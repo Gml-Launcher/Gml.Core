@@ -1,0 +1,158 @@
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using CmlLib.Core;
+using CmlLib.Core.Auth;
+using CmlLib.Core.Installer.Forge;
+using CmlLib.Core.Installer.Forge.Versions;
+using CmlLib.Core.Version;
+using Gml.Core.Services.Storage;
+using Gml.Models;
+using Gml.Models.CmlLib;
+using GmlCore.Interfaces.Enums;
+using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.Procedures;
+
+namespace Gml.Core.GameDownloader
+{
+    public class GameDownloaderProcedures : IGameDownloaderProcedures
+    {
+        public MVersion? InstallationVersion => _gameVersion;
+
+        private readonly ILauncherInfo _launcherInfo;
+        private readonly IStorageService _storage;
+        private readonly CustomMinecraftPath _minecraftPath;
+        private readonly CMLauncher _launcher;
+        private MVersion? _gameVersion;
+
+        public event IGameDownloaderProcedures.FileDownloadChanged? FileChanged;
+        public event IGameDownloaderProcedures.ProgressDownloadChanged? ProgressChanged;
+
+
+        public GameDownloaderProcedures(ILauncherInfo launcherInfo, IStorageService storage, IGameProfile profile)
+        {
+            _launcherInfo = launcherInfo;
+            _storage = storage;
+
+            if (profile == GameProfile.Empty) 
+                return;
+            
+            var clientDirectory = Path.Combine(launcherInfo.InstallationDirectory, "clients", profile.Name);
+
+            profile.ClientPath = clientDirectory;
+            _minecraftPath = new CustomMinecraftPath(clientDirectory);
+            _launcher = new CMLauncher(_minecraftPath);
+
+            _launcher.FileChanged += fileInfo => FileChanged?.Invoke(fileInfo); // ToDo: Заменить на свой класс
+            _launcher.ProgressChanged +=
+                (sender, args) => ProgressChanged?.Invoke(sender, args); // ToDo: Заменить на свой класс
+
+            System.Net.ServicePointManager.DefaultConnectionLimit = 256;
+        }
+
+        public async Task<string> DownloadGame(string version, GameLoader loader)
+        {
+            if (string.IsNullOrEmpty(version))
+                throw new ArgumentNullException(nameof(version));
+
+            switch (loader)
+            {
+                case GameLoader.Vanilla:
+                    await _launcher.CheckAndDownloadAsync(_gameVersion);
+                    return _gameVersion.Id;
+                case GameLoader.Forge:
+
+                    var forge = new MForge(_launcher);
+                    var originalVersion = version.Split('-').First() ?? string.Empty;
+
+                    return await forge.Install(originalVersion, true).ConfigureAwait(false);
+                
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(loader), loader, null);
+            }
+        }
+
+        internal async Task<string> ValidateMinecraftVersion(string version, GameLoader loader)
+        {
+            if (_gameVersion != null) 
+                return _gameVersion.Id;
+            
+            switch (loader)
+            {
+                case GameLoader.Vanilla:
+                    _gameVersion ??= await _launcher.GetVersionAsync(version);
+                    break;
+
+                case GameLoader.Forge:
+                    
+                    var clientHandler = new HttpClientHandler();
+                    clientHandler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+
+                    var versionMapper = new ForgeInstallerVersionMapper();
+                    var versionLoader = new ForgeVersionLoader(new HttpClient(clientHandler));
+
+                    var minecraftVersion = version.Split('-').First();
+                    
+                    var versions = (await versionLoader.GetForgeVersions(minecraftVersion)).ToList();
+
+                    var bestVersion =
+                        versions.FirstOrDefault(v => v.IsRecommendedVersion) ??
+                        versions.FirstOrDefault(v => v.IsLatestVersion) ??
+                        versions.FirstOrDefault() ??
+                        throw new InvalidOperationException("Cannot find any version");
+
+                    var mappedVersion = versionMapper.CreateInstaller(bestVersion);
+                    _gameVersion = new MVersion(mappedVersion.VersionName);
+                        
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(loader), loader, null);
+            }
+
+            return _gameVersion.Id;
+        }
+
+
+        public async Task<bool> IsFullLoaded(IGameProfile baseProfile)
+        {
+            if (await baseProfile.CheckClientExists() == false)
+                return false;
+
+            return true;
+        }
+
+        public async Task<Process> CreateProfileProcess(IGameProfile baseProfile, IStartupOptions startupOptions)
+        {
+            var session = MSession.CreateOfflineSession("GamerVII"); //ToDo: Заменить на ник пользователя
+
+            return await _launcher.CreateProcessAsync(baseProfile.LaunchVersion, new MLaunchOption
+            {
+                // JavaPath = _launcher.GetJavaPath(_gameVersion!),
+                MinimumRamMb = startupOptions.MinimumRamMb,
+                MaximumRamMb = startupOptions.MaximumRamMb,
+                FullScreen = startupOptions.FullScreen,
+                ScreenHeight = startupOptions.ScreenHeight,
+                ScreenWidth = startupOptions.ScreenWidth,
+                ServerIp = startupOptions.ServerIp,
+                ServerPort = startupOptions.ServerPort,
+                Session = session,
+            }).ConfigureAwait(false);
+        }
+
+        public Task<bool> CheckClientExists(IGameProfile baseProfile)
+        {
+            var jarFilePath = Path.Combine(
+                baseProfile.ClientPath, 
+                "client", 
+                baseProfile.GameVersion,
+                $"{baseProfile.GameVersion}.jar");
+
+            var fileInfo = new FileInfo(jarFilePath);
+
+            return Task.FromResult(fileInfo.Exists);
+        }
+    }
+}
