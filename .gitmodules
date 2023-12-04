@@ -1,0 +1,3 @@
+[submodule "src/CmlLib.Core.Installer.Forge"]
+	path = src/CmlLib.Core.Installer.Forge
+	url = https://github.com/GamerVII-NET/CmlLib.Core.Installer.Forge
