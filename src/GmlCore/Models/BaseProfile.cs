@@ -6,6 +6,7 @@ using Gml.Models.Enums;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
+using GmlCore.Interfaces.User;
 
 namespace Gml.Models
 {
@@ -27,7 +28,7 @@ namespace Gml.Models
 
         public BaseProfile()
         {
-            
+
         }
         internal BaseProfile(string name, string gameVersion, GameLoader loader)
         {
@@ -41,18 +42,18 @@ namespace Gml.Models
         public async Task<bool> ValidateProfile()
         {
             CheckDispose();
-            
+
             IsValidProfile = await ProfileProcedures.ValidateProfileAsync(this)
                 ? NullableBool.True
                 : NullableBool.False;
 
             return IsValidProfile == NullableBool.True;
         }
-        
+
         public async Task<bool> CheckIsLoaded()
         {
             CheckDispose();
-            
+
             IsLoaded = await GameLoader.IsFullLoaded(this)
                 ? NullableBool.True
                 : NullableBool.False;
@@ -67,11 +68,11 @@ namespace Gml.Models
             await ProfileProcedures.DownloadProfileAsync(this);
         }
 
-        public Task<Process> CreateProcess(IStartupOptions startupOptions)
+        public Task<Process> CreateProcess(IStartupOptions startupOptions, IUser user)
         {
             CheckDispose();
 
-            return GameLoader.CreateProfileProcess(this, startupOptions);
+            return GameLoader.CreateProfileProcess(this, startupOptions, user, false);
         }
 
         public Task<bool> CheckClientExists()
@@ -91,9 +92,9 @@ namespace Gml.Models
         public async Task Remove()
         {
             CheckDispose();
-            
+
             await ProfileProcedures.RemoveProfile(this);
-            
+
             Dispose();
         }
 
@@ -115,7 +116,7 @@ namespace Gml.Models
         public void Dispose()
         {
             if (IsDisposed) return;
-            
+
 
             IsDisposed = true;
         }

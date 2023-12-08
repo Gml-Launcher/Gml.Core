@@ -16,6 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\..\..\..\source\repos\Gml.Common\Gml.Common\Gml.Common.csproj" />
       <ProjectReference Include="..\CmlLib.Core.Installer.Forge\CmlLib.Core.Installer.Forge\CmlLib.Core.Installer.Forge.csproj" />
       <ProjectReference Include="..\GmlCore.Interfaces\GmlCore.Interfaces.csproj" />
     </ItemGroup>

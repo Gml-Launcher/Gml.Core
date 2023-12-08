@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CmlLib.Core.Downloader;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.User;
 
 namespace GmlCore.Interfaces.Procedures
 {
@@ -14,10 +15,10 @@ namespace GmlCore.Interfaces.Procedures
 
         public event FileDownloadChanged FileChanged;
         public event ProgressDownloadChanged ProgressChanged;
-        
+
         Task<string> DownloadGame(string version, GameLoader loader);
         Task<bool> IsFullLoaded(IGameProfile baseProfile);
-        Task<Process> CreateProfileProcess(IGameProfile baseProfile, IStartupOptions startupOptions);
+        Task<Process> CreateProfileProcess(IGameProfile baseProfile, IStartupOptions startupOptions, IUser user, bool forceDownload);
         Task<bool> CheckClientExists(IGameProfile baseProfile);
     }
 }

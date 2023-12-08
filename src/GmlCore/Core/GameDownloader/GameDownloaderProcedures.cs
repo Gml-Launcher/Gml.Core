@@ -2,7 +2,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
@@ -15,6 +17,7 @@ using Gml.Models.CmlLib;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
+using GmlCore.Interfaces.User;
 
 namespace Gml.Core.GameDownloader
 {
@@ -37,9 +40,9 @@ namespace Gml.Core.GameDownloader
             _launcherInfo = launcherInfo;
             _storage = storage;
 
-            if (profile == GameProfile.Empty) 
+            if (profile == GameProfile.Empty)
                 return;
-            
+
             var clientDirectory = Path.Combine(launcherInfo.InstallationDirectory, "clients", profile.Name);
 
             profile.ClientPath = clientDirectory;
@@ -50,7 +53,8 @@ namespace Gml.Core.GameDownloader
             _launcher.ProgressChanged +=
                 (sender, args) => ProgressChanged?.Invoke(sender, args); // ToDo: Заменить на свой класс
 
-            System.Net.ServicePointManager.DefaultConnectionLimit = 256;
+            //ToDo: Починить
+            // System.Net.ServicePointManager.DefaultConnectionLimit = 256;
         }
 
         public async Task<string> DownloadGame(string version, GameLoader loader)
@@ -69,7 +73,7 @@ namespace Gml.Core.GameDownloader
                     var originalVersion = version.Split('-').First() ?? string.Empty;
 
                     return await forge.Install(originalVersion, true).ConfigureAwait(false);
-                
+
                 default:
                     throw new ArgumentOutOfRangeException(nameof(loader), loader, null);
             }
@@ -77,17 +81,20 @@ namespace Gml.Core.GameDownloader
 
         internal async Task<string> ValidateMinecraftVersion(string version, GameLoader loader)
         {
-            if (_gameVersion != null) 
+            if (_gameVersion != null)
                 return _gameVersion.Id;
-            
+
             switch (loader)
             {
                 case GameLoader.Vanilla:
+                    // ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls;
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+
                     _gameVersion ??= await _launcher.GetVersionAsync(version);
                     break;
 
                 case GameLoader.Forge:
-                    
+
                     var clientHandler = new HttpClientHandler();
                     clientHandler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
 
@@ -95,7 +102,7 @@ namespace Gml.Core.GameDownloader
                     var versionLoader = new ForgeVersionLoader(new HttpClient(clientHandler));
 
                     var minecraftVersion = version.Split('-').First();
-                    
+
                     var versions = (await versionLoader.GetForgeVersions(minecraftVersion)).ToList();
 
                     var bestVersion =
@@ -106,7 +113,7 @@ namespace Gml.Core.GameDownloader
 
                     var mappedVersion = versionMapper.CreateInstaller(bestVersion);
                     _gameVersion = new MVersion(mappedVersion.VersionName);
-                        
+
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(loader), loader, null);
@@ -124,11 +131,11 @@ namespace Gml.Core.GameDownloader
             return true;
         }
 
-        public async Task<Process> CreateProfileProcess(IGameProfile baseProfile, IStartupOptions startupOptions)
+        public Task<Process> CreateProfileProcess(IGameProfile baseProfile, IStartupOptions startupOptions, IUser user, bool forceDownload)
         {
-            var session = MSession.CreateOfflineSession("GamerVII"); //ToDo: Заменить на ник пользователя
+            var session = new MSession(user.Name, user.AccessToken, user.Uuid); //ToDo: Заменить на ник пользователя
 
-            return await _launcher.CreateProcessAsync(baseProfile.LaunchVersion, new MLaunchOption
+            return _launcher.CreateProcessAsync(baseProfile.LaunchVersion, new MLaunchOption
             {
                 // JavaPath = _launcher.GetJavaPath(_gameVersion!),
                 MinimumRamMb = startupOptions.MinimumRamMb,
@@ -139,14 +146,14 @@ namespace Gml.Core.GameDownloader
                 ServerIp = startupOptions.ServerIp,
                 ServerPort = startupOptions.ServerPort,
                 Session = session,
-            }).ConfigureAwait(false);
+            }, forceDownload);
         }
 
         public Task<bool> CheckClientExists(IGameProfile baseProfile)
         {
             var jarFilePath = Path.Combine(
-                baseProfile.ClientPath, 
-                "client", 
+                baseProfile.ClientPath,
+                "client",
                 baseProfile.GameVersion,
                 $"{baseProfile.GameVersion}.jar");
 

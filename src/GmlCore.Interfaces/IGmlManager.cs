@@ -7,5 +7,6 @@ namespace GmlCore.Interfaces
     {
         public ILauncherInfo LauncherInfo { get; }
         public IProfileProcedures Profiles { get; }
+        public IFileStorageProcedures Files { get; }
     }
 }

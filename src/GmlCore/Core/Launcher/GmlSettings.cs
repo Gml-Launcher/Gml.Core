@@ -18,10 +18,10 @@ namespace Gml.Core.Launcher
         {
             Name = name;
             FolderName = _systemProcedures.CleanFolderName(name);
-            BaseDirectory = baseDirectory ?? _systemProcedures.DefaultInstallation;
+            BaseDirectory = string.IsNullOrEmpty(baseDirectory) ? _systemProcedures.DefaultInstallation : baseDirectory;
             InstallationDirectory = Path.Combine(BaseDirectory, FolderName);
         }
-        
-        
+
+
     }
 }
