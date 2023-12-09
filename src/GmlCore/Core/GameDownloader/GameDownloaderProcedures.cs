@@ -55,6 +55,11 @@ namespace Gml.Core.GameDownloader
 
             //ToDo: Починить
             // System.Net.ServicePointManager.DefaultConnectionLimit = 256;
+
+            _launcher.ProgressChanged += (sender, args) =>
+            {
+                Console.WriteLine($"Downloading files: {args.ProgressPercentage}%");
+            };
         }
 
         public async Task<string> DownloadGame(string version, GameLoader loader)
