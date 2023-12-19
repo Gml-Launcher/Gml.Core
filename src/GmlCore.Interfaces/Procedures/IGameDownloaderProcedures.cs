@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using CmlLib.Core.Downloader;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.User;
@@ -10,7 +9,7 @@ namespace GmlCore.Interfaces.Procedures
 {
     public interface IGameDownloaderProcedures
     {
-        public delegate void FileDownloadChanged(DownloadFileChangedEventArgs file);
+        public delegate void FileDownloadChanged(string file);
         public delegate void ProgressDownloadChanged(object sender, ProgressChangedEventArgs e);
 
         public event FileDownloadChanged FileChanged;

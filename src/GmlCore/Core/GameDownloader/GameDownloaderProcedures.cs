@@ -49,7 +49,7 @@ namespace Gml.Core.GameDownloader
             _minecraftPath = new CustomMinecraftPath(clientDirectory);
             _launcher = new CMLauncher(_minecraftPath);
 
-            _launcher.FileChanged += fileInfo => FileChanged?.Invoke(fileInfo); // ToDo: Заменить на свой класс
+            _launcher.FileChanged += fileInfo => FileChanged?.Invoke(fileInfo.FileName ?? string.Empty); // ToDo: Заменить на свой класс
             _launcher.ProgressChanged +=
                 (sender, args) => ProgressChanged?.Invoke(sender, args); // ToDo: Заменить на свой класс
 
@@ -142,7 +142,6 @@ namespace Gml.Core.GameDownloader
 
             return _launcher.CreateProcessAsync(baseProfile.LaunchVersion, new MLaunchOption
             {
-                // JavaPath = _launcher.GetJavaPath(_gameVersion!),
                 MinimumRamMb = startupOptions.MinimumRamMb,
                 MaximumRamMb = startupOptions.MaximumRamMb,
                 FullScreen = startupOptions.FullScreen,
@@ -151,6 +150,7 @@ namespace Gml.Core.GameDownloader
                 ServerIp = startupOptions.ServerIp,
                 ServerPort = startupOptions.ServerPort,
                 Session = session,
+                OsType = (OsType)Enum.Parse(typeof(OsType), startupOptions.OsType.ToString())
             }, forceDownload);
         }
 

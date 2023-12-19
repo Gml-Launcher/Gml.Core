@@ -6,8 +6,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CmlLib.Core" Version="3.3.8" />
       <PackageReference Include="System.Text.Json" Version="8.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Gml.WebApi.Models\Gml.WebApi.Models.csproj" />
     </ItemGroup>
 
 </Project>

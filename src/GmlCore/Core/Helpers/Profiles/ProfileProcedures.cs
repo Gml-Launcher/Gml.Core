@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using CommunityToolkit.Diagnostics;
 using Gml.Common;
 using Gml.Core.Constants;
 using Gml.Core.Exceptions;
@@ -65,11 +66,11 @@ namespace Gml.Core.Helpers.Profiles
 
         public async Task<IGameProfile?> AddProfile(string name, string version, GameLoader loader)
         {
-            if (name is null)
-                throw new ArgumentNullException(nameof(name));
+            if (string.IsNullOrEmpty(name))
+                ThrowHelper.ThrowArgumentNullException<string>(name);
 
-            if (version is null)
-                throw new ArgumentNullException(nameof(version));
+            if (string.IsNullOrEmpty(version))
+                ThrowHelper.ThrowArgumentNullException<string>(version);
 
             var profile = new GameProfile(name, version, loader)
             {
@@ -244,6 +245,9 @@ namespace Gml.Core.Helpers.Profiles
 
         public async Task PackProfile(IGameProfile profile)
         {
+
+            await profile.GameLoader.CreateProfileProcess(profile, StartupOptions.Empty, User.User.Empty, true);
+
             var files = await GetProfileFiles(profile);
 
             foreach (var file in files)

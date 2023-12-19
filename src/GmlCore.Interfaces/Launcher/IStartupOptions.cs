@@ -1,4 +1,6 @@
-﻿namespace GmlCore.Interfaces.Launcher
+﻿using Gml.WebApi.Models.Enums.System;
+
+namespace GmlCore.Interfaces.Launcher
 {
     public interface IStartupOptions
     {
@@ -9,5 +11,6 @@
         int ScreenHeight { get; set; }
         string? ServerIp { get; set; }
         int ServerPort { get; set; }
+        public OsType OsType { get; set; }
     }
 }
