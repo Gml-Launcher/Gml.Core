@@ -91,14 +91,39 @@ namespace Gml.Core.Helpers.Profiles
         }
 
 
-        public async Task RemoveProfile(IGameProfile profile)
+        public Task RemoveProfile(IGameProfile profile)
+        {
+            return RemoveProfile(profile, false);
+        }
+
+        public async Task RemoveProfile(IGameProfile profile, bool removeProfileFiles)
         {
             if (!_gameProfiles.Any())
                 await RestoreProfiles();
 
             var localProfile = _gameProfiles.FirstOrDefault(c => c.Name == profile.Name);
 
-            _gameProfiles.Remove(profile);
+            if (localProfile == null)
+                return;
+
+            if (removeProfileFiles)
+            {
+                var info = await GetProfileInfo(localProfile.Name, StartupOptions.Empty, User.User.Empty);
+
+                if (info is GameProfileInfo profileInfo)
+                {
+                    var clientPath = _launcherInfo.InstallationDirectory + $"\\clients\\{profileInfo.ProfileName}";
+
+                    if (Directory.Exists(clientPath))
+                    {
+                        Directory.Delete(clientPath, true);
+                    }
+                }
+
+
+            }
+
+            _gameProfiles.Remove(localProfile);
 
             await _storageService.SetAsync(StorageConstants.GameProfiles, _gameProfiles);
         }
@@ -215,18 +240,43 @@ namespace Gml.Core.Helpers.Profiles
 
             if (profile == null)
                 return null;
-
-            Process process;
-
-            if (await profile.CheckIsFullLoaded() == false)
-            {
-                await profile.DownloadAsync();
-                process = await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, true);
-            }
-            else
+            Process process = null;
+            try
             {
                 process = await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, false);
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+
+            var files = await GetProfileFiles(profile);
+            var files2 = GetWhiteListFilesProfileFiles(files);
+
+            return new GameProfileInfo
+            {
+                ProfileName = profile.Name,
+                Arguments = process?.StartInfo.Arguments.Replace(profile.ClientPath, "{localPath}"),
+                ClientVersion = profile.GameVersion,
+                MinecraftVersion = profile.LaunchVersion.Split('-').First(),
+                Files = files,
+                WhiteListFiles = files2
+            };
+
+        }
+
+        public async Task<IGameProfileInfo?> RestoreProfileInfo(string profileName, IStartupOptions startupOptions, IUser user)
+        {
+            if (!_gameProfiles.Any())
+                await RestoreProfiles();
+
+            var profile = _gameProfiles.FirstOrDefault(c => c.Name == profileName);
+
+            if (profile == null)
+                return null;
+
+            await profile.DownloadAsync();
+            Process process = await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, true);
 
             var files = await GetProfileFiles(profile);
             var files2 = GetWhiteListFilesProfileFiles(files);
@@ -245,9 +295,6 @@ namespace Gml.Core.Helpers.Profiles
 
         public async Task PackProfile(IGameProfile profile)
         {
-
-            await profile.GameLoader.CreateProfileProcess(profile, StartupOptions.Empty, User.User.Empty, true);
-
             var files = await GetProfileFiles(profile);
 
             foreach (var file in files)

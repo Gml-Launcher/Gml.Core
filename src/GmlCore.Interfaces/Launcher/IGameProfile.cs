@@ -21,10 +21,11 @@ namespace GmlCore.Interfaces.Launcher
         string ClientPath { get; set; }
 
         Task<bool> ValidateProfile();
-        Task<bool> CheckIsFullLoaded();
+        Task<bool> CheckIsFullLoaded(IStartupOptions startupOptions);
         Task Remove();
         Task DownloadAsync();
         Task<Process> CreateProcess(IStartupOptions startupOptions, IUser user);
         Task<bool> CheckClientExists();
+        Task<bool> CheckOsTypeLoaded(IStartupOptions startupOptions);
     }
 }

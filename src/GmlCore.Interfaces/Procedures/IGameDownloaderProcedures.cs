@@ -16,8 +16,9 @@ namespace GmlCore.Interfaces.Procedures
         public event ProgressDownloadChanged ProgressChanged;
 
         Task<string> DownloadGame(string version, GameLoader loader);
-        Task<bool> IsFullLoaded(IGameProfile baseProfile);
+        Task<bool> IsFullLoaded(IGameProfile baseProfile, IStartupOptions startupOptions = null);
         Task<Process> CreateProfileProcess(IGameProfile baseProfile, IStartupOptions startupOptions, IUser user, bool forceDownload);
         Task<bool> CheckClientExists(IGameProfile baseProfile);
+        Task<bool> CheckOsTypeLoaded(IGameProfile baseProfile, IStartupOptions startupOptions);
     }
 }

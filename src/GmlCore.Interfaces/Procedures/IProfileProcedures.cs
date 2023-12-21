@@ -17,6 +17,7 @@ namespace GmlCore.Interfaces.Procedures
         Task<bool> CanAddProfile(string name, string version);
 
         Task RemoveProfile(IGameProfile profile);
+        Task RemoveProfile(IGameProfile profile, bool removeProfileFiles);
         Task RestoreProfiles();
         Task RemoveProfile(int profileId);
         Task ClearProfiles();
@@ -28,6 +29,7 @@ namespace GmlCore.Interfaces.Procedures
         Task<IGameProfile?> GetProfile(string profileName);
         Task<IEnumerable<IGameProfile>> GetProfiles();
         Task<IGameProfileInfo?> GetProfileInfo(string profileName, IStartupOptions startupOptions, IUser user);
+        Task<IGameProfileInfo?> RestoreProfileInfo(string profileName, IStartupOptions startupOptions, IUser user);
         Task PackProfile(IGameProfile baseProfile);
     }
 }

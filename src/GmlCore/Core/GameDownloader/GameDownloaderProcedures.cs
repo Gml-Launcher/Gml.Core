@@ -84,6 +84,7 @@ namespace Gml.Core.GameDownloader
             }
         }
 
+
         internal async Task<string> ValidateMinecraftVersion(string version, GameLoader loader)
         {
             if (_gameVersion != null)
@@ -128,9 +129,12 @@ namespace Gml.Core.GameDownloader
         }
 
 
-        public async Task<bool> IsFullLoaded(IGameProfile baseProfile)
+        public async Task<bool> IsFullLoaded(IGameProfile baseProfile, IStartupOptions? startupOptions = null)
         {
             if (await baseProfile.CheckClientExists() == false)
+                return false;
+
+            if (startupOptions != null && await baseProfile.CheckOsTypeLoaded(startupOptions) == false)
                 return false;
 
             return true;
@@ -165,6 +169,19 @@ namespace Gml.Core.GameDownloader
             var fileInfo = new FileInfo(jarFilePath);
 
             return Task.FromResult(fileInfo.Exists);
+        }
+
+        public Task<bool> CheckOsTypeLoaded(IGameProfile baseProfile, IStartupOptions startupOptions)
+        {
+
+            var jarFilePath = Path.Combine(
+                baseProfile.ClientPath,
+                "client",
+                baseProfile.GameVersion,
+                $"natives");
+
+
+            return Task.FromResult(false);
         }
     }
 }

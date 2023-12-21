@@ -81,12 +81,18 @@ namespace Gml.Models
 
             return GameLoader.CheckClientExists(this);
         }
-
-        public async Task<bool> CheckIsFullLoaded()
+        public Task<bool> CheckOsTypeLoaded(IStartupOptions startupOptions)
         {
             CheckDispose();
 
-            return await GameLoader.IsFullLoaded(this);
+            return GameLoader.CheckOsTypeLoaded(this, startupOptions);
+        }
+
+        public async Task<bool> CheckIsFullLoaded(IStartupOptions startupOptions)
+        {
+            CheckDispose();
+
+            return await GameLoader.IsFullLoaded(this, startupOptions);
         }
 
         public async Task Remove()
