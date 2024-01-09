@@ -1,18 +1,26 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Gml.Core.Launcher;
+using Gml.Core.System;
+using Gml.Models.Converters;
 using Gml.Models.Enums;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
+using GmlCore.Interfaces.System;
 using GmlCore.Interfaces.User;
+using Newtonsoft.Json;
 
 namespace Gml.Models
 {
+
     public class BaseProfile : IGameProfile
     {
+        [JsonIgnore]
         public IProfileProcedures ProfileProcedures { get; set; }
+        [JsonIgnore]
         public IGameDownloaderProcedures GameLoader { get; set; }
 
         public string Name { get; set; }
@@ -21,6 +29,9 @@ namespace Gml.Models
         public GameLoader Loader { get; set; }
         public string ClientPath { get; set; }
 
+        [JsonConverter(typeof(LocalFileInfoConverter))]
+        public List<IFileInfo>? FileWhiteList { get; set; }
+
         internal NullableBool IsValidProfile { get; set; }
         internal NullableBool IsLoaded { get; set; }
 
@@ -28,8 +39,8 @@ namespace Gml.Models
 
         public BaseProfile()
         {
-
         }
+
         internal BaseProfile(string name, string gameVersion, GameLoader loader)
         {
             Loader = loader;
@@ -81,6 +92,7 @@ namespace Gml.Models
 
             return GameLoader.CheckClientExists(this);
         }
+
         public Task<bool> CheckOsTypeLoaded(IStartupOptions startupOptions)
         {
             CheckDispose();
@@ -114,7 +126,9 @@ namespace Gml.Models
         {
             if (IsDisposed) return;
 
-            if (disposing) { }
+            if (disposing)
+            {
+            }
 
             IsDisposed = true;
         }

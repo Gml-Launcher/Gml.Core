@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Procedures;
+using GmlCore.Interfaces.System;
 using GmlCore.Interfaces.User;
 
 namespace GmlCore.Interfaces.Launcher
@@ -19,6 +21,7 @@ namespace GmlCore.Interfaces.Launcher
         string LaunchVersion { get; set; }
         GameLoader Loader { get; }
         string ClientPath { get; set; }
+        List<IFileInfo>? FileWhiteList { get; set; }
 
         Task<bool> ValidateProfile();
         Task<bool> CheckIsFullLoaded(IStartupOptions startupOptions);

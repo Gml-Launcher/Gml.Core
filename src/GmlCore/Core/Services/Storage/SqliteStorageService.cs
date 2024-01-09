@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
+using Newtonsoft.Json;
 using SQLite;
 
 namespace Gml.Core.Services.Storage
@@ -13,7 +13,7 @@ namespace Gml.Core.Services.Storage
         private readonly string _databasePath;
         private readonly IGmlSettings _settings;
         private readonly SQLiteAsyncConnection _database;
-        
+
         private const string DatabaseFileName = "data.db";
 
 
@@ -22,7 +22,7 @@ namespace Gml.Core.Services.Storage
             _settings = settings;
             _databasePath = Path.Combine(settings.InstallationDirectory, DatabaseFileName);
             _database = new SQLiteAsyncConnection(_databasePath);
-            
+
             InitializeTables();
         }
 
@@ -32,20 +32,20 @@ namespace Gml.Core.Services.Storage
 
             if (!fileInfo.Directory!.Exists)
                 fileInfo.Directory.Create();
-            
+
             _database.CreateTableAsync<StorageItem>().Wait();
         }
 
         public async Task SetAsync<T>(string key, T value)
         {
-            var serializedValue = JsonSerializer.Serialize(value);
+            var serializedValue = JsonConvert.SerializeObject(value);
             var storageItem = new StorageItem
             {
                 Key = key,
                 TypeName = typeof(T).FullName,
                 Value = serializedValue
             };
-            
+
             await _database.InsertOrReplaceAsync(storageItem);
         }
 
@@ -55,8 +55,8 @@ namespace Gml.Core.Services.Storage
                 .Where(si => si.Key == key)
                 .FirstOrDefaultAsync();
 
-            return storageItem != null 
-                       ? JsonSerializer.Deserialize<T>(storageItem.Value) 
+            return storageItem != null
+                       ? JsonConvert.DeserializeObject<T>(storageItem.Value)
                        : default;
         }
 

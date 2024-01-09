@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -20,16 +19,22 @@ using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.System;
 using GmlCore.Interfaces.User;
-using NotImplementedException = System.NotImplementedException;
 
 namespace Gml.Core.Helpers.Profiles
 {
     public class ProfileProcedures : IProfileProcedures
     {
         private readonly IGameDownloaderProcedures _gameDownloader;
+
+
         private readonly ILauncherInfo _launcherInfo;
+
+
         private readonly IStorageService _storageService;
-        private List<IGameProfile> _gameProfiles = new List<IGameProfile>();
+
+
+        private List<IGameProfile> _gameProfiles = new();
+
 
         public ProfileProcedures(IGameDownloaderProcedures gameDownloader, ILauncherInfo launcherInfo,
             IStorageService storageService)
@@ -64,6 +69,7 @@ namespace Gml.Core.Helpers.Profiles
             await _storageService.SetAsync(StorageConstants.GameProfiles, _gameProfiles);
         }
 
+
         public async Task<IGameProfile?> AddProfile(string name, string version, GameLoader loader)
         {
             if (string.IsNullOrEmpty(name))
@@ -74,7 +80,7 @@ namespace Gml.Core.Helpers.Profiles
 
             var profile = new GameProfile(name, version, loader)
             {
-                ProfileProcedures = this,
+                ProfileProcedures = this
             };
 
             await AddProfile(profile);
@@ -114,13 +120,8 @@ namespace Gml.Core.Helpers.Profiles
                 {
                     var clientPath = _launcherInfo.InstallationDirectory + $"\\clients\\{profileInfo.ProfileName}";
 
-                    if (Directory.Exists(clientPath))
-                    {
-                        Directory.Delete(clientPath, true);
-                    }
+                    if (Directory.Exists(clientPath)) Directory.Delete(clientPath, true);
                 }
-
-
             }
 
             _gameProfiles.Remove(localProfile);
@@ -140,20 +141,24 @@ namespace Gml.Core.Helpers.Profiles
             }
         }
 
-        private async void UpdateProfilesService(GameProfile c)
+
+        private async void UpdateProfilesService(GameProfile gameProfile)
         {
-            var gameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, c);
+            var gameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, gameProfile);
 
-            c.ProfileProcedures = this;
-            c.GameLoader = gameLoader;
+            gameProfile.ProfileProcedures = this;
+            gameProfile.GameLoader = gameLoader;
 
-            c.LaunchVersion = await gameLoader.ValidateMinecraftVersion(c.GameVersion, c.Loader);
-            c.GameVersion = gameLoader.InstallationVersion!.Id;
+            gameProfile.LaunchVersion = await gameLoader.ValidateMinecraftVersion(gameProfile.GameVersion, gameProfile.Loader);
+            gameProfile.GameVersion = gameLoader.InstallationVersion!.Id;
         }
+
 
         public Task RemoveProfile(int profileId)
         {
-            throw new NotImplementedException();
+            var profile = _gameProfiles[profileId];
+
+            return RemoveProfile(profile, false);
         }
 
         public async Task ClearProfiles()
@@ -184,10 +189,8 @@ namespace Gml.Core.Helpers.Profiles
         public async Task DownloadProfileAsync(IGameProfile baseProfile)
         {
             if (baseProfile is GameProfile gameProfile && await gameProfile.ValidateProfile())
-            {
                 gameProfile.LaunchVersion =
                     await gameProfile.GameLoader.DownloadGame(gameProfile.GameVersion, gameProfile.Loader);
-            }
         }
 
         public async Task<IGameProfile?> GetProfile(string profileName)
@@ -208,7 +211,6 @@ namespace Gml.Core.Helpers.Profiles
             return _gameProfiles.AsEnumerable();
         }
 
-
         public IEnumerable<IFileInfo> GetWhiteListFilesProfileFiles(IEnumerable<IFileInfo> files)
         {
             return files.Where(c => c.Directory.EndsWith("options.txt"));
@@ -220,18 +222,21 @@ namespace Gml.Core.Helpers.Profiles
 
             var localFiles = profileDirectoryInfo.GetFiles("*.*", SearchOption.AllDirectories);
 
+            var algorithm = new SHA256Managed();
+
             IEnumerable<IFileInfo> localFilesInfo = localFiles.Select(c => new LocalFileInfo
             {
                 Name = c.Name,
                 Directory = c.FullName.Replace(_launcherInfo.InstallationDirectory, string.Empty),
                 Size = c.Length,
-                Hash = SystemHelper.CalculateFileHash(c.FullName, new SHA256Managed())
+                Hash = SystemHelper.CalculateFileHash(c.FullName, algorithm)
             });
 
             return Task.FromResult(localFilesInfo);
         }
 
-        public async Task<IGameProfileInfo?> GetProfileInfo(string profileName, IStartupOptions startupOptions, IUser user)
+        public async Task<IGameProfileInfo?> GetProfileInfo(string profileName, IStartupOptions startupOptions,
+            IUser user)
         {
             if (!_gameProfiles.Any())
                 await RestoreProfiles();
@@ -240,7 +245,7 @@ namespace Gml.Core.Helpers.Profiles
 
             if (profile == null)
                 return null;
-            Process process = null;
+            Process process = null!;
             try
             {
                 process = await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, false);
@@ -250,8 +255,7 @@ namespace Gml.Core.Helpers.Profiles
                 Console.WriteLine(e);
             }
 
-            var files = await GetProfileFiles(profile);
-            var files2 = GetWhiteListFilesProfileFiles(files);
+            var files = (await GetProfileFiles(profile)).ToList();
 
             return new GameProfileInfo
             {
@@ -260,12 +264,12 @@ namespace Gml.Core.Helpers.Profiles
                 ClientVersion = profile.GameVersion,
                 MinecraftVersion = profile.LaunchVersion.Split('-').First(),
                 Files = files,
-                WhiteListFiles = files2
+                WhiteListFiles = profile.FileWhiteList ??= new List<IFileInfo>()
             };
-
         }
 
-        public async Task<IGameProfileInfo?> RestoreProfileInfo(string profileName, IStartupOptions startupOptions, IUser user)
+        public async Task<IGameProfileInfo?> RestoreProfileInfo(string profileName, IStartupOptions startupOptions,
+            IUser user)
         {
             if (!_gameProfiles.Any())
                 await RestoreProfiles();
@@ -276,7 +280,7 @@ namespace Gml.Core.Helpers.Profiles
                 return null;
 
             await profile.DownloadAsync();
-            Process process = await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, true);
+            var process = await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, true);
 
             var files = await GetProfileFiles(profile);
             var files2 = GetWhiteListFilesProfileFiles(files);
@@ -290,8 +294,8 @@ namespace Gml.Core.Helpers.Profiles
                 Files = files,
                 WhiteListFiles = files2
             };
-
         }
+
 
         public async Task PackProfile(IGameProfile profile)
         {
@@ -299,7 +303,28 @@ namespace Gml.Core.Helpers.Profiles
 
             foreach (var file in files)
                 await _storageService.SetAsync(file.Hash, file);
+        }
 
+        public async Task AddFileToWhiteList(IGameProfile profile, IFileInfo file)
+        {
+            profile.FileWhiteList ??= new List<IFileInfo>();
+
+            if (!profile.FileWhiteList.Any(c => c.Hash == file.Hash))
+            {
+                profile.FileWhiteList.Add(file);
+                await SaveProfiles();
+            }
+        }
+
+        public async Task RemoveFileFromWhiteList(IGameProfile profile, IFileInfo file)
+        {
+            profile.FileWhiteList ??= new List<IFileInfo>();
+
+            if (profile.FileWhiteList.FirstOrDefault(c => c.Hash == file.Hash) is { } fileInfo)
+            {
+                profile.FileWhiteList.Remove(fileInfo);
+                await SaveProfiles();
+            }
         }
     }
 }

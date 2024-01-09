@@ -31,5 +31,7 @@ namespace GmlCore.Interfaces.Procedures
         Task<IGameProfileInfo?> GetProfileInfo(string profileName, IStartupOptions startupOptions, IUser user);
         Task<IGameProfileInfo?> RestoreProfileInfo(string profileName, IStartupOptions startupOptions, IUser user);
         Task PackProfile(IGameProfile baseProfile);
+        Task AddFileToWhiteList(IGameProfile profile, IFileInfo file);
+        Task RemoveFileFromWhiteList(IGameProfile profile, IFileInfo file);
     }
 }
