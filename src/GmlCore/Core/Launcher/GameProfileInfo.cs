@@ -6,6 +6,7 @@ namespace Gml.Core.Launcher
 {
     public class GameProfileInfo : IGameProfileInfo
     {
+        public string JavaPath { get; set; }
         public string ProfileName { get; set; }
         public string MinecraftVersion { get; set; }
         public string ClientVersion { get; set; }

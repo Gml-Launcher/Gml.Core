@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using GmlCore.Interfaces.Enums;
@@ -11,6 +12,10 @@ namespace GmlCore.Interfaces.Procedures
 {
     public interface IProfileProcedures
     {
+        public delegate void ProgressPackChanged(ProgressChangedEventArgs e);
+
+        public event ProgressPackChanged PackChanged;
+
         Task AddProfile(IGameProfile? profile);
         Task<IGameProfile?> AddProfile(string name, string version, GameLoader loader);
 

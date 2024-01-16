@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -24,6 +25,11 @@ namespace Gml.Core.Helpers.Profiles
 {
     public class ProfileProcedures : IProfileProcedures
     {
+
+        public delegate void ProgressPackChanged(ProgressChangedEventArgs e);
+
+        public event IProfileProcedures.ProgressPackChanged PackChanged;
+
         private readonly IGameDownloaderProcedures _gameDownloader;
 
 
@@ -245,26 +251,51 @@ namespace Gml.Core.Helpers.Profiles
 
             if (profile == null)
                 return null;
-            Process process = null!;
+
             try
             {
-                process = await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, false);
+                Process process = null;
+                try
+                {
+                    process = await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, false);
+                }
+                catch (KeyNotFoundException e)
+                {
+                    //ToDo: Убрать этот костыль
+                    // var loader = profile.LaunchVersion.Contains("Forge", StringComparison.InvariantCultureIgnoreCase) ? GameLoader.Forge : GameLoader.Vanilla;
+                    //
+                    // await profile.GameLoader.DownloadGame(profile.LaunchVersion, loader);
+                    // process = await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, false);
+                }
+
+
+                var files = (await GetProfileFiles(profile)).ToList();
+
+                return new GameProfileInfo
+                {
+                    ProfileName = profile.Name,
+                    Arguments = process?.StartInfo.Arguments.Replace(profile.ClientPath, "{localPath}"),
+                    JavaPath = process?.StartInfo.FileName.Replace(profile.ClientPath, "{localPath}"),
+                    ClientVersion = profile.GameVersion,
+                    MinecraftVersion = profile.LaunchVersion.Split('-').First(),
+                    Files = files,
+                    WhiteListFiles = profile.FileWhiteList ??= new List<IFileInfo>()
+                };
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
 
-            var files = (await GetProfileFiles(profile)).ToList();
-
             return new GameProfileInfo
             {
                 ProfileName = profile.Name,
-                Arguments = process?.StartInfo.Arguments.Replace(profile.ClientPath, "{localPath}"),
+                Arguments = string.Empty,
+                JavaPath = string.Empty,
                 ClientVersion = profile.GameVersion,
                 MinecraftVersion = profile.LaunchVersion.Split('-').First(),
-                Files = files,
-                WhiteListFiles = profile.FileWhiteList ??= new List<IFileInfo>()
+                Files = Enumerable.Empty<IFileInfo>(),
+                WhiteListFiles = Enumerable.Empty<IFileInfo>()
             };
         }
 
@@ -301,8 +332,19 @@ namespace Gml.Core.Helpers.Profiles
         {
             var files = await GetProfileFiles(profile);
 
+            var totalFiles = files.Count();
+            var processed = 0;
+
             foreach (var file in files)
+            {
                 await _storageService.SetAsync(file.Hash, file);
+
+                processed++;
+
+                var percentage = (processed * 100) / totalFiles;
+
+                PackChanged?.Invoke(new ProgressChangedEventArgs(percentage, null));
+            }
         }
 
         public async Task AddFileToWhiteList(IGameProfile profile, IFileInfo file)
