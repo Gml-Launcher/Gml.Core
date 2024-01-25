@@ -28,9 +28,13 @@ namespace Gml.Models
         public string LaunchVersion { get; set; }
         public GameLoader Loader { get; set; }
         public string ClientPath { get; set; }
+        public string IconBase64 { get; set; }
+        public string Description { get; set; }
 
         [JsonConverter(typeof(LocalFileInfoConverter))]
         public List<IFileInfo>? FileWhiteList { get; set; }
+
+        public DateTimeOffset CreateDate { get; set; }
 
         internal NullableBool IsValidProfile { get; set; }
         internal NullableBool IsLoaded { get; set; }

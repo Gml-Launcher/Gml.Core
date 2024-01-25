@@ -25,7 +25,6 @@ namespace Gml.Core.Helpers.Profiles
 {
     public class ProfileProcedures : IProfileProcedures
     {
-
         public delegate void ProgressPackChanged(ProgressChangedEventArgs e);
 
         public event IProfileProcedures.ProgressPackChanged PackChanged;
@@ -76,7 +75,11 @@ namespace Gml.Core.Helpers.Profiles
         }
 
 
-        public async Task<IGameProfile?> AddProfile(string name, string version, GameLoader loader)
+        public async Task<IGameProfile?> AddProfile(string name,
+            string version,
+            GameLoader loader,
+            string icon,
+            string description)
         {
             if (string.IsNullOrEmpty(name))
                 ThrowHelper.ThrowArgumentNullException<string>(name);
@@ -86,7 +89,10 @@ namespace Gml.Core.Helpers.Profiles
 
             var profile = new GameProfile(name, version, loader)
             {
-                ProfileProcedures = this
+                ProfileProcedures = this,
+                CreateDate = DateTimeOffset.Now,
+                Description = description,
+                IconBase64 = icon
             };
 
             await AddProfile(profile);
@@ -141,9 +147,11 @@ namespace Gml.Core.Helpers.Profiles
 
             if (profiles != null)
             {
+                profiles = profiles.Where(c => c != null).ToList();
+
                 profiles.ForEach(UpdateProfilesService);
 
-                _gameProfiles.AddRange(profiles);
+                _gameProfiles = new List<IGameProfile>(profiles);
             }
         }
 
@@ -155,7 +163,8 @@ namespace Gml.Core.Helpers.Profiles
             gameProfile.ProfileProcedures = this;
             gameProfile.GameLoader = gameLoader;
 
-            gameProfile.LaunchVersion = await gameLoader.ValidateMinecraftVersion(gameProfile.GameVersion, gameProfile.Loader);
+            gameProfile.LaunchVersion =
+                await gameLoader.ValidateMinecraftVersion(gameProfile.GameVersion, gameProfile.Loader);
             gameProfile.GameVersion = gameLoader.InstallationVersion!.Id;
         }
 
@@ -274,6 +283,8 @@ namespace Gml.Core.Helpers.Profiles
                 return new GameProfileInfo
                 {
                     ProfileName = profile.Name,
+                    Description = profile.Description,
+                    IconBase64 = profile.IconBase64,
                     Arguments = process?.StartInfo.Arguments.Replace(profile.ClientPath, "{localPath}"),
                     JavaPath = process?.StartInfo.FileName.Replace(profile.ClientPath, "{localPath}"),
                     ClientVersion = profile.GameVersion,
@@ -292,6 +303,8 @@ namespace Gml.Core.Helpers.Profiles
                 ProfileName = profile.Name,
                 Arguments = string.Empty,
                 JavaPath = string.Empty,
+                IconBase64 = profile.IconBase64,
+                Description = profile.Description,
                 ClientVersion = profile.GameVersion,
                 MinecraftVersion = profile.LaunchVersion.Split('-').First(),
                 Files = Enumerable.Empty<IFileInfo>(),
@@ -366,6 +379,89 @@ namespace Gml.Core.Helpers.Profiles
             {
                 profile.FileWhiteList.Remove(fileInfo);
                 await SaveProfiles();
+            }
+        }
+
+        public async Task UpdateProfile(IGameProfile profile, string newProfileName, string newIcon, string newDescription)
+        {
+            var directory =
+                new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "clients", profile.Name));
+            var newDirectory = new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "clients", newProfileName));
+
+            bool needRenameFolder = profile.Name != newProfileName;
+
+            if (newDirectory.Exists && profile.Name != newProfileName)
+                return;
+
+            profile.Name = newProfileName;
+            profile.IconBase64 = newIcon;
+            profile.Description = newDescription;
+
+            profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile);
+
+            await SaveProfiles();
+
+            if (needRenameFolder)
+            {
+                RenameFolder(directory.FullName, newDirectory.FullName);
+            }
+        }
+
+        /// <summary>
+        /// Renames a folder name
+        /// </summary>
+        /// <param name="directory">The full directory of the folder</param>
+        /// <param name="newFolderName">New name of the folder</param>
+        /// <returns>Returns true if rename is successfull</returns>
+        public static bool RenameFolder(string directory, string newFolderName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(directory) ||
+                    string.IsNullOrWhiteSpace(newFolderName))
+                {
+                    return false;
+                }
+
+
+                var oldDirectory = new DirectoryInfo(directory);
+
+                if (!oldDirectory.Exists)
+                {
+                    return false;
+                }
+
+                if (string.Equals(oldDirectory.Name, newFolderName, StringComparison.OrdinalIgnoreCase))
+                {
+                    //new folder name is the same with the old one.
+                    return false;
+                }
+
+                string newDirectory;
+
+                if (oldDirectory.Parent == null)
+                {
+                    //root directory
+                    newDirectory = Path.Combine(directory, newFolderName);
+                }
+                else
+                {
+                    newDirectory = Path.Combine(oldDirectory.Parent.FullName, newFolderName);
+                }
+
+                if (Directory.Exists(newDirectory))
+                {
+                    Directory.Delete(newDirectory, true);
+                }
+
+                oldDirectory.MoveTo(newDirectory);
+
+                return true;
+            }
+            catch
+            {
+                //ignored
+                return false;
             }
         }
     }

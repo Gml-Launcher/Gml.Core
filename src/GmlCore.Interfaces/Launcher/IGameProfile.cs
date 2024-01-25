@@ -21,7 +21,10 @@ namespace GmlCore.Interfaces.Launcher
         string LaunchVersion { get; set; }
         GameLoader Loader { get; }
         string ClientPath { get; set; }
+        string IconBase64 { get; set; }
+        string Description { get; set; }
         List<IFileInfo>? FileWhiteList { get; set; }
+        DateTimeOffset CreateDate { get; set; }
 
         Task<bool> ValidateProfile();
         Task<bool> CheckIsFullLoaded(IStartupOptions startupOptions);

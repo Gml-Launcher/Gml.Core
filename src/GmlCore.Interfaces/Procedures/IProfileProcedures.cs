@@ -17,7 +17,8 @@ namespace GmlCore.Interfaces.Procedures
         public event ProgressPackChanged PackChanged;
 
         Task AddProfile(IGameProfile? profile);
-        Task<IGameProfile?> AddProfile(string name, string version, GameLoader loader);
+        Task<IGameProfile?> AddProfile(string name, string version, GameLoader loader, string profileIconBase64,
+            string description);
 
         Task<bool> CanAddProfile(string name, string version);
 
@@ -38,5 +39,6 @@ namespace GmlCore.Interfaces.Procedures
         Task PackProfile(IGameProfile baseProfile);
         Task AddFileToWhiteList(IGameProfile profile, IFileInfo file);
         Task RemoveFileFromWhiteList(IGameProfile profile, IFileInfo file);
+        Task UpdateProfile(IGameProfile profile, string newProfileName, string newIcon, string newDescription);
     }
 }

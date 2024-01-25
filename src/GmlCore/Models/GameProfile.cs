@@ -31,5 +31,6 @@ namespace Gml.Models
 
         public static IGameProfile Empty { get; set; } =
             new GameProfile("Empty", "0.0.0", GmlCore.Interfaces.Enums.GameLoader.Undefined);
+
     }
 }
