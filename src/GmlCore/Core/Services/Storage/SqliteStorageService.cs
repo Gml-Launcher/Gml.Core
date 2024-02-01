@@ -34,6 +34,7 @@ namespace Gml.Core.Services.Storage
                 fileInfo.Directory.Create();
 
             _database.CreateTableAsync<StorageItem>().Wait();
+            _database.CreateTableAsync<UserStorageItem>().Wait();
         }
 
         public async Task SetAsync<T>(string key, T value)
@@ -56,8 +57,32 @@ namespace Gml.Core.Services.Storage
                 .FirstOrDefaultAsync();
 
             return storageItem != null
-                       ? JsonConvert.DeserializeObject<T>(storageItem.Value)
-                       : default;
+                ? JsonConvert.DeserializeObject<T>(storageItem.Value)
+                : default;
+        }
+
+        public async Task<T?> GetUserAsync<T>(string login)
+        {
+            var storageItem = await _database.Table<UserStorageItem>()
+                .Where(si => si.Login == login)
+                .FirstOrDefaultAsync();
+
+            return storageItem != null
+                ? JsonConvert.DeserializeObject<T>(storageItem.Value)
+                : default;
+        }
+
+        public async Task SetUserAsync<T>(string login, T value)
+        {
+            var serializedValue = JsonConvert.SerializeObject(value);
+            var storageItem = new UserStorageItem()
+            {
+                Login = login,
+                TypeName = typeof(T).FullName,
+                Value = serializedValue
+            };
+
+            await _database.InsertOrReplaceAsync(storageItem);
         }
 
         public Task<int> SaveRecord<T>(T record)

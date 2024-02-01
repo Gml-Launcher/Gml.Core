@@ -25,6 +25,9 @@ namespace Gml.Core.Services.Storage
         /// <returns>An asynchronous operation that yields the retrieved value.</returns>
         Task<T?> GetAsync<T>(string key);
 
+        Task<T?> GetUserAsync<T>(string login);
+        Task SetUserAsync<T>(string login, T value);
+
         /// <summary>
         /// Saves a record in local storage asynchronously.
         /// </summary>
@@ -33,5 +36,5 @@ namespace Gml.Core.Services.Storage
         /// <returns>An asynchronous operation that yields the number of records saved.</returns>
         Task<int> SaveRecord<T>(T record);
     }
-    
+
 }

@@ -126,7 +126,7 @@ namespace Gml.Core.Helpers.Profiles
 
             if (removeProfileFiles)
             {
-                var info = await GetProfileInfo(localProfile.Name, StartupOptions.Empty, User.User.Empty);
+                var info = await GetProfileInfo(localProfile.Name, StartupOptions.Empty, Gml.Core.User.User.Empty);
 
                 if (info is GameProfileInfo profileInfo)
                 {

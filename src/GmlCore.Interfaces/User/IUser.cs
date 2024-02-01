@@ -1,3 +1,5 @@
+using System;
+
 namespace GmlCore.Interfaces.User
 {
     public interface IUser
@@ -5,5 +7,6 @@ namespace GmlCore.Interfaces.User
         string Name { get; set; }
         string AccessToken { get; set; }
         string Uuid { get; set; }
+        public DateTime ExpiredDate { get; set; }
     }
 }

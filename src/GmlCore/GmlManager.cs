@@ -1,10 +1,13 @@
 using Gml.Core.GameDownloader;
 using Gml.Core.Helpers.Files;
 using Gml.Core.Helpers.Profiles;
+using Gml.Core.Helpers.User;
+using Gml.Core.Integrations;
 using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
 using Gml.Models;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.Integrations;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 
@@ -15,6 +18,8 @@ namespace Gml
         public ILauncherInfo LauncherInfo { get; }
         public IProfileProcedures Profiles { get; }
         public IFileStorageProcedures Files { get; }
+        public IServicesIntegrationProcedures Integrations { get; }
+        public IUserProcedures Users { get; }
         public IGameDownloaderProcedures GameLoader { get; }
         public IStorageService Storage { get; }
 
@@ -25,6 +30,8 @@ namespace Gml
             GameLoader = new GameDownloaderProcedures(LauncherInfo, Storage, GameProfile.Empty);
             Profiles = new ProfileProcedures(GameLoader, LauncherInfo, Storage);
             Files = new FileStorageProcedures(LauncherInfo, Storage);
+            Integrations = new ServicesIntegrationProcedures(Storage);
+            Users = new UserProcedures(Storage);
         }
 
     }
