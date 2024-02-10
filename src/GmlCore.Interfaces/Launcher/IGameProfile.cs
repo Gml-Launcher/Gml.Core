@@ -33,5 +33,7 @@ namespace GmlCore.Interfaces.Launcher
         Task<Process> CreateProcess(IStartupOptions startupOptions, IUser user);
         Task<bool> CheckClientExists();
         Task<bool> CheckOsTypeLoaded(IStartupOptions startupOptions);
+        Task<string[]> InstallAuthLib();
+        Task<IGameProfileInfo?> GetCacheProfile();
     }
 }

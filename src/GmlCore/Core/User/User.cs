@@ -1,5 +1,6 @@
 using System;
 using GmlCore.Interfaces.User;
+using Newtonsoft.Json;
 
 namespace Gml.Core.User
 {
@@ -10,6 +11,7 @@ namespace Gml.Core.User
         public string? Uuid { get; set; }
         public DateTime ExpiredDate { get; set; }
 
+        [JsonIgnore]
         public bool IsValid => ExpiredDate != DateTime.MinValue && ExpiredDate > DateTime.Now;
 
         public static IUser Empty { get; set; } = new User

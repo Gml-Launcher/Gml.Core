@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,7 +28,7 @@ namespace Gml.Core.Helpers.User
             };
 
             authUser.AuthHistory.Add(AuthUserHistory.Create(device));
-
+            authUser.AuthHistory = authUser.AuthHistory.TakeLast(20).ToList();
             authUser.AccessToken = GenerateAccessToken();
             authUser.Uuid ??= UsernameToUuid(login);
             authUser.ExpiredDate = DateTime.Now + TimeSpan.FromDays(30);
@@ -42,7 +43,7 @@ namespace Gml.Core.Helpers.User
             var timestamp = DateTime.Now.Ticks.ToString();
             var guidPart1 = Guid.NewGuid().ToString();
             var guidPart2 = Guid.NewGuid().ToString();
-            var secretKey = "YourSecretKey";
+            var secretKey = "YourSecretKey"; // ToDo: Export to constant .env
 
             var textBytes = Encoding.UTF8.GetBytes(timestamp + secretKey + guidPart1 + guidPart2);
             return Convert.ToBase64String(textBytes);
@@ -50,12 +51,20 @@ namespace Gml.Core.Helpers.User
 
         private string UsernameToUuid(string username)
         {
-            using MD5 md5 = MD5.Create();
-            var hashBytes = md5.ComputeHash(Encoding.ASCII.GetBytes(username));
+            return ConstructOfflinePlayerUuid(username).ToString();
+        }
 
-            var hashGuid = new Guid(hashBytes);
-
-            return hashGuid.ToString();
+        public static Guid ConstructOfflinePlayerUuid(string username)
+        {
+            using (MD5 md5 = MD5.Create())
+            {
+                byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes("OfflinePlayer:" + username));
+                // Set the version to 3 -> Name based MD5 hash
+                hash[6] = (byte)((hash[6] & 0x0F) | (3 << 4));
+                // IETF variant
+                hash[8] = (byte)((hash[8] & 0x3F) | 0x80);
+                return new Guid(hash);
+            }
         }
     }
 }

@@ -70,9 +70,9 @@ namespace Gml.Core.GameDownloader
                 case GameLoader.Forge:
 
                     var forge = new MForge(_launcher);
-                    var originalVersion = version.Split('-').First() ?? string.Empty;
+                    // var originalVersion = version.Split('-').First() ?? string.Empty;
 
-                    return await forge.Install(originalVersion, true).ConfigureAwait(false);
+                    return await forge.Install(version, true).ConfigureAwait(false);
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(loader), loader, null);
@@ -135,9 +135,10 @@ namespace Gml.Core.GameDownloader
             return true;
         }
 
-        public Task<Process> CreateProfileProcess(IGameProfile baseProfile, IStartupOptions startupOptions, IUser user, bool forceDownload)
+        public Task<Process> CreateProfileProcess(IGameProfile baseProfile, IStartupOptions startupOptions, IUser user,
+            bool forceDownload, string[]? jvmArguments)
         {
-            var session = new MSession(user.Name, user.AccessToken, user.Uuid); //ToDo: Заменить на ник пользователя
+            var session = new MSession(user.Name, user.AccessToken, user.Uuid);
 
             return _launcher.CreateProcessAsync(baseProfile.LaunchVersion, new MLaunchOption
             {
@@ -149,6 +150,7 @@ namespace Gml.Core.GameDownloader
                 ServerIp = startupOptions.ServerIp,
                 ServerPort = startupOptions.ServerPort,
                 Session = session,
+                JVMArguments = jvmArguments,
                 OsType = (OsType)Enum.Parse(typeof(OsType), startupOptions.OsType.ToString())
             }, forceDownload);
         }

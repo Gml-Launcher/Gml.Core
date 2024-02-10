@@ -87,7 +87,7 @@ namespace Gml.Models
         {
             CheckDispose();
 
-            return GameLoader.CreateProfileProcess(this, startupOptions, user, false);
+            return GameLoader.CreateProfileProcess(this, startupOptions, user, false, Array.Empty<string>());
         }
 
         public Task<bool> CheckClientExists()
@@ -102,6 +102,20 @@ namespace Gml.Models
             CheckDispose();
 
             return GameLoader.CheckOsTypeLoaded(this, startupOptions);
+        }
+
+        public Task<string[]> InstallAuthLib()
+        {
+            CheckDispose();
+
+            return ProfileProcedures.InstallAuthLib(this);
+        }
+
+        public Task<IGameProfileInfo?> GetCacheProfile()
+        {
+            CheckDispose();
+
+            return ProfileProcedures.GetCacheProfile(this);
         }
 
         public async Task<bool> CheckIsFullLoaded(IStartupOptions startupOptions)

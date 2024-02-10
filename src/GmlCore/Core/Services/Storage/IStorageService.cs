@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using GmlCore.Interfaces.Launcher;
 
 namespace Gml.Core.Services.Storage
 {

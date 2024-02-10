@@ -13,7 +13,7 @@ namespace Gml.Core.Launcher
         public string IconBase64 { get; set; }
         public string Description { get; set; }
         public string Arguments { get; set; }
-        public IEnumerable<IFileInfo> Files { get; set; }
-        public IEnumerable<IFileInfo> WhiteListFiles { get; set; }
+        public IEnumerable<Gml.Core.System.LocalFileInfo> Files { get; set; }
+        public IEnumerable<Gml.Core.System.LocalFileInfo> WhiteListFiles { get; set; }
     }
 }

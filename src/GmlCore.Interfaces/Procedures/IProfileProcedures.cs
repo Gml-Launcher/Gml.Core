@@ -40,5 +40,8 @@ namespace GmlCore.Interfaces.Procedures
         Task AddFileToWhiteList(IGameProfile profile, IFileInfo file);
         Task RemoveFileFromWhiteList(IGameProfile profile, IFileInfo file);
         Task UpdateProfile(IGameProfile profile, string newProfileName, string newIcon, string newDescription);
+        Task<string[]> InstallAuthLib(IGameProfile profile);
+        Task<IGameProfileInfo?> GetCacheProfile(IGameProfile baseProfile);
+        Task SetCacheProfile(IGameProfileInfo profile);
     }
 }

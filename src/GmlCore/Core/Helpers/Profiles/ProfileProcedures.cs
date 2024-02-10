@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using CommunityToolkit.Diagnostics;
@@ -20,6 +21,8 @@ using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.System;
 using GmlCore.Interfaces.User;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Gml.Core.Helpers.Profiles
 {
@@ -40,6 +43,9 @@ namespace Gml.Core.Helpers.Profiles
 
         private List<IGameProfile> _gameProfiles = new();
 
+        private const string authLibUrl =
+            "https://github.com/yushijinhun/authlib-injector/releases/download/v1.2.4/authlib-injector-1.2.4.jar";
+
 
         public ProfileProcedures(IGameDownloaderProcedures gameDownloader, ILauncherInfo launcherInfo,
             IStorageService storageService)
@@ -51,8 +57,7 @@ namespace Gml.Core.Helpers.Profiles
 
         public async Task AddProfile(IGameProfile? profile)
         {
-            if (!_gameProfiles.Any())
-                await RestoreProfiles();
+            await RestoreProfiles();
 
             if (profile is null)
                 throw new ArgumentNullException(nameof(profile));
@@ -116,8 +121,7 @@ namespace Gml.Core.Helpers.Profiles
 
         public async Task RemoveProfile(IGameProfile profile, bool removeProfileFiles)
         {
-            if (!_gameProfiles.Any())
-                await RestoreProfiles();
+            await RestoreProfiles();
 
             var localProfile = _gameProfiles.FirstOrDefault(c => c.Name == profile.Name);
 
@@ -205,13 +209,12 @@ namespace Gml.Core.Helpers.Profiles
         {
             if (baseProfile is GameProfile gameProfile && await gameProfile.ValidateProfile())
                 gameProfile.LaunchVersion =
-                    await gameProfile.GameLoader.DownloadGame(gameProfile.GameVersion, gameProfile.Loader);
+                    await gameProfile.GameLoader.DownloadGame(baseProfile.GameVersion, gameProfile.Loader);
         }
 
         public async Task<IGameProfile?> GetProfile(string profileName)
         {
-            if (!_gameProfiles.Any())
-                await RestoreProfiles();
+            await RestoreProfiles();
 
             var profile = _gameProfiles.FirstOrDefault(c => c.Name == profileName);
 
@@ -220,8 +223,7 @@ namespace Gml.Core.Helpers.Profiles
 
         public async Task<IEnumerable<IGameProfile>> GetProfiles()
         {
-            if (!_gameProfiles.Any())
-                await RestoreProfiles();
+            await RestoreProfiles();
 
             return _gameProfiles.AsEnumerable();
         }
@@ -263,34 +265,37 @@ namespace Gml.Core.Helpers.Profiles
 
             try
             {
-                Process process = null;
+                var jvmArgs = new List<string>();
+                var files = (await GetProfileFiles(profile)).ToList();
+
+                if (files.Any(c => c.Name == Path.GetFileName(authLibUrl)))
+                {
+                    var authLibRelativePath =
+                        Path.Combine(profile.ClientPath, "libraries", Path.GetFileName(authLibUrl));
+                    jvmArgs.Add($"-javaagent:{authLibRelativePath}={{authEndpoint}}");
+                }
+
+                Process? process = null;
                 try
                 {
-                    process = await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, false);
+                    process = await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, false,
+                        jvmArgs.ToArray());
                 }
-                catch (KeyNotFoundException e)
+                catch (Exception e)
                 {
-                    //ToDo: Убрать этот костыль
-                    // var loader = profile.LaunchVersion.Contains("Forge", StringComparison.InvariantCultureIgnoreCase) ? GameLoader.Forge : GameLoader.Vanilla;
-                    //
-                    // await profile.GameLoader.DownloadGame(profile.LaunchVersion, loader);
-                    // process = await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, false);
                 }
-
-
-                var files = (await GetProfileFiles(profile)).ToList();
 
                 return new GameProfileInfo
                 {
                     ProfileName = profile.Name,
                     Description = profile.Description,
                     IconBase64 = profile.IconBase64,
-                    Arguments = process?.StartInfo.Arguments.Replace(profile.ClientPath, "{localPath}"),
-                    JavaPath = process?.StartInfo.FileName.Replace(profile.ClientPath, "{localPath}"),
+                    Arguments = process?.StartInfo.Arguments.Replace(profile.ClientPath, "{localPath}") ?? string.Empty,
+                    JavaPath = process?.StartInfo.FileName.Replace(profile.ClientPath, "{localPath}") ?? string.Empty,
                     ClientVersion = profile.GameVersion,
                     MinecraftVersion = profile.LaunchVersion.Split('-').First(),
-                    Files = files,
-                    WhiteListFiles = profile.FileWhiteList ??= new List<IFileInfo>()
+                    Files = files.OfType<LocalFileInfo>(),
+                    WhiteListFiles = profile.FileWhiteList?.OfType<LocalFileInfo>() ?? new List<LocalFileInfo>()
                 };
             }
             catch (Exception e)
@@ -306,17 +311,14 @@ namespace Gml.Core.Helpers.Profiles
                 IconBase64 = profile.IconBase64,
                 Description = profile.Description,
                 ClientVersion = profile.GameVersion,
-                MinecraftVersion = profile.LaunchVersion.Split('-').First(),
-                Files = Enumerable.Empty<IFileInfo>(),
-                WhiteListFiles = Enumerable.Empty<IFileInfo>()
+                MinecraftVersion = profile.LaunchVersion.Split('-').First()
             };
         }
 
         public async Task<IGameProfileInfo?> RestoreProfileInfo(string profileName, IStartupOptions startupOptions,
             IUser user)
         {
-            if (!_gameProfiles.Any())
-                await RestoreProfiles();
+            await RestoreProfiles();
 
             var profile = _gameProfiles.FirstOrDefault(c => c.Name == profileName);
 
@@ -324,9 +326,11 @@ namespace Gml.Core.Helpers.Profiles
                 return null;
 
             await profile.DownloadAsync();
-            var process = await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, true);
+            var authLibArguments = await profile.InstallAuthLib();
+            var process =
+                await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, true, authLibArguments);
 
-            var files = await GetProfileFiles(profile);
+            var files = (await GetProfileFiles(profile)).ToList();
             var files2 = GetWhiteListFilesProfileFiles(files);
 
             return new GameProfileInfo
@@ -335,8 +339,8 @@ namespace Gml.Core.Helpers.Profiles
                 Arguments = process.StartInfo.Arguments.Replace(profile.ClientPath, "{localPath}"),
                 ClientVersion = profile.GameVersion,
                 MinecraftVersion = profile.LaunchVersion.Split('-').First(),
-                Files = files,
-                WhiteListFiles = files2
+                Files = files.OfType<LocalFileInfo>(),
+                WhiteListFiles = files2.OfType<LocalFileInfo>()
             };
         }
 
@@ -345,10 +349,11 @@ namespace Gml.Core.Helpers.Profiles
         {
             var files = await GetProfileFiles(profile);
 
-            var totalFiles = files.Count();
+            var fileInfos = files as IFileInfo[] ?? files.ToArray();
+            var totalFiles = fileInfos.Count();
             var processed = 0;
 
-            foreach (var file in files)
+            foreach (var file in fileInfos)
             {
                 await _storageService.SetAsync(file.Hash, file);
 
@@ -382,11 +387,13 @@ namespace Gml.Core.Helpers.Profiles
             }
         }
 
-        public async Task UpdateProfile(IGameProfile profile, string newProfileName, string newIcon, string newDescription)
+        public async Task UpdateProfile(IGameProfile profile, string newProfileName, string newIcon,
+            string newDescription)
         {
             var directory =
                 new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "clients", profile.Name));
-            var newDirectory = new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "clients", newProfileName));
+            var newDirectory =
+                new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "clients", newProfileName));
 
             bool needRenameFolder = profile.Name != newProfileName;
 
@@ -400,11 +407,82 @@ namespace Gml.Core.Helpers.Profiles
             profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile);
 
             await SaveProfiles();
+            await RestoreProfiles();
 
             if (needRenameFolder)
             {
                 RenameFolder(directory.FullName, newDirectory.FullName);
             }
+        }
+
+        public async Task<string[]> InstallAuthLib(IGameProfile profile)
+        {
+            var directory =
+                new DirectoryInfo(profile.ClientPath);
+            var authLibPath = new DirectoryInfo(Path.Combine(directory.FullName, "libraries"));
+            var downloadedFileInfo = new FileInfo(authLibUrl);
+            var downloadingFileInfo = new FileInfo(Path.Combine(authLibPath.FullName, downloadedFileInfo.Name));
+            var authLibRelativePath = downloadingFileInfo.FullName.Replace($"{authLibPath.FullName}\\", string.Empty);
+
+            if (!authLibPath.Exists)
+                authLibPath.Create();
+
+            if (downloadingFileInfo.Exists)
+                return new string[] { $"-javaagent:{{localPath}}\\libraries\\{authLibRelativePath}={{authEndpoint}}" };
+
+            using (var httpClient = new HttpClient())
+            {
+                var response = await httpClient.GetAsync(authLibUrl);
+
+                await using Stream contentStream = await response.Content.ReadAsStreamAsync(),
+                    fileStream = new FileStream(downloadingFileInfo.FullName, FileMode.Create, FileAccess.Write,
+                        FileShare.None, 8192, true);
+            }
+
+            downloadingFileInfo.Refresh();
+
+            var gameVersion = profile.LaunchVersion.Split("-").First();
+
+            var manifestFilePath =
+                new FileInfo(Path.Combine(profile.ClientPath, "client", gameVersion, $"{gameVersion}.json"));
+
+            var content = await File.ReadAllTextAsync(manifestFilePath.FullName) ?? string.Empty;
+
+            var jObject = JObject.Parse(content);
+
+            var newLibrary = new JObject(
+                new JProperty("downloads",
+                    new JObject(
+                        new JProperty("artifact",
+                            new JObject(
+                                new JProperty("path",
+                                    downloadingFileInfo.FullName.Replace($"{authLibPath.FullName}\\", string.Empty)),
+                                new JProperty("sha1",
+                                    SystemHelper.CalculateFileHash(downloadingFileInfo.FullName, new SHA256Managed())),
+                                new JProperty("size", downloadingFileInfo.Length),
+                                new JProperty("url", authLibUrl)
+                            )
+                        )
+                    )
+                )
+            );
+
+            var libraries = (JArray)jObject["libraries"]!;
+            libraries.Add(newLibrary);
+
+            await File.WriteAllTextAsync(manifestFilePath.FullName, jObject.ToString());
+
+            return new[] { $"-javaagent:{{localPath}}\\{authLibRelativePath}={{authEndpoint}}" };
+        }
+
+        public async Task<IGameProfileInfo?> GetCacheProfile(IGameProfile baseProfile)
+        {
+            return await _storageService.GetAsync<GameProfileInfo>($"CachedProfile-{baseProfile.Name}");
+        }
+
+        public Task SetCacheProfile(IGameProfileInfo profile)
+        {
+            return _storageService.SetAsync($"CachedProfile-{profile.ProfileName}", (GameProfileInfo)profile);
         }
 
         /// <summary>
