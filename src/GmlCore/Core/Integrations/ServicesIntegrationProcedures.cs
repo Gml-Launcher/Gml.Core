@@ -47,8 +47,16 @@ namespace Gml.Core.Integrations
             return _authServices.FirstOrDefault(c => c.AuthType == authType);
         }
 
-        public async Task SetActiveAuthService(IAuthServiceInfo service)
+        public async Task SetActiveAuthService(IAuthServiceInfo? service)
         {
+            if (service == null)
+            {
+                await _storage.SetAsync<object>(StorageConstants.AuthType, null);
+                await _storage.SetAsync<object>(StorageConstants.ActiveAuthService, null);
+
+                return;
+            }
+
             await _storage.SetAsync(StorageConstants.AuthType, service.AuthType);
             await _storage.SetAsync(StorageConstants.ActiveAuthService, service);
         }

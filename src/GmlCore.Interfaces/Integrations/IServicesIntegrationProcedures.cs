@@ -11,6 +11,6 @@ namespace GmlCore.Interfaces.Integrations
         Task<IEnumerable<IAuthServiceInfo>> GetAuthServices();
         Task<IAuthServiceInfo?> GetActiveAuthService();
         Task<IAuthServiceInfo?> GetAuthService(AuthType authType);
-        Task SetActiveAuthService(IAuthServiceInfo service);
+        Task SetActiveAuthService(IAuthServiceInfo? service);
     }
 }

@@ -37,7 +37,7 @@ namespace Gml.Core.Services.Storage
             _database.CreateTableAsync<UserStorageItem>().Wait();
         }
 
-        public async Task SetAsync<T>(string key, T value)
+        public async Task SetAsync<T>(string key, T? value)
         {
             var serializedValue = JsonConvert.SerializeObject(value);
             var storageItem = new StorageItem

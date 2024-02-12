@@ -16,7 +16,7 @@ namespace Gml.Core.Services.Storage
         /// <param name="key">The key associated with the item.</param>
         /// <param name="value">The value to store.</param>
         /// <returns>An asynchronous operation representing the completion of the set operation.</returns>
-        Task SetAsync<T>(string key, T value);
+        Task SetAsync<T>(string key, T? value);
 
         /// <summary>
         /// Gets the value of an item from the local storage asynchronously.
