@@ -233,23 +233,28 @@ namespace Gml.Core.Helpers.Profiles
             return files.Where(c => c.Directory.EndsWith("options.txt"));
         }
 
-        public Task<IEnumerable<IFileInfo>> GetProfileFiles(IGameProfile baseProfile)
+        public async Task<IEnumerable<IFileInfo>> GetProfileFiles(IGameProfile baseProfile)
         {
             var profileDirectoryInfo = new DirectoryInfo(baseProfile.ClientPath);
 
             var localFiles = profileDirectoryInfo.GetFiles("*.*", SearchOption.AllDirectories);
 
-            var algorithm = new SHA256Managed();
-
-            IEnumerable<IFileInfo> localFilesInfo = localFiles.Select(c => new LocalFileInfo
+            var localFilesInfo = await Task.WhenAll(localFiles.AsParallel().Select(async c =>
             {
-                Name = c.Name,
-                Directory = c.FullName.Replace(_launcherInfo.InstallationDirectory, string.Empty),
-                Size = c.Length,
-                Hash = SystemHelper.CalculateFileHash(c.FullName, algorithm)
-            });
+                using (var algorithm = new SHA256Managed())
+                {
+                    var hash = SystemHelper.CalculateFileHash(c.FullName, algorithm);
+                    return new LocalFileInfo
+                    {
+                        Name = c.Name,
+                        Directory = c.FullName.Replace(_launcherInfo.InstallationDirectory, string.Empty),
+                        Size = c.Length,
+                        Hash = hash
+                    };
+                }
+            }));
 
-            return Task.FromResult(localFilesInfo);
+            return localFilesInfo;
         }
 
         public async Task<IGameProfileInfo?> GetProfileInfo(string profileName, IStartupOptions startupOptions,
@@ -295,7 +300,7 @@ namespace Gml.Core.Helpers.Profiles
                     ClientVersion = profile.GameVersion,
                     MinecraftVersion = profile.LaunchVersion.Split('-').First(),
                     Files = files.OfType<LocalFileInfo>(),
-                    WhiteListFiles = profile.FileWhiteList?.OfType<LocalFileInfo>() ?? new List<LocalFileInfo>()
+                    WhiteListFiles = profile.FileWhiteList?.OfType<LocalFileInfo>().ToList() ?? new List<LocalFileInfo>()
                 };
             }
             catch (Exception e)
