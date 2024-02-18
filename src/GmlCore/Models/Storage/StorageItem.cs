@@ -8,6 +8,7 @@ namespace Gml.Models.Storage
         public string? TypeName { get; set; }
         public string Value { get; set; } = null!;
     }
+
     public class UserStorageItem
     {
         [PrimaryKey] public string Login { get; set; } = null!;

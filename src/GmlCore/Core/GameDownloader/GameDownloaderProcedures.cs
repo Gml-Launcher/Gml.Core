@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
@@ -18,22 +17,16 @@ using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.User;
-using Spectre.Console;
 
 namespace Gml.Core.GameDownloader
 {
     public class GameDownloaderProcedures : IGameDownloaderProcedures
     {
-        public MVersion? InstallationVersion => _gameVersion;
+        private readonly CMLauncher _launcher;
 
         private readonly ILauncherInfo _launcherInfo;
-        private readonly IStorageService _storage;
         private readonly CustomMinecraftPath _minecraftPath;
-        private readonly CMLauncher _launcher;
-        private MVersion? _gameVersion;
-
-        public event IGameDownloaderProcedures.FileDownloadChanged? FileChanged;
-        public event IGameDownloaderProcedures.ProgressDownloadChanged? ProgressChanged;
+        private readonly IStorageService _storage;
 
 
         public GameDownloaderProcedures(ILauncherInfo launcherInfo, IStorageService storage, IGameProfile profile)
@@ -57,6 +50,11 @@ namespace Gml.Core.GameDownloader
             ServicePointManager.DefaultConnectionLimit = 255;
         }
 
+        public MVersion? InstallationVersion { get; private set; }
+
+        public event IGameDownloaderProcedures.FileDownloadChanged? FileChanged;
+        public event IGameDownloaderProcedures.ProgressDownloadChanged? ProgressChanged;
+
         public async Task<string> DownloadGame(string version, GameLoader loader)
         {
             if (string.IsNullOrEmpty(version))
@@ -65,8 +63,8 @@ namespace Gml.Core.GameDownloader
             switch (loader)
             {
                 case GameLoader.Vanilla:
-                    await _launcher.CheckAndDownloadAsync(_gameVersion);
-                    return _gameVersion.Id;
+                    await _launcher.CheckAndDownloadAsync(InstallationVersion);
+                    return InstallationVersion.Id;
                 case GameLoader.Forge:
 
                     var forge = new MForge(_launcher);
@@ -77,50 +75,6 @@ namespace Gml.Core.GameDownloader
                 default:
                     throw new ArgumentOutOfRangeException(nameof(loader), loader, null);
             }
-        }
-
-
-        internal async Task<string> ValidateMinecraftVersion(string version, GameLoader loader)
-        {
-            if (_gameVersion != null)
-                return _gameVersion.Id;
-
-            switch (loader)
-            {
-                case GameLoader.Vanilla:
-                    // ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls;
-                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-
-                    _gameVersion ??= await _launcher.GetVersionAsync(version);
-                    break;
-
-                case GameLoader.Forge:
-
-                    var clientHandler = new HttpClientHandler();
-                    clientHandler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
-
-                    var versionMapper = new ForgeInstallerVersionMapper();
-                    var versionLoader = new ForgeVersionLoader(new HttpClient(clientHandler));
-
-                    var minecraftVersion = version.Split('-').First();
-
-                    var versions = (await versionLoader.GetForgeVersions(minecraftVersion)).ToList();
-
-                    var bestVersion =
-                        versions.FirstOrDefault(v => v.IsRecommendedVersion) ??
-                        versions.FirstOrDefault(v => v.IsLatestVersion) ??
-                        versions.FirstOrDefault() ??
-                        throw new InvalidOperationException("Cannot find any version");
-
-                    var mappedVersion = versionMapper.CreateInstaller(bestVersion);
-                    _gameVersion = new MVersion(mappedVersion.VersionName);
-
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(loader), loader, null);
-            }
-
-            return _gameVersion.Id;
         }
 
 
@@ -170,15 +124,59 @@ namespace Gml.Core.GameDownloader
 
         public Task<bool> CheckOsTypeLoaded(IGameProfile baseProfile, IStartupOptions startupOptions)
         {
-
             var jarFilePath = Path.Combine(
                 baseProfile.ClientPath,
                 "client",
                 baseProfile.GameVersion,
-                $"natives");
+                "natives");
 
 
             return Task.FromResult(false);
+        }
+
+
+        internal async Task<string> ValidateMinecraftVersion(string version, GameLoader loader)
+        {
+            if (InstallationVersion != null)
+                return InstallationVersion.Id;
+
+            switch (loader)
+            {
+                case GameLoader.Vanilla:
+                    // ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls;
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 |
+                                                           SecurityProtocolType.Tls;
+
+                    InstallationVersion ??= await _launcher.GetVersionAsync(version);
+                    break;
+
+                case GameLoader.Forge:
+
+                    var clientHandler = new HttpClientHandler();
+                    clientHandler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+
+                    var versionMapper = new ForgeInstallerVersionMapper();
+                    var versionLoader = new ForgeVersionLoader(new HttpClient(clientHandler));
+
+                    var minecraftVersion = version.Split('-').First();
+
+                    var versions = (await versionLoader.GetForgeVersions(minecraftVersion)).ToList();
+
+                    var bestVersion =
+                        versions.FirstOrDefault(v => v.IsRecommendedVersion) ??
+                        versions.FirstOrDefault(v => v.IsLatestVersion) ??
+                        versions.FirstOrDefault() ??
+                        throw new InvalidOperationException("Cannot find any version");
+
+                    var mappedVersion = versionMapper.CreateInstaller(bestVersion);
+                    InstallationVersion = new MVersion(mappedVersion.VersionName);
+
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(loader), loader, null);
+            }
+
+            return InstallationVersion.Id;
         }
     }
 }

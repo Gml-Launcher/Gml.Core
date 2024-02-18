@@ -7,14 +7,15 @@ using Newtonsoft.Json;
 
 namespace Gml.Models.Converters
 {
-    public class LocalFileInfoConverter : Newtonsoft.Json.JsonConverter
+    public class LocalFileInfoConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {
             return typeof(List<IFileInfo>).IsAssignableFrom(objectType);
         }
 
-        public override object ReadJson(Newtonsoft.Json.JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer)
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
+            JsonSerializer serializer)
         {
             var fileInfos = serializer.Deserialize<List<LocalFileInfo>>(reader);
 

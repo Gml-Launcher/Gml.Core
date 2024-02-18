@@ -20,7 +20,10 @@ namespace Gml.Core.Integrations
             _storage = storage;
         }
 
-        public Task<AuthType> GetAuthType() => _storage.GetAsync<AuthType>(StorageConstants.AuthType);
+        public Task<AuthType> GetAuthType()
+        {
+            return _storage.GetAsync<AuthType>(StorageConstants.AuthType);
+        }
 
         public Task<IEnumerable<IAuthServiceInfo>> GetAuthServices()
         {

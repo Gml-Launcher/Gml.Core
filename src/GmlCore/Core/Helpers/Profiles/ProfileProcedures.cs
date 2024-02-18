@@ -21,7 +21,6 @@ using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.System;
 using GmlCore.Interfaces.User;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Gml.Core.Helpers.Profiles
@@ -30,7 +29,8 @@ namespace Gml.Core.Helpers.Profiles
     {
         public delegate void ProgressPackChanged(ProgressChangedEventArgs e);
 
-        public event IProfileProcedures.ProgressPackChanged PackChanged;
+        private const string authLibUrl =
+            "https://github.com/yushijinhun/authlib-injector/releases/download/v1.2.4/authlib-injector-1.2.4.jar";
 
         private readonly IGameDownloaderProcedures _gameDownloader;
 
@@ -43,9 +43,6 @@ namespace Gml.Core.Helpers.Profiles
 
         private List<IGameProfile> _gameProfiles = new();
 
-        private const string authLibUrl =
-            "https://github.com/yushijinhun/authlib-injector/releases/download/v1.2.4/authlib-injector-1.2.4.jar";
-
 
         public ProfileProcedures(IGameDownloaderProcedures gameDownloader, ILauncherInfo launcherInfo,
             IStorageService storageService)
@@ -54,6 +51,8 @@ namespace Gml.Core.Helpers.Profiles
             _launcherInfo = launcherInfo;
             _storageService = storageService;
         }
+
+        public event IProfileProcedures.ProgressPackChanged PackChanged;
 
         public async Task AddProfile(IGameProfile? profile)
         {
@@ -130,7 +129,7 @@ namespace Gml.Core.Helpers.Profiles
 
             if (removeProfileFiles)
             {
-                var info = await GetProfileInfo(localProfile.Name, StartupOptions.Empty, Gml.Core.User.User.Empty);
+                var info = await GetProfileInfo(localProfile.Name, StartupOptions.Empty, Core.User.User.Empty);
 
                 if (info is GameProfileInfo profileInfo)
                 {
@@ -157,19 +156,6 @@ namespace Gml.Core.Helpers.Profiles
 
                 _gameProfiles = new List<IGameProfile>(profiles);
             }
-        }
-
-
-        private async void UpdateProfilesService(GameProfile gameProfile)
-        {
-            var gameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, gameProfile);
-
-            gameProfile.ProfileProcedures = this;
-            gameProfile.GameLoader = gameLoader;
-
-            gameProfile.LaunchVersion =
-                await gameLoader.ValidateMinecraftVersion(gameProfile.GameVersion, gameProfile.Loader);
-            gameProfile.GameVersion = gameLoader.InstallationVersion!.Id;
         }
 
 
@@ -226,11 +212,6 @@ namespace Gml.Core.Helpers.Profiles
             await RestoreProfiles();
 
             return _gameProfiles.AsEnumerable();
-        }
-
-        public IEnumerable<IFileInfo> GetWhiteListFilesProfileFiles(IEnumerable<IFileInfo> files)
-        {
-            return files.Where(c => c.Directory.EndsWith("options.txt"));
         }
 
         public async Task<IEnumerable<IFileInfo>> GetProfileFiles(IGameProfile baseProfile)
@@ -300,7 +281,8 @@ namespace Gml.Core.Helpers.Profiles
                     ClientVersion = profile.GameVersion,
                     MinecraftVersion = profile.LaunchVersion.Split('-').First(),
                     Files = files.OfType<LocalFileInfo>(),
-                    WhiteListFiles = profile.FileWhiteList?.OfType<LocalFileInfo>().ToList() ?? new List<LocalFileInfo>()
+                    WhiteListFiles = profile.FileWhiteList?.OfType<LocalFileInfo>().ToList() ??
+                                     new List<LocalFileInfo>()
                 };
             }
             catch (Exception e)
@@ -364,7 +346,7 @@ namespace Gml.Core.Helpers.Profiles
 
                 processed++;
 
-                var percentage = (processed * 100) / totalFiles;
+                var percentage = processed * 100 / totalFiles;
 
                 PackChanged?.Invoke(new ProgressChangedEventArgs(percentage, null));
             }
@@ -400,7 +382,7 @@ namespace Gml.Core.Helpers.Profiles
             var newDirectory =
                 new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "clients", newProfileName));
 
-            bool needRenameFolder = profile.Name != newProfileName;
+            var needRenameFolder = profile.Name != newProfileName;
 
             if (newDirectory.Exists && profile.Name != newProfileName)
                 return;
@@ -414,10 +396,7 @@ namespace Gml.Core.Helpers.Profiles
             await SaveProfiles();
             await RestoreProfiles();
 
-            if (needRenameFolder)
-            {
-                RenameFolder(directory.FullName, newDirectory.FullName);
-            }
+            if (needRenameFolder) RenameFolder(directory.FullName, newDirectory.FullName);
         }
 
         public async Task<string[]> InstallAuthLib(IGameProfile profile)
@@ -433,7 +412,7 @@ namespace Gml.Core.Helpers.Profiles
                 authLibPath.Create();
 
             if (downloadingFileInfo.Exists)
-                return new string[] { $"-javaagent:{{localPath}}\\libraries\\{authLibRelativePath}={{authEndpoint}}" };
+                return new[] { $"-javaagent:{{localPath}}\\libraries\\{authLibRelativePath}={{authEndpoint}}" };
 
             using (var httpClient = new HttpClient())
             {
@@ -490,8 +469,26 @@ namespace Gml.Core.Helpers.Profiles
             return _storageService.SetAsync($"CachedProfile-{profile.ProfileName}", (GameProfileInfo)profile);
         }
 
+
+        private async void UpdateProfilesService(GameProfile gameProfile)
+        {
+            var gameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, gameProfile);
+
+            gameProfile.ProfileProcedures = this;
+            gameProfile.GameLoader = gameLoader;
+
+            gameProfile.LaunchVersion =
+                await gameLoader.ValidateMinecraftVersion(gameProfile.GameVersion, gameProfile.Loader);
+            gameProfile.GameVersion = gameLoader.InstallationVersion!.Id;
+        }
+
+        public IEnumerable<IFileInfo> GetWhiteListFilesProfileFiles(IEnumerable<IFileInfo> files)
+        {
+            return files.Where(c => c.Directory.EndsWith("options.txt"));
+        }
+
         /// <summary>
-        /// Renames a folder name
+        ///     Renames a folder name
         /// </summary>
         /// <param name="directory">The full directory of the folder</param>
         /// <param name="newFolderName">New name of the folder</param>
@@ -502,40 +499,26 @@ namespace Gml.Core.Helpers.Profiles
             {
                 if (string.IsNullOrWhiteSpace(directory) ||
                     string.IsNullOrWhiteSpace(newFolderName))
-                {
                     return false;
-                }
 
 
                 var oldDirectory = new DirectoryInfo(directory);
 
-                if (!oldDirectory.Exists)
-                {
-                    return false;
-                }
+                if (!oldDirectory.Exists) return false;
 
                 if (string.Equals(oldDirectory.Name, newFolderName, StringComparison.OrdinalIgnoreCase))
-                {
                     //new folder name is the same with the old one.
                     return false;
-                }
 
                 string newDirectory;
 
                 if (oldDirectory.Parent == null)
-                {
                     //root directory
                     newDirectory = Path.Combine(directory, newFolderName);
-                }
                 else
-                {
                     newDirectory = Path.Combine(oldDirectory.Parent.FullName, newFolderName);
-                }
 
-                if (Directory.Exists(newDirectory))
-                {
-                    Directory.Delete(newDirectory, true);
-                }
+                if (Directory.Exists(newDirectory)) Directory.Delete(newDirectory, true);
 
                 oldDirectory.MoveTo(newDirectory);
 

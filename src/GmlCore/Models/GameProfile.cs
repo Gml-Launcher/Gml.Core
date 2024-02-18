@@ -11,15 +11,6 @@ namespace Gml.Models
 {
     public class GameProfile : BaseProfile
     {
-
-
-        [JsonConverter(typeof(LocalFileInfoConverter))]
-        public List<LocalFileInfo>? FileWhiteList
-        {
-            get => base.FileWhiteList?.Cast<LocalFileInfo>().ToList();
-            set => base.FileWhiteList = value?.Cast<IFileInfo>().ToList();
-        }
-
         public GameProfile()
         {
         }
@@ -29,8 +20,15 @@ namespace Gml.Models
         {
         }
 
+
+        [JsonConverter(typeof(LocalFileInfoConverter))]
+        public List<LocalFileInfo>? FileWhiteList
+        {
+            get => base.FileWhiteList?.Cast<LocalFileInfo>().ToList();
+            set => base.FileWhiteList = value?.Cast<IFileInfo>().ToList();
+        }
+
         public static IGameProfile Empty { get; set; } =
             new GameProfile("Empty", "0.0.0", GmlCore.Interfaces.Enums.GameLoader.Undefined);
-
     }
 }
