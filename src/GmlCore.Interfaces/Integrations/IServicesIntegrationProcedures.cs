@@ -12,5 +12,6 @@ namespace GmlCore.Interfaces.Integrations
         Task<IAuthServiceInfo?> GetActiveAuthService();
         Task<IAuthServiceInfo?> GetAuthService(AuthType authType);
         Task SetActiveAuthService(IAuthServiceInfo? service);
+        Task<string> GetSkinServiceAsync();
     }
 }

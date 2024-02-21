@@ -7,6 +7,7 @@ using Gml.Models.Auth;
 using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Auth;
 using GmlCore.Interfaces.Integrations;
+using NotImplementedException = System.NotImplementedException;
 
 namespace Gml.Core.Integrations
 {
@@ -62,6 +63,11 @@ namespace Gml.Core.Integrations
 
             await _storage.SetAsync(StorageConstants.AuthType, service.AuthType);
             await _storage.SetAsync(StorageConstants.ActiveAuthService, service);
+        }
+
+        public Task<string> GetSkinServiceAsync()
+        {
+            return Task.FromResult("http://localhost:5006/skin/{userName}/front/128");
         }
     }
 }

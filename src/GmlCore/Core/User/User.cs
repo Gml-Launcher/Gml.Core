@@ -16,6 +16,7 @@ namespace Gml.Core.User
         };
 
         public string Name { get; set; } = null!;
+        public string TextureUrl { get; set; }
         public string? AccessToken { get; set; }
         public string? Uuid { get; set; }
         public DateTime ExpiredDate { get; set; }
