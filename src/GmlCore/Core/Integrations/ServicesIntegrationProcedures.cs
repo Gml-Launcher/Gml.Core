@@ -7,7 +7,6 @@ using Gml.Models.Auth;
 using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Auth;
 using GmlCore.Interfaces.Integrations;
-using NotImplementedException = System.NotImplementedException;
 
 namespace Gml.Core.Integrations
 {
