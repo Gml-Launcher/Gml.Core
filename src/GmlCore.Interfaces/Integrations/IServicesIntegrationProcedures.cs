@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Gml.WebApi.Models.Enums.Auth;
+using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Auth;
 
 namespace GmlCore.Interfaces.Integrations

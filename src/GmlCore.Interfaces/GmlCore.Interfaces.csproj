@@ -10,7 +10,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\Gml.WebApi.Models\Gml.WebApi.Models.csproj" />
+      <ProjectReference Include="..\..\..\Gml.Web.Api\src\Gml.Web.Api.Domains\Gml.Web.Api.Domains.csproj" />
     </ItemGroup>
 
 </Project>

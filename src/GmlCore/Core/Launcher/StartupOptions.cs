@@ -1,4 +1,4 @@
-using Gml.WebApi.Models.Enums.System;
+using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Launcher;
 
 namespace Gml.Core.Launcher
