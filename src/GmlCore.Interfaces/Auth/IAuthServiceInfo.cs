@@ -1,4 +1,4 @@
-using Gml.WebApi.Models.Enums.Auth;
+using Gml.Web.Api.Domains.System;
 
 namespace GmlCore.Interfaces.Auth
 {

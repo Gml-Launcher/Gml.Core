@@ -4,10 +4,9 @@ using System.Threading.Tasks;
 using Gml.Core.Constants;
 using Gml.Core.Services.Storage;
 using Gml.Models.Auth;
-using Gml.WebApi.Models.Enums.Auth;
+using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Auth;
 using GmlCore.Interfaces.Integrations;
-using NotImplementedException = System.NotImplementedException;
 
 namespace Gml.Core.Integrations
 {
