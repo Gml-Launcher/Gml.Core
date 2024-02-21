@@ -7,7 +7,6 @@ using Gml.Core.Services.Storage;
 using Gml.Core.User;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.User;
-using NotImplementedException = System.NotImplementedException;
 
 namespace Gml.Core.Helpers.User
 {
@@ -56,9 +55,9 @@ namespace Gml.Core.Helpers.User
 
         public static Guid ConstructOfflinePlayerUuid(string username)
         {
-            using (MD5 md5 = MD5.Create())
+            using (var md5 = MD5.Create())
             {
-                byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes("OfflinePlayer:" + username));
+                var hash = md5.ComputeHash(Encoding.UTF8.GetBytes("OfflinePlayer:" + username));
                 // Set the version to 3 -> Name based MD5 hash
                 hash[6] = (byte)((hash[6] & 0x0F) | (3 << 4));
                 // IETF variant

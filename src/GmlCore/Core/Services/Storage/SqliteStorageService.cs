@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
@@ -10,11 +9,10 @@ namespace Gml.Core.Services.Storage
 {
     public class SqliteStorageService : IStorageService
     {
+        private const string DatabaseFileName = "data.db";
+        private readonly SQLiteAsyncConnection _database;
         private readonly string _databasePath;
         private readonly IGmlSettings _settings;
-        private readonly SQLiteAsyncConnection _database;
-
-        private const string DatabaseFileName = "data.db";
 
 
         public SqliteStorageService(IGmlSettings settings)
@@ -26,18 +24,7 @@ namespace Gml.Core.Services.Storage
             InitializeTables();
         }
 
-        private void InitializeTables()
-        {
-            var fileInfo = new FileInfo(_databasePath);
-
-            if (!fileInfo.Directory!.Exists)
-                fileInfo.Directory.Create();
-
-            _database.CreateTableAsync<StorageItem>().Wait();
-            _database.CreateTableAsync<UserStorageItem>().Wait();
-        }
-
-        public async Task SetAsync<T>(string key, T value)
+        public async Task SetAsync<T>(string key, T? value)
         {
             var serializedValue = JsonConvert.SerializeObject(value);
             var storageItem = new StorageItem
@@ -75,7 +62,7 @@ namespace Gml.Core.Services.Storage
         public async Task SetUserAsync<T>(string login, T value)
         {
             var serializedValue = JsonConvert.SerializeObject(value);
-            var storageItem = new UserStorageItem()
+            var storageItem = new UserStorageItem
             {
                 Login = login,
                 TypeName = typeof(T).FullName,
@@ -88,6 +75,17 @@ namespace Gml.Core.Services.Storage
         public Task<int> SaveRecord<T>(T record)
         {
             return _database.InsertOrReplaceAsync(record);
+        }
+
+        private void InitializeTables()
+        {
+            var fileInfo = new FileInfo(_databasePath);
+
+            if (!fileInfo.Directory!.Exists)
+                fileInfo.Directory.Create();
+
+            _database.CreateTableAsync<StorageItem>().Wait();
+            _database.CreateTableAsync<UserStorageItem>().Wait();
         }
     }
 }

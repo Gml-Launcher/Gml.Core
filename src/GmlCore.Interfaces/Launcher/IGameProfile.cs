@@ -12,7 +12,6 @@ namespace GmlCore.Interfaces.Launcher
 {
     public interface IGameProfile : IDisposable
     {
-
         [JsonIgnore] IProfileProcedures ProfileProcedures { get; set; }
         [JsonIgnore] IGameDownloaderProcedures GameLoader { get; set; }
 

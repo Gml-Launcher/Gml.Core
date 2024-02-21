@@ -7,11 +7,6 @@ namespace Gml.Core.Launcher
 {
     public class GmlSettings : IGmlSettings
     {
-        public string Name { get; }
-        public string FolderName { get; }
-        public string BaseDirectory { get; }
-        public string InstallationDirectory { get; }
-
         private readonly ISystemProcedures _systemProcedures = new SystemProcedures();
 
         public GmlSettings(string name, string? baseDirectory = null)
@@ -22,6 +17,9 @@ namespace Gml.Core.Launcher
             InstallationDirectory = Path.Combine(BaseDirectory, FolderName);
         }
 
-
+        public string FolderName { get; }
+        public string Name { get; }
+        public string BaseDirectory { get; }
+        public string InstallationDirectory { get; }
     }
 }

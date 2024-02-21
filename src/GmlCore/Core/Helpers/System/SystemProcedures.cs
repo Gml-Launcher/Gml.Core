@@ -42,8 +42,8 @@ namespace Gml.Core.Helpers.System
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-            return RuntimeInformation.IsOSPlatform(OSPlatform.OSX) 
-                ? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) 
+            return RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
+                ? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
                 : Environment.CurrentDirectory;
         }
     }

@@ -4,7 +4,6 @@ using Gml.Core.System;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.System;
-using NotImplementedException = System.NotImplementedException;
 
 namespace Gml.Core.Helpers.Files
 {

@@ -20,7 +20,10 @@ namespace Gml.Core.Integrations
             _storage = storage;
         }
 
-        public Task<AuthType> GetAuthType() => _storage.GetAsync<AuthType>(StorageConstants.AuthType);
+        public Task<AuthType> GetAuthType()
+        {
+            return _storage.GetAsync<AuthType>(StorageConstants.AuthType);
+        }
 
         public Task<IEnumerable<IAuthServiceInfo>> GetAuthServices()
         {
@@ -47,10 +50,23 @@ namespace Gml.Core.Integrations
             return _authServices.FirstOrDefault(c => c.AuthType == authType);
         }
 
-        public async Task SetActiveAuthService(IAuthServiceInfo service)
+        public async Task SetActiveAuthService(IAuthServiceInfo? service)
         {
+            if (service == null)
+            {
+                await _storage.SetAsync<object>(StorageConstants.AuthType, null);
+                await _storage.SetAsync<object>(StorageConstants.ActiveAuthService, null);
+
+                return;
+            }
+
             await _storage.SetAsync(StorageConstants.AuthType, service.AuthType);
             await _storage.SetAsync(StorageConstants.ActiveAuthService, service);
+        }
+
+        public Task<string> GetSkinServiceAsync()
+        {
+            return Task.FromResult("http://localhost:5006/skin/{userName}/front/128");
         }
     }
 }

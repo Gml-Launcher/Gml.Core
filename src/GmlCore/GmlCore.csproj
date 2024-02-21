@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
@@ -17,9 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\CmlLib.Core\CmlLib\CmlLib.csproj" />
       <ProjectReference Include="..\..\..\Gml.Common\Gml.Common\Gml.Common.csproj" />
-      <ProjectReference Include="..\..\..\Gml.Web.Api\src\Gml.Web.Api.Domains\Gml.Web.Api.Domains.csproj" />
       <ProjectReference Include="..\CmlLib.Core.Installer.Forge\CmlLib.Core.Installer.Forge\CmlLib.Core.Installer.Forge.csproj" />
       <ProjectReference Include="..\GmlCore.Interfaces\GmlCore.Interfaces.csproj" />
     </ItemGroup>

@@ -1,25 +1,23 @@
-using System;
 using System.Threading.Tasks;
-using GmlCore.Interfaces.Launcher;
 
 namespace Gml.Core.Services.Storage
 {
     /// <summary>
-    /// Represents a service for managing local storage.
+    ///     Represents a service for managing local storage.
     /// </summary>
     public interface IStorageService
     {
         /// <summary>
-        /// Sets the value of an item in the local storage asynchronously.
+        ///     Sets the value of an item in the local storage asynchronously.
         /// </summary>
         /// <typeparam name="T">The type of the value to store.</typeparam>
         /// <param name="key">The key associated with the item.</param>
         /// <param name="value">The value to store.</param>
         /// <returns>An asynchronous operation representing the completion of the set operation.</returns>
-        Task SetAsync<T>(string key, T value);
+        Task SetAsync<T>(string key, T? value);
 
         /// <summary>
-        /// Gets the value of an item from the local storage asynchronously.
+        ///     Gets the value of an item from the local storage asynchronously.
         /// </summary>
         /// <typeparam name="T">The type of the value to retrieve.</typeparam>
         /// <param name="key">The key associated with the item.</param>
@@ -30,12 +28,11 @@ namespace Gml.Core.Services.Storage
         Task SetUserAsync<T>(string login, T value);
 
         /// <summary>
-        /// Saves a record in local storage asynchronously.
+        ///     Saves a record in local storage asynchronously.
         /// </summary>
         /// <typeparam name="T">The type of the value to store.</typeparam>
         /// <param name="record">The record to store.</param>
         /// <returns>An asynchronous operation that yields the number of records saved.</returns>
         Task<int> SaveRecord<T>(T record);
     }
-
 }

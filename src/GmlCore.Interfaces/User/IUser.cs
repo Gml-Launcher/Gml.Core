@@ -8,5 +8,6 @@ namespace GmlCore.Interfaces.User
         string AccessToken { get; set; }
         string Uuid { get; set; }
         public DateTime ExpiredDate { get; set; }
+        public string TextureUrl { get; set; }
     }
 }

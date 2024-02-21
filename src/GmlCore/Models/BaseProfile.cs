@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Gml.Core.Launcher;
-using Gml.Core.System;
 using Gml.Models.Converters;
 using Gml.Models.Enums;
 using GmlCore.Interfaces.Enums;
@@ -15,31 +13,9 @@ using Newtonsoft.Json;
 
 namespace Gml.Models
 {
-
     public class BaseProfile : IGameProfile
     {
-        [JsonIgnore]
-        public IProfileProcedures ProfileProcedures { get; set; }
-        [JsonIgnore]
-        public IGameDownloaderProcedures GameLoader { get; set; }
-
-        public string Name { get; set; }
-        public string GameVersion { get; set; }
-        public string LaunchVersion { get; set; }
-        public GameLoader Loader { get; set; }
-        public string ClientPath { get; set; }
-        public string IconBase64 { get; set; }
-        public string Description { get; set; }
-
-        [JsonConverter(typeof(LocalFileInfoConverter))]
-        public List<IFileInfo>? FileWhiteList { get; set; }
-
-        public DateTimeOffset CreateDate { get; set; }
-
-        internal NullableBool IsValidProfile { get; set; }
-        internal NullableBool IsLoaded { get; set; }
-
-        private bool IsDisposed = false;
+        private bool IsDisposed;
 
         public BaseProfile()
         {
@@ -54,22 +30,31 @@ namespace Gml.Models
             IsValidProfile = NullableBool.Undefined;
         }
 
+        internal NullableBool IsValidProfile { get; set; }
+        internal NullableBool IsLoaded { get; set; }
+
+        [JsonIgnore] public IProfileProcedures ProfileProcedures { get; set; }
+
+        [JsonIgnore] public IGameDownloaderProcedures GameLoader { get; set; }
+
+        public string Name { get; set; }
+        public string GameVersion { get; set; }
+        public string LaunchVersion { get; set; }
+        public GameLoader Loader { get; set; }
+        public string ClientPath { get; set; }
+        public string IconBase64 { get; set; }
+        public string Description { get; set; }
+
+        [JsonConverter(typeof(LocalFileInfoConverter))]
+        public List<IFileInfo>? FileWhiteList { get; set; }
+
+        public DateTimeOffset CreateDate { get; set; }
+
         public async Task<bool> ValidateProfile()
         {
             CheckDispose();
 
             IsValidProfile = await ProfileProcedures.ValidateProfileAsync(this)
-                ? NullableBool.True
-                : NullableBool.False;
-
-            return IsValidProfile == NullableBool.True;
-        }
-
-        public async Task<bool> CheckIsLoaded()
-        {
-            CheckDispose();
-
-            IsLoaded = await GameLoader.IsFullLoaded(this)
                 ? NullableBool.True
                 : NullableBool.False;
 
@@ -134,6 +119,25 @@ namespace Gml.Models
             Dispose();
         }
 
+        public void Dispose()
+        {
+            if (IsDisposed) return;
+
+
+            IsDisposed = true;
+        }
+
+        public async Task<bool> CheckIsLoaded()
+        {
+            CheckDispose();
+
+            IsLoaded = await GameLoader.IsFullLoaded(this)
+                ? NullableBool.True
+                : NullableBool.False;
+
+            return IsValidProfile == NullableBool.True;
+        }
+
         private void CheckDispose()
         {
             if (IsDisposed)
@@ -147,14 +151,6 @@ namespace Gml.Models
             if (disposing)
             {
             }
-
-            IsDisposed = true;
-        }
-
-        public void Dispose()
-        {
-            if (IsDisposed) return;
-
 
             IsDisposed = true;
         }
