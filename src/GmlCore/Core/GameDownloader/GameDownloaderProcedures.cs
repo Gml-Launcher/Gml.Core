@@ -10,6 +10,7 @@ using CmlLib.Core.Auth;
 using CmlLib.Core.Installer.FabricMC;
 using CmlLib.Core.Installer.Forge;
 using CmlLib.Core.Installer.Forge.Versions;
+using CmlLib.Core.Installer.LiteLoader;
 using CmlLib.Core.Version;
 using Gml.Core.Services.Storage;
 using Gml.Models;
@@ -85,6 +86,11 @@ namespace Gml.Core.GameDownloader
                     var fabric = fabricVersions.GetVersionMetadata(version);
 
                     await fabric.SaveAsync(_minecraftPath);
+
+                    await _launcher.CreateProcessAsync(version, new MLaunchOption());
+
+                    return version;
+                case GameLoader.LiteLoader:
 
                     await _launcher.CreateProcessAsync(version, new MLaunchOption());
 
@@ -203,6 +209,25 @@ namespace Gml.Core.GameDownloader
                                             ?? throw new InvalidOperationException("Cannot find any version");
 
                     InstallationVersion = new MVersion(fabricBestVersion.Name);
+
+                    break;
+                case GameLoader.LiteLoader:
+
+                    var liteLoaderVersionLoader = new LiteLoaderVersionLoader();
+                    var liteLoaderVersions = await liteLoaderVersionLoader.GetVersionMetadatasAsync();
+
+                    var minecraftLiteLoaderVersion = version.Split("LiteLoader").Last();
+
+                    var liteLoaderBestVersion = liteLoaderVersions
+                                                    .FirstOrDefault(c => c.Name == $"LiteLoader{minecraftLiteLoaderVersion}")
+                                                ?? throw new InvalidOperationException("Cannot find any version");
+                    var minecraftVersions = await _launcher.GetAllVersionsAsync();
+                    var liteLoaderVersion =
+                        (LiteLoaderVersionMetadata)liteLoaderVersions.GetVersionMetadata(liteLoaderBestVersion.Name);
+
+                    var startVersionName = liteLoaderVersion.Install(_minecraftPath, await minecraftVersions.GetVersionAsync(minecraftLiteLoaderVersion));
+
+                    InstallationVersion = new MVersion(startVersionName);
 
                     break;
                 default:

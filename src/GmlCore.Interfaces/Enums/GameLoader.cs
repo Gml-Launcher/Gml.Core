@@ -6,5 +6,6 @@ namespace GmlCore.Interfaces.Enums
         Vanilla = 1,
         Forge = 2,
         Fabric = 3,
+        LiteLoader = 4,
     }
 }
