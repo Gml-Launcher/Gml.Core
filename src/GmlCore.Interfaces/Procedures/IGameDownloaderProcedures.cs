@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.User;
@@ -16,7 +17,7 @@ namespace GmlCore.Interfaces.Procedures
         public event FileDownloadChanged FileChanged;
         public event ProgressDownloadChanged ProgressChanged;
 
-        Task<string> DownloadGame(string version, GameLoader loader);
+        Task<string> DownloadGame(string version, GameLoader loader, OsType osType, string osArch);
         Task<bool> IsFullLoaded(IGameProfile baseProfile, IStartupOptions startupOptions = null);
 
         Task<Process> CreateProfileProcess(IGameProfile baseProfile, IStartupOptions startupOptions, IUser user,

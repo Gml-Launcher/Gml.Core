@@ -22,5 +22,6 @@ namespace Gml.Core.Launcher
         public string? ServerIp { get; set; }
         public int ServerPort { get; set; }
         public OsType OsType { get; set; }
+        public string OsArch { get; set; }
     }
 }

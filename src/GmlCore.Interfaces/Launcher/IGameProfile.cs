@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.System;
@@ -28,7 +29,7 @@ namespace GmlCore.Interfaces.Launcher
         Task<bool> ValidateProfile();
         Task<bool> CheckIsFullLoaded(IStartupOptions startupOptions);
         Task Remove();
-        Task DownloadAsync();
+        Task DownloadAsync(OsType startupOptionsOsType, string startupOptionsOsArch);
         Task<Process> CreateProcess(IStartupOptions startupOptions, IUser user);
         Task<bool> CheckClientExists();
         Task<bool> CheckOsTypeLoaded(IStartupOptions startupOptions);

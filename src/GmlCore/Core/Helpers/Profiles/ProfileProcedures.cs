@@ -16,6 +16,7 @@ using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
 using Gml.Core.System;
 using Gml.Models;
+using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
@@ -152,7 +153,10 @@ namespace Gml.Core.Helpers.Profiles
             {
                 profiles = profiles.Where(c => c != null).ToList();
 
-                profiles.ForEach(UpdateProfilesService);
+                foreach (var profile in profiles)
+                {
+                    await UpdateProfilesService(profile);
+                }
 
                 _gameProfiles = new List<IGameProfile>(profiles);
             }
@@ -191,11 +195,11 @@ namespace Gml.Core.Helpers.Profiles
             await _storageService.SetAsync(StorageConstants.GameProfiles, _gameProfiles);
         }
 
-        public async Task DownloadProfileAsync(IGameProfile baseProfile)
+        public async Task DownloadProfileAsync(IGameProfile baseProfile, OsType osType, string osArch)
         {
             if (baseProfile is GameProfile gameProfile && await gameProfile.ValidateProfile())
                 gameProfile.LaunchVersion =
-                    await gameProfile.GameLoader.DownloadGame(baseProfile.GameVersion, gameProfile.Loader);
+                    await gameProfile.GameLoader.DownloadGame(baseProfile.GameVersion, gameProfile.Loader, osType, osArch);
         }
 
         public async Task<IGameProfile?> GetProfile(string profileName)
@@ -312,7 +316,7 @@ namespace Gml.Core.Helpers.Profiles
             if (profile == null)
                 return null;
 
-            await profile.DownloadAsync();
+            await profile.DownloadAsync(startupOptions.OsType, startupOptions.OsArch);
             var authLibArguments = await profile.InstallAuthLib();
             var process =
                 await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, true, authLibArguments);
@@ -411,7 +415,7 @@ namespace Gml.Core.Helpers.Profiles
             if (!authLibPath.Exists)
                 authLibPath.Create();
 
-            if (downloadingFileInfo.Exists)
+            if (downloadingFileInfo.Exists && downloadingFileInfo.Length > 0)
                 return new[] { $"-javaagent:{{localPath}}\\libraries\\{authLibRelativePath}={{authEndpoint}}" };
 
             using (var httpClient = new HttpClient())
@@ -426,6 +430,11 @@ namespace Gml.Core.Helpers.Profiles
             downloadingFileInfo.Refresh();
 
             var gameVersion = profile.LaunchVersion.Split("-").First();
+
+            if (profile.Loader == GameLoader.Fabric)
+            {
+                gameVersion = profile.LaunchVersion.Split("-").Last();
+            }
 
             var manifestFilePath =
                 new FileInfo(Path.Combine(profile.ClientPath, "client", gameVersion, $"{gameVersion}.json"));
@@ -470,7 +479,7 @@ namespace Gml.Core.Helpers.Profiles
         }
 
 
-        private async void UpdateProfilesService(GameProfile gameProfile)
+        private async Task UpdateProfilesService(GameProfile gameProfile)
         {
             var gameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, gameProfile);
 

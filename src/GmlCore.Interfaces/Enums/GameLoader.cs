@@ -4,6 +4,7 @@ namespace GmlCore.Interfaces.Enums
     {
         Undefined = 0,
         Vanilla = 1,
-        Forge = 2
+        Forge = 2,
+        Fabric = 3,
     }
 }
