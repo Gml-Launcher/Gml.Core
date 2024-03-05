@@ -7,8 +7,10 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
+using CmlLib.Core.Installer.FabricMC;
 using CmlLib.Core.Installer.Forge;
 using CmlLib.Core.Installer.Forge.Versions;
+using CmlLib.Core.Installer.LiteLoader;
 using CmlLib.Core.Version;
 using Gml.Core.Services.Storage;
 using Gml.Models;
@@ -55,7 +57,10 @@ namespace Gml.Core.GameDownloader
         public event IGameDownloaderProcedures.FileDownloadChanged? FileChanged;
         public event IGameDownloaderProcedures.ProgressDownloadChanged? ProgressChanged;
 
-        public async Task<string> DownloadGame(string version, GameLoader loader)
+        public async Task<string> DownloadGame(
+            string version, GameLoader loader,
+            Web.Api.Domains.System.OsType osType,
+            string osArch)
         {
             if (string.IsNullOrEmpty(version))
                 throw new ArgumentNullException(nameof(version));
@@ -70,7 +75,26 @@ namespace Gml.Core.GameDownloader
                     var forge = new MForge(_launcher);
                     // var originalVersion = version.Split('-').First() ?? string.Empty;
 
-                    return await forge.Install(version, true).ConfigureAwait(false);
+                    return await forge.Install(version, true, (OsType)(int)osType, osArch).ConfigureAwait(false);
+
+
+                case GameLoader.Fabric:
+
+                    var fabricVersionLoader = new FabricVersionLoader();
+                    var fabricVersions = await fabricVersionLoader.GetVersionMetadatasAsync();
+
+                    var fabric = fabricVersions.GetVersionMetadata(version);
+
+                    await fabric.SaveAsync(_minecraftPath);
+
+                    await _launcher.CreateProcessAsync(version, new MLaunchOption());
+
+                    return version;
+                case GameLoader.LiteLoader:
+
+                    await _launcher.CreateProcessAsync(version, new MLaunchOption());
+
+                    return version;
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(loader), loader, null);
@@ -170,6 +194,40 @@ namespace Gml.Core.GameDownloader
 
                     var mappedVersion = versionMapper.CreateInstaller(bestVersion);
                     InstallationVersion = new MVersion(mappedVersion.VersionName);
+
+                    break;
+
+
+                case GameLoader.Fabric:
+                    var fabricLoader = new FabricVersionLoader();
+
+                    var fabricMinecraftVersion = version.Split('-').Last();
+
+                    var fabricVersions = await fabricLoader.GetVersionMetadatasAsync();
+
+                    var fabricBestVersion = fabricVersions.FirstOrDefault(v => v.Name.EndsWith($"-{fabricMinecraftVersion}"))
+                                            ?? throw new InvalidOperationException("Cannot find any version");
+
+                    InstallationVersion = new MVersion(fabricBestVersion.Name);
+
+                    break;
+                case GameLoader.LiteLoader:
+
+                    var liteLoaderVersionLoader = new LiteLoaderVersionLoader();
+                    var liteLoaderVersions = await liteLoaderVersionLoader.GetVersionMetadatasAsync();
+
+                    var minecraftLiteLoaderVersion = version.Split("LiteLoader").Last();
+
+                    var liteLoaderBestVersion = liteLoaderVersions
+                                                    .FirstOrDefault(c => c.Name == $"LiteLoader{minecraftLiteLoaderVersion}")
+                                                ?? throw new InvalidOperationException("Cannot find any version");
+                    var minecraftVersions = await _launcher.GetAllVersionsAsync();
+                    var liteLoaderVersion =
+                        (LiteLoaderVersionMetadata)liteLoaderVersions.GetVersionMetadata(liteLoaderBestVersion.Name);
+
+                    var startVersionName = liteLoaderVersion.Install(_minecraftPath, await minecraftVersions.GetVersionAsync(minecraftLiteLoaderVersion));
+
+                    InstallationVersion = new MVersion(startVersionName);
 
                     break;
                 default:

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.System;
@@ -29,7 +30,7 @@ namespace GmlCore.Interfaces.Procedures
         Task<bool> ValidateProfileAsync(IGameProfile baseProfile);
         bool ValidateProfile();
         Task SaveProfiles();
-        Task DownloadProfileAsync(IGameProfile baseProfile);
+        Task DownloadProfileAsync(IGameProfile baseProfile, OsType osType, string osArch);
         Task<IEnumerable<IFileInfo>> GetProfileFiles(IGameProfile baseProfile);
         Task<IGameProfile?> GetProfile(string profileName);
         Task<IEnumerable<IGameProfile>> GetProfiles();

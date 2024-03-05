@@ -66,7 +66,12 @@ namespace Gml.Core.Integrations
 
         public Task<string> GetSkinServiceAsync()
         {
-            return Task.FromResult("http://localhost:5006/skin/{userName}/front/128");
+            return Task.FromResult("http://launcher.recloud.tech:5006/skin/{userName}");
+        }
+
+        public Task<string> GetClockServiceAsync()
+        {
+            return Task.FromResult("http://launcher.recloud.tech:5006/cloak/{userName}");
         }
     }
 }
