@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -64,14 +65,26 @@ namespace Gml.Core.Integrations
             await _storage.SetAsync(StorageConstants.ActiveAuthService, service);
         }
 
-        public Task<string> GetSkinServiceAsync()
+        public async Task<string> GetSkinServiceAsync()
         {
-            return Task.FromResult("http://launcher.recloud.tech:5006/skin/{userName}");
+            return await _storage.GetAsync<string>(StorageConstants.SkinUrl)
+                   ?? throw new Exception("Сервис скинов не настроен");
         }
 
-        public Task<string> GetClockServiceAsync()
+        public async Task<string> GetCloakServiceAsync()
         {
-            return Task.FromResult("http://launcher.recloud.tech:5006/cloak/{userName}");
+            return await _storage.GetAsync<string>(StorageConstants.CloakUrl)
+                ?? throw new Exception("Сервис плащей не настроен");
+        }
+
+        public Task SetSkinServiceAsync(string url)
+        {
+            return _storage.SetAsync(StorageConstants.SkinUrl, url);
+        }
+
+        public Task SetCloakServiceAsync(string url)
+        {
+            return _storage.SetAsync(StorageConstants.CloakUrl, url);
         }
     }
 }
