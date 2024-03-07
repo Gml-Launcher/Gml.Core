@@ -29,7 +29,7 @@ namespace Gml.Core.Helpers.User
             authUser.AuthHistory.Add(AuthUserHistory.Create(device));
             authUser.AuthHistory = authUser.AuthHistory.TakeLast(20).ToList();
             authUser.AccessToken = GenerateAccessToken();
-            authUser.Uuid ??= UsernameToUuid(login);
+            authUser.Uuid = UsernameToUuid(login);
             authUser.ExpiredDate = DateTime.Now + TimeSpan.FromDays(30);
 
             await _storage.SetUserAsync(login, authUser);
