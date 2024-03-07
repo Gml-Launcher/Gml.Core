@@ -13,6 +13,8 @@ namespace GmlCore.Interfaces.Integrations
         Task<IAuthServiceInfo?> GetAuthService(AuthType authType);
         Task SetActiveAuthService(IAuthServiceInfo? service);
         Task<string> GetSkinServiceAsync();
-        Task<string> GetClockServiceAsync();
+        Task<string> GetCloakServiceAsync();
+        Task SetSkinServiceAsync(string url);
+        Task SetCloakServiceAsync(string url);
     }
 }
