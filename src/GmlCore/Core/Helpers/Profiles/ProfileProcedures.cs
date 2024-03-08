@@ -149,7 +149,7 @@ namespace Gml.Core.Helpers.Profiles
         {
             var profiles = await _storageService.GetAsync<List<GameProfile>>(StorageConstants.GameProfiles);
 
-            if (profiles != null)
+            if (profiles != null && !_gameProfiles.Any())
             {
                 profiles = profiles.Where(c => c != null).ToList();
 
@@ -242,7 +242,9 @@ namespace Gml.Core.Helpers.Profiles
             return localFilesInfo;
         }
 
-        public async Task<IGameProfileInfo?> GetProfileInfo(string profileName, IStartupOptions startupOptions,
+        public async Task<IGameProfileInfo?> GetProfileInfo(
+            string profileName,
+            IStartupOptions startupOptions,
             IUser user)
         {
             if (!_gameProfiles.Any())
@@ -306,7 +308,9 @@ namespace Gml.Core.Helpers.Profiles
             };
         }
 
-        public async Task<IGameProfileInfo?> RestoreProfileInfo(string profileName, IStartupOptions startupOptions,
+        public async Task<IGameProfileInfo?> RestoreProfileInfo(
+            string profileName,
+            IStartupOptions startupOptions,
             IUser user)
         {
             await RestoreProfiles();
