@@ -426,9 +426,11 @@ namespace Gml.Core.Helpers.Profiles
             {
                 var response = await httpClient.GetAsync(authLibUrl);
 
-                await using Stream contentStream = await response.Content.ReadAsStreamAsync(),
-                    fileStream = new FileStream(downloadingFileInfo.FullName, FileMode.Create, FileAccess.Write,
-                        FileShare.None, 8192, true);
+                using (Stream contentStream = await response.Content.ReadAsStreamAsync())
+                using (Stream fileStream = new FileStream(downloadingFileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
+                {
+                    await contentStream.CopyToAsync(fileStream);
+                }
             }
 
             downloadingFileInfo.Refresh();

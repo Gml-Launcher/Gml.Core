@@ -92,7 +92,21 @@ namespace Gml.Core.GameDownloader
                     return version;
                 case GameLoader.LiteLoader:
 
-                    await _launcher.CreateProcessAsync(version, new MLaunchOption());
+                    var liteLoaderVersionLoader = new LiteLoaderVersionLoader();
+                    var liteLoaderVersions = await liteLoaderVersionLoader.GetVersionMetadatasAsync();
+
+                    var minecraftLiteLoaderVersion = version.Split("LiteLoader").Last();
+
+                    var liteLoaderBestVersion = liteLoaderVersions
+                                                    .FirstOrDefault(c => c.Name == $"LiteLoader{minecraftLiteLoaderVersion}")
+                                                ?? throw new InvalidOperationException("Cannot find any version");
+                    var minecraftVersions = await _launcher.GetAllVersionsAsync();
+                    var liteLoaderVersion =
+                        (LiteLoaderVersionMetadata)liteLoaderVersions.GetVersionMetadata(liteLoaderBestVersion.Name);
+
+                    var startVersionName = liteLoaderVersion.Install(_minecraftPath, await minecraftVersions.GetVersionAsync(minecraftLiteLoaderVersion));
+
+                    await _launcher.CreateProcessAsync(startVersionName, new MLaunchOption());
 
                     return version;
 
