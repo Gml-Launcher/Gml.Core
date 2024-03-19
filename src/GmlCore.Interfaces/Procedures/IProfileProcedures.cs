@@ -14,6 +14,7 @@ namespace GmlCore.Interfaces.Procedures
         public delegate void ProgressPackChanged(ProgressChangedEventArgs e);
 
         public event ProgressPackChanged PackChanged;
+        bool CanUpdateAndRestore { get; }
 
         Task AddProfile(IGameProfile? profile);
 

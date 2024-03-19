@@ -14,6 +14,7 @@ using Gml.Core.Exceptions;
 using Gml.Core.GameDownloader;
 using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
+using Gml.Core.StateMachine;
 using Gml.Core.System;
 using Gml.Models;
 using Gml.Web.Api.Domains.System;
@@ -45,7 +46,9 @@ namespace Gml.Core.Helpers.Profiles
         private List<IGameProfile> _gameProfiles = new();
 
 
-        public ProfileProcedures(IGameDownloaderProcedures gameDownloader, ILauncherInfo launcherInfo,
+        public ProfileProcedures(
+            IGameDownloaderProcedures gameDownloader,
+            ILauncherInfo launcherInfo,
             IStorageService storageService)
         {
             _gameDownloader = gameDownloader;
@@ -54,6 +57,7 @@ namespace Gml.Core.Helpers.Profiles
         }
 
         public event IProfileProcedures.ProgressPackChanged PackChanged;
+        public bool CanUpdateAndRestore => !ProfileLoaderStateMachine.IsLoading;
 
         public async Task AddProfile(IGameProfile? profile)
         {
@@ -270,7 +274,7 @@ namespace Gml.Core.Helpers.Profiles
                 Process? process = null;
                 try
                 {
-                    process = await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, false,
+                    process = await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, true,
                         jvmArgs.ToArray());
                 }
                 catch (Exception e)
@@ -282,6 +286,7 @@ namespace Gml.Core.Helpers.Profiles
                     ProfileName = profile.Name,
                     Description = profile.Description,
                     IconBase64 = profile.IconBase64,
+                    HasUpdate = !ProfileLoaderStateMachine.IsLoading,
                     Arguments = process?.StartInfo.Arguments.Replace(profile.ClientPath, "{localPath}") ?? string.Empty,
                     JavaPath = process?.StartInfo.FileName.Replace(profile.ClientPath, "{localPath}") ?? string.Empty,
                     ClientVersion = profile.GameVersion,
@@ -315,28 +320,43 @@ namespace Gml.Core.Helpers.Profiles
         {
             await RestoreProfiles();
 
-            var profile = _gameProfiles.FirstOrDefault(c => c.Name == profileName);
+            ProfileLoaderStateMachine.IsLoading = true;
 
-            if (profile == null)
-                return null;
-
-            await profile.DownloadAsync(startupOptions.OsType, startupOptions.OsArch);
-            var authLibArguments = await profile.InstallAuthLib();
-            var process =
-                await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, true, authLibArguments);
-
-            var files = (await GetProfileFiles(profile)).ToList();
-            var files2 = GetWhiteListFilesProfileFiles(files);
-
-            return new GameProfileInfo
+            try
             {
-                ProfileName = profile.Name,
-                Arguments = process.StartInfo.Arguments.Replace(profile.ClientPath, "{localPath}"),
-                ClientVersion = profile.GameVersion,
-                MinecraftVersion = profile.LaunchVersion.Split('-').First(),
-                Files = files.OfType<LocalFileInfo>(),
-                WhiteListFiles = files2.OfType<LocalFileInfo>()
-            };
+                var profile = _gameProfiles.FirstOrDefault(c => c.Name == profileName);
+
+                if (profile == null)
+                    return null;
+
+                await profile.DownloadAsync(startupOptions.OsType, startupOptions.OsArch);
+                var authLibArguments = await profile.InstallAuthLib();
+                var process =
+                    await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, true,
+                        authLibArguments);
+
+                var files = (await GetProfileFiles(profile)).ToList();
+                var files2 = GetWhiteListFilesProfileFiles(files);
+
+
+                return new GameProfileInfo
+                {
+                    ProfileName = profile.Name,
+                    Arguments = process.StartInfo.Arguments.Replace(profile.ClientPath, "{localPath}"),
+                    ClientVersion = profile.GameVersion,
+                    HasUpdate = ProfileLoaderStateMachine.IsLoading,
+                    MinecraftVersion = profile.LaunchVersion.Split('-').First(),
+                    Files = files.OfType<LocalFileInfo>(),
+                    WhiteListFiles = files2.OfType<LocalFileInfo>()
+                };
+            }
+            catch (Exception exception)
+            {
+                throw new Exception($"Не удалось восстановить игроой профиль. {exception.Message}");
+            }finally
+            {
+                ProfileLoaderStateMachine.IsLoading = false;
+            }
         }
 
 

@@ -5,6 +5,7 @@ using Gml.Core.Helpers.User;
 using Gml.Core.Integrations;
 using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
+using Gml.Core.StateMachine;
 using Gml.Models;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Integrations;
@@ -33,5 +34,7 @@ namespace Gml
         public IFileStorageProcedures Files { get; }
         public IServicesIntegrationProcedures Integrations { get; }
         public IUserProcedures Users { get; }
+
+        internal ProfileLoaderStateMachine ProfileLoaderState {get;}
     }
 }
