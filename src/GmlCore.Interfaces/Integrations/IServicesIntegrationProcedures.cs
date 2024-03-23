@@ -16,5 +16,7 @@ namespace GmlCore.Interfaces.Integrations
         Task<string> GetCloakServiceAsync();
         Task SetSkinServiceAsync(string url);
         Task SetCloakServiceAsync(string url);
+        Task<string?> GetSentryService();
+        Task SetSentryService(string url);
     }
 }
