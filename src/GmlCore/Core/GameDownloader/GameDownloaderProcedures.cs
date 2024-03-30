@@ -197,10 +197,12 @@ namespace Gml.Core.GameDownloader
                     var versionLoader = new ForgeVersionLoader(new HttpClient(clientHandler));
 
                     var minecraftVersion = version.Split('-').First();
+                    var forgeVersion = version.Split('-').Last();
 
                     var versions = (await versionLoader.GetForgeVersions(minecraftVersion)).ToList();
 
                     var bestVersion =
+                        versions.FirstOrDefault(v => v.ForgeVersionName== forgeVersion) ??
                         versions.FirstOrDefault(v => v.IsRecommendedVersion) ??
                         versions.FirstOrDefault(v => v.IsLatestVersion) ??
                         versions.FirstOrDefault() ??
