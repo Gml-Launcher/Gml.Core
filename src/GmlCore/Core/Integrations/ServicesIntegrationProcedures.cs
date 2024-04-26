@@ -31,6 +31,7 @@ namespace Gml.Core.Integrations
             return Task.FromResult(new List<IAuthServiceInfo>
             {
                 new AuthServiceInfo("Undefined", AuthType.Undefined),
+                new AuthServiceInfo("Any", AuthType.Any),
                 new AuthServiceInfo("DataLifeEngine", AuthType.DataLifeEngine)
             }.AsEnumerable());
         }
@@ -85,6 +86,16 @@ namespace Gml.Core.Integrations
         public Task SetCloakServiceAsync(string url)
         {
             return _storage.SetAsync(StorageConstants.CloakUrl, url);
+        }
+
+        public Task<string?> GetSentryService()
+        {
+            return _storage.GetAsync<string>(StorageConstants.SentrySdnUrl);
+        }
+
+        public Task SetSentryService(string url)
+        {
+            return _storage.SetAsync(StorageConstants.SentrySdnUrl, url);
         }
     }
 }

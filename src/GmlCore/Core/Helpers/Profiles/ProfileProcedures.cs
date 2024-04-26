@@ -31,10 +31,8 @@ namespace Gml.Core.Helpers.Profiles
     {
         public delegate void ProgressPackChanged(ProgressChangedEventArgs e);
 
-        private const string authLibUrl =
+        private const string AuthLibUrl =
             "https://github.com/yushijinhun/authlib-injector/releases/download/v1.2.4/authlib-injector-1.2.4.jar";
-
-        private readonly IGameDownloaderProcedures _gameDownloader;
 
 
         private readonly ILauncherInfo _launcherInfo;
@@ -46,17 +44,14 @@ namespace Gml.Core.Helpers.Profiles
         private List<IGameProfile> _gameProfiles = new();
 
 
-        public ProfileProcedures(
-            IGameDownloaderProcedures gameDownloader,
-            ILauncherInfo launcherInfo,
+        public ProfileProcedures(ILauncherInfo launcherInfo,
             IStorageService storageService)
         {
-            _gameDownloader = gameDownloader;
             _launcherInfo = launcherInfo;
             _storageService = storageService;
         }
 
-        public event IProfileProcedures.ProgressPackChanged PackChanged;
+        public event IProfileProcedures.ProgressPackChanged? PackChanged;
         public bool CanUpdateAndRestore => !ProfileLoaderStateMachine.IsLoading;
 
         public async Task AddProfile(IGameProfile? profile)
@@ -157,10 +152,7 @@ namespace Gml.Core.Helpers.Profiles
             {
                 profiles = profiles.Where(c => c != null).ToList();
 
-                foreach (var profile in profiles)
-                {
-                    await UpdateProfilesService(profile);
-                }
+                foreach (var profile in profiles) await UpdateProfilesService(profile);
 
                 _gameProfiles = new List<IGameProfile>(profiles);
             }
@@ -203,7 +195,8 @@ namespace Gml.Core.Helpers.Profiles
         {
             if (baseProfile is GameProfile gameProfile && await gameProfile.ValidateProfile())
                 gameProfile.LaunchVersion =
-                    await gameProfile.GameLoader.DownloadGame(baseProfile.GameVersion, gameProfile.Loader, osType, osArch);
+                    await gameProfile.GameLoader.DownloadGame(baseProfile.GameVersion, gameProfile.Loader, osType,
+                        osArch);
         }
 
         public async Task<IGameProfile?> GetProfile(string profileName)
@@ -228,18 +221,18 @@ namespace Gml.Core.Helpers.Profiles
 
             var localFiles = profileDirectoryInfo.GetFiles("*.*", SearchOption.AllDirectories);
 
-            var localFilesInfo = await Task.WhenAll(localFiles.AsParallel().Select(async c =>
+            var localFilesInfo = await Task.WhenAll(localFiles.AsParallel().Select(c =>
             {
                 using (var algorithm = new SHA256Managed())
                 {
                     var hash = SystemHelper.CalculateFileHash(c.FullName, algorithm);
-                    return new LocalFileInfo
+                    return Task.FromResult(new LocalFileInfo
                     {
                         Name = c.Name,
                         Directory = c.FullName.Replace(_launcherInfo.InstallationDirectory, string.Empty),
                         Size = c.Length,
                         Hash = hash
-                    };
+                    });
                 }
             }));
 
@@ -264,21 +257,22 @@ namespace Gml.Core.Helpers.Profiles
                 var jvmArgs = new List<string>();
                 var files = (await GetProfileFiles(profile)).ToList();
 
-                if (files.Any(c => c.Name == Path.GetFileName(authLibUrl)))
+                if (files.Any(c => c.Name == Path.GetFileName(AuthLibUrl)))
                 {
                     var authLibRelativePath =
-                        Path.Combine(profile.ClientPath, "libraries", Path.GetFileName(authLibUrl));
+                        Path.Combine(profile.ClientPath, "libraries", Path.GetFileName(AuthLibUrl));
                     jvmArgs.Add($"-javaagent:{authLibRelativePath}={{authEndpoint}}");
                 }
 
                 Process? process = null;
                 try
                 {
-                    process = await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, true,
+                    process = await profile.GameLoader.CreateProfileProcess(profile, startupOptions, user, false,
                         jvmArgs.ToArray());
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
+                    // ToDo: Sentry
                 }
 
                 return new GameProfileInfo
@@ -353,7 +347,8 @@ namespace Gml.Core.Helpers.Profiles
             catch (Exception exception)
             {
                 throw new Exception($"Не удалось восстановить игроой профиль. {exception.Message}");
-            }finally
+            }
+            finally
             {
                 ProfileLoaderStateMachine.IsLoading = false;
             }
@@ -432,7 +427,7 @@ namespace Gml.Core.Helpers.Profiles
             var directory =
                 new DirectoryInfo(profile.ClientPath);
             var authLibPath = new DirectoryInfo(Path.Combine(directory.FullName, "libraries"));
-            var downloadedFileInfo = new FileInfo(authLibUrl);
+            var downloadedFileInfo = new FileInfo(AuthLibUrl);
             var downloadingFileInfo = new FileInfo(Path.Combine(authLibPath.FullName, downloadedFileInfo.Name));
             var authLibRelativePath = downloadingFileInfo.FullName.Replace($"{authLibPath.FullName}\\", string.Empty);
 
@@ -444,10 +439,11 @@ namespace Gml.Core.Helpers.Profiles
 
             using (var httpClient = new HttpClient())
             {
-                var response = await httpClient.GetAsync(authLibUrl);
+                var response = await httpClient.GetAsync(AuthLibUrl);
 
-                using (Stream contentStream = await response.Content.ReadAsStreamAsync())
-                using (Stream fileStream = new FileStream(downloadingFileInfo.FullName, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
+                using (var contentStream = await response.Content.ReadAsStreamAsync())
+                using (Stream fileStream = new FileStream(downloadingFileInfo.FullName, FileMode.Create,
+                           FileAccess.Write, FileShare.None, 8192, true))
                 {
                     await contentStream.CopyToAsync(fileStream);
                 }
@@ -457,10 +453,7 @@ namespace Gml.Core.Helpers.Profiles
 
             var gameVersion = profile.LaunchVersion.Split("-").First();
 
-            if (profile.Loader == GameLoader.Fabric)
-            {
-                gameVersion = profile.LaunchVersion.Split("-").Last();
-            }
+            if (profile.Loader == GameLoader.Fabric) gameVersion = profile.LaunchVersion.Split("-").Last();
 
             var manifestFilePath =
                 new FileInfo(Path.Combine(profile.ClientPath, "client", gameVersion, $"{gameVersion}.json"));
@@ -479,7 +472,7 @@ namespace Gml.Core.Helpers.Profiles
                                 new JProperty("sha1",
                                     SystemHelper.CalculateFileHash(downloadingFileInfo.FullName, new SHA256Managed())),
                                 new JProperty("size", downloadingFileInfo.Length),
-                                new JProperty("url", authLibUrl)
+                                new JProperty("url", AuthLibUrl)
                             )
                         )
                     )
