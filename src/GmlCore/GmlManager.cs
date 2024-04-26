@@ -21,7 +21,7 @@ namespace Gml
             LauncherInfo = new LauncherInfo(settings);
             Storage = new SqliteStorageService(settings);
             GameLoader = new GameDownloaderProcedures(LauncherInfo, Storage, GameProfile.Empty);
-            Profiles = new ProfileProcedures(GameLoader, LauncherInfo, Storage);
+            Profiles = new ProfileProcedures(LauncherInfo, Storage);
             Files = new FileStorageProcedures(LauncherInfo, Storage);
             Integrations = new ServicesIntegrationProcedures(Storage);
             Users = new UserProcedures(Storage);
