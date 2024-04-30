@@ -75,7 +75,7 @@ namespace Gml.Core.Integrations
         public async Task<string> GetCloakServiceAsync()
         {
             return await _storage.GetAsync<string>(StorageConstants.CloakUrl)
-                ?? throw new Exception("Сервис плащей не настроен");
+                   ?? throw new Exception("Сервис плащей не настроен");
         }
 
         public Task SetSkinServiceAsync(string url)

@@ -1,34 +1,34 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
-        <RootNamespace>Gml</RootNamespace>
-        <AssemblyName>GmlCore</AssemblyName>
-        <Nullable>enable</Nullable>
-        <LangVersion>9</LangVersion>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>Gml</RootNamespace>
+    <AssemblyName>GmlCore</AssemblyName>
+    <Nullable>enable</Nullable>
+    <LangVersion>9</LangVersion>
+  </PropertyGroup>
 
-    <ItemGroup>
-      <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
-      <PackageReference Include="Spectre.Console" Version="0.48.1-preview.0.11" />
-      <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
-      <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
-      <PackageReference Include="System.Text.Json" Version="8.0.0" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2"/>
+    <PackageReference Include="Spectre.Console" Version="0.48.1-preview.0.11"/>
+    <PackageReference Include="sqlite-net-pcl" Version="1.8.116"/>
+    <PackageReference Include="System.Runtime.Loader" Version="4.3.0"/>
+    <PackageReference Include="System.Text.Json" Version="8.0.0"/>
+  </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\..\..\Gml.Common\Gml.Common\Gml.Common.csproj" />
-      <ProjectReference Include="..\CmlLib.Core.Installer.Forge\CmlLib.Core.Installer.Forge\CmlLib.Core.Installer.Forge.csproj" />
-      <ProjectReference Include="..\GmlCore.Interfaces\GmlCore.Interfaces.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Gml.Common\Gml.Common\Gml.Common.csproj"/>
+    <ProjectReference Include="..\CmlLib.Core.Installer.Forge\CmlLib.Core.Installer.Forge\CmlLib.Core.Installer.Forge.csproj"/>
+    <ProjectReference Include="..\GmlCore.Interfaces\GmlCore.Interfaces.csproj"/>
+  </ItemGroup>
 
-    <ItemGroup>
-      <Compile Update="Models\GameProfile.cs">
-        <DependentUpon>BaseProfile.cs</DependentUpon>
-      </Compile>
-      <Compile Update="Core\Services\Storage\SqliteStorageService.cs">
-        <DependentUpon>IStorageService.cs</DependentUpon>
-      </Compile>
-    </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Models\GameProfile.cs">
+      <DependentUpon>BaseProfile.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Services\Storage\SqliteStorageService.cs">
+      <DependentUpon>IStorageService.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
 
 </Project>

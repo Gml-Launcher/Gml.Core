@@ -19,6 +19,7 @@ using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.User;
+using OsType = Gml.Web.Api.Domains.System.OsType;
 
 namespace Gml.Core.GameDownloader
 {
@@ -59,7 +60,7 @@ namespace Gml.Core.GameDownloader
 
         public async Task<string> DownloadGame(
             string version, GameLoader loader,
-            Web.Api.Domains.System.OsType osType,
+            OsType osType,
             string osArch)
         {
             if (string.IsNullOrEmpty(version))
@@ -75,7 +76,8 @@ namespace Gml.Core.GameDownloader
                     var forge = new MForge(_launcher);
                     // var originalVersion = version.Split('-').First() ?? string.Empty;
 
-                    return await forge.Install(version, true, (OsType)(int)osType, osArch).ConfigureAwait(false);
+                    return await forge.Install(version, true, (CmlLib.Core.OsType)(int)osType, osArch)
+                        .ConfigureAwait(false);
 
 
                 case GameLoader.Fabric:
@@ -98,13 +100,15 @@ namespace Gml.Core.GameDownloader
                     var minecraftLiteLoaderVersion = version.Split("LiteLoader").Last();
 
                     var liteLoaderBestVersion = liteLoaderVersions
-                                                    .FirstOrDefault(c => c.Name == $"LiteLoader{minecraftLiteLoaderVersion}")
+                                                    .FirstOrDefault(c =>
+                                                        c.Name == $"LiteLoader{minecraftLiteLoaderVersion}")
                                                 ?? throw new InvalidOperationException("Cannot find any version");
                     var minecraftVersions = await _launcher.GetAllVersionsAsync();
                     var liteLoaderVersion =
                         (LiteLoaderVersionMetadata)liteLoaderVersions.GetVersionMetadata(liteLoaderBestVersion.Name);
 
-                    var startVersionName = liteLoaderVersion.Install(_minecraftPath, await minecraftVersions.GetVersionAsync(minecraftLiteLoaderVersion));
+                    var startVersionName = liteLoaderVersion.Install(_minecraftPath,
+                        await minecraftVersions.GetVersionAsync(minecraftLiteLoaderVersion));
 
                     await _launcher.CreateProcessAsync(startVersionName, new MLaunchOption());
 
@@ -143,7 +147,7 @@ namespace Gml.Core.GameDownloader
                 ServerPort = startupOptions.ServerPort,
                 Session = session,
                 JVMArguments = jvmArguments,
-                OsType = (OsType)Enum.Parse(typeof(OsType), startupOptions.OsType.ToString())
+                OsType = (CmlLib.Core.OsType)Enum.Parse(typeof(CmlLib.Core.OsType), startupOptions.OsType.ToString())
             }, forceDownload);
         }
 
@@ -202,7 +206,7 @@ namespace Gml.Core.GameDownloader
                     var versions = (await versionLoader.GetForgeVersions(minecraftVersion)).ToList();
 
                     var bestVersion =
-                        versions.FirstOrDefault(v => v.ForgeVersionName== forgeVersion) ??
+                        versions.FirstOrDefault(v => v.ForgeVersionName == forgeVersion) ??
                         versions.FirstOrDefault(v => v.IsRecommendedVersion) ??
                         versions.FirstOrDefault(v => v.IsLatestVersion) ??
                         versions.FirstOrDefault() ??
@@ -221,8 +225,9 @@ namespace Gml.Core.GameDownloader
 
                     var fabricVersions = await fabricLoader.GetVersionMetadatasAsync();
 
-                    var fabricBestVersion = fabricVersions.FirstOrDefault(v => v.Name.EndsWith($"-{fabricMinecraftVersion}"))
-                                            ?? throw new InvalidOperationException("Cannot find any version");
+                    var fabricBestVersion =
+                        fabricVersions.FirstOrDefault(v => v.Name.EndsWith($"-{fabricMinecraftVersion}"))
+                        ?? throw new InvalidOperationException("Cannot find any version");
 
                     InstallationVersion = new MVersion(fabricBestVersion.Name);
 
@@ -235,13 +240,15 @@ namespace Gml.Core.GameDownloader
                     var minecraftLiteLoaderVersion = version.Split("LiteLoader").Last();
 
                     var liteLoaderBestVersion = liteLoaderVersions
-                                                    .FirstOrDefault(c => c.Name == $"LiteLoader{minecraftLiteLoaderVersion}")
+                                                    .FirstOrDefault(c =>
+                                                        c.Name == $"LiteLoader{minecraftLiteLoaderVersion}")
                                                 ?? throw new InvalidOperationException("Cannot find any version");
                     var minecraftVersions = await _launcher.GetAllVersionsAsync();
                     var liteLoaderVersion =
                         (LiteLoaderVersionMetadata)liteLoaderVersions.GetVersionMetadata(liteLoaderBestVersion.Name);
 
-                    var startVersionName = liteLoaderVersion.Install(_minecraftPath, await minecraftVersions.GetVersionAsync(minecraftLiteLoaderVersion));
+                    var startVersionName = liteLoaderVersion.Install(_minecraftPath,
+                        await minecraftVersions.GetVersionAsync(minecraftLiteLoaderVersion));
 
                     InstallationVersion = new MVersion(startVersionName);
 

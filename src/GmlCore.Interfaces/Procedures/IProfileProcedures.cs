@@ -13,11 +13,14 @@ namespace GmlCore.Interfaces.Procedures
     {
         public delegate void ProgressPackChanged(ProgressChangedEventArgs e);
 
-        public event ProgressPackChanged PackChanged;
         bool CanUpdateAndRestore { get; }
+
+        public event ProgressPackChanged PackChanged;
         Task AddProfile(IGameProfile? profile);
+
         Task<IGameProfile?> AddProfile(string name, string version, GameLoader loader, string profileIconBase64,
             string description);
+
         Task<bool> CanAddProfile(string name, string version);
         Task RemoveProfile(IGameProfile profile);
         Task RemoveProfile(IGameProfile profile, bool removeProfileFiles);

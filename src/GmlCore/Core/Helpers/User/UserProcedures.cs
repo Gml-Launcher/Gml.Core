@@ -56,13 +56,13 @@ namespace Gml.Core.Helpers.User
         private string GetOfflinePlayerUuid(string username)
         {
             //new GameProfile(UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(Charsets.UTF_8)), name));
-            byte[] rawresult = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes($"OfflinePlayer:{username}"));
+            var rawresult = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes($"OfflinePlayer:{username}"));
             //set the version to 3 -> Name based md5 hash
-            rawresult[6] = (byte)(rawresult[6] & 0x0f | 0x30);
+            rawresult[6] = (byte)((rawresult[6] & 0x0f) | 0x30);
             //IETF variant
-            rawresult[8] = (byte)(rawresult[8] & 0x3f | 0x80);
+            rawresult[8] = (byte)((rawresult[8] & 0x3f) | 0x80);
             //convert to string and remove any - if any
-            string finalresult = BitConverter.ToString(rawresult).Replace("-", "");
+            var finalresult = BitConverter.ToString(rawresult).Replace("-", "");
             //formatting
             finalresult = finalresult.Insert(8, "-").Insert(13, "-").Insert(18, "-").Insert(23, "-");
             return finalresult;
