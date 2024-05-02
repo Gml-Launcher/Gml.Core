@@ -11,10 +11,10 @@ namespace Gml.Core.Launcher
         public string Description { get; set; }
         public IEnumerable<LocalFileInfo> Files { get; set; }
         public IEnumerable<LocalFileInfo> WhiteListFiles { get; set; }
+        public bool HasUpdate { get; set; }
         public string ProfileName { get; set; }
         public string MinecraftVersion { get; set; }
         public string ClientVersion { get; set; }
         public string Arguments { get; set; }
-        public bool HasUpdate { get; set; }
     }
 }
