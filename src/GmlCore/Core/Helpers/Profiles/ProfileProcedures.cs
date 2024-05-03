@@ -260,7 +260,9 @@ namespace Gml.Core.Helpers.Profiles
                 if (files.Any(c => c.Name == Path.GetFileName(AuthLibUrl)))
                 {
                     var authLibRelativePath =
-                        Path.Combine(profile.ClientPath, "libraries", Path.GetFileName(AuthLibUrl));
+                        ValidatePath(Path.Combine(profile.ClientPath, "libraries", Path.GetFileName(AuthLibUrl)),
+                            startupOptions.OsType);
+
                     jvmArgs.Add($"-javaagent:{authLibRelativePath}={{authEndpoint}}");
                 }
 
@@ -281,8 +283,9 @@ namespace Gml.Core.Helpers.Profiles
                     Description = profile.Description,
                     IconBase64 = profile.IconBase64,
                     HasUpdate = !ProfileLoaderStateMachine.IsLoading,
-                    Arguments = process?.StartInfo.Arguments.Replace(profile.ClientPath, "{localPath}") ?? string.Empty,
-                    JavaPath = process?.StartInfo.FileName.Replace(profile.ClientPath, "{localPath}") ?? string.Empty,
+                    Arguments = process?.StartInfo.Arguments.Replace(
+                        ValidatePath(profile.ClientPath, startupOptions.OsType), "{localPath}") ?? string.Empty,
+                    JavaPath = ValidatePath(process?.StartInfo.FileName.Replace(profile.ClientPath, "{localPath}") ?? string.Empty, startupOptions.OsType),
                     ClientVersion = profile.GameVersion,
                     MinecraftVersion = profile.LaunchVersion.Split('-').First(),
                     Files = files.OfType<LocalFileInfo>(),
@@ -305,6 +308,13 @@ namespace Gml.Core.Helpers.Profiles
                 ClientVersion = profile.GameVersion,
                 MinecraftVersion = profile.LaunchVersion.Split('-').First()
             };
+        }
+
+        private string ValidatePath(string path, OsType osType)
+        {
+            return osType == OsType.Windows
+                ? path.Replace("/", "\\")
+                : path.Replace("\\", "/");
         }
 
         public async Task<IGameProfileInfo?> RestoreProfileInfo(
