@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using GmlCore.Interfaces.User;
 
 namespace Gml.Core.Services.Storage
 {

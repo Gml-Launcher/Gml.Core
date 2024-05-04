@@ -285,7 +285,9 @@ namespace Gml.Core.Helpers.Profiles
                     HasUpdate = !ProfileLoaderStateMachine.IsLoading,
                     Arguments = process?.StartInfo.Arguments.Replace(
                         ValidatePath(profile.ClientPath, startupOptions.OsType), "{localPath}") ?? string.Empty,
-                    JavaPath = ValidatePath(process?.StartInfo.FileName.Replace(profile.ClientPath, "{localPath}") ?? string.Empty, startupOptions.OsType),
+                    JavaPath = ValidatePath(
+                        process?.StartInfo.FileName.Replace(profile.ClientPath, "{localPath}") ?? string.Empty,
+                        startupOptions.OsType),
                     ClientVersion = profile.GameVersion,
                     MinecraftVersion = profile.LaunchVersion.Split('-').First(),
                     Files = files.OfType<LocalFileInfo>(),
@@ -308,13 +310,6 @@ namespace Gml.Core.Helpers.Profiles
                 ClientVersion = profile.GameVersion,
                 MinecraftVersion = profile.LaunchVersion.Split('-').First()
             };
-        }
-
-        private string ValidatePath(string path, OsType osType)
-        {
-            return osType == OsType.Windows
-                ? path.Replace("/", "\\")
-                : path.Replace("\\", "/");
         }
 
         public async Task<IGameProfileInfo?> RestoreProfileInfo(
@@ -505,6 +500,13 @@ namespace Gml.Core.Helpers.Profiles
         public Task SetCacheProfile(IGameProfileInfo profile)
         {
             return _storageService.SetAsync($"CachedProfile-{profile.ProfileName}", (GameProfileInfo)profile);
+        }
+
+        private string ValidatePath(string path, OsType osType)
+        {
+            return osType == OsType.Windows
+                ? path.Replace("/", "\\")
+                : path.Replace("\\", "/");
         }
 
 
