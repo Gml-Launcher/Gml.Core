@@ -32,7 +32,8 @@ namespace Gml.Core.Integrations
             {
                 new AuthServiceInfo("Undefined", AuthType.Undefined),
                 new AuthServiceInfo("Any", AuthType.Any),
-                new AuthServiceInfo("DataLifeEngine", AuthType.DataLifeEngine)
+                new AuthServiceInfo("DataLifeEngine", AuthType.DataLifeEngine),
+                new AuthServiceInfo("Azuriom", AuthType.Azuriom)
             }.AsEnumerable());
         }
 
