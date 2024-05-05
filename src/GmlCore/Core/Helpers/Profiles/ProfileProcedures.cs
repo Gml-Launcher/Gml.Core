@@ -12,6 +12,7 @@ using Gml.Common;
 using Gml.Core.Constants;
 using Gml.Core.Exceptions;
 using Gml.Core.GameDownloader;
+using Gml.Core.Helpers.Files;
 using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
 using Gml.Core.StateMachine;
@@ -23,6 +24,9 @@ using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.System;
 using GmlCore.Interfaces.User;
+using Minio;
+using Minio.DataModel.Args;
+using Minio.DataModel.Tags;
 using Newtonsoft.Json.Linq;
 
 namespace Gml.Core.Helpers.Profiles
@@ -39,16 +43,18 @@ namespace Gml.Core.Helpers.Profiles
 
 
         private readonly IStorageService _storageService;
+        private readonly GmlManager _gmlManager;
 
 
         private List<IGameProfile> _gameProfiles = new();
 
 
         public ProfileProcedures(ILauncherInfo launcherInfo,
-            IStorageService storageService)
+            IStorageService storageService, GmlManager gmlManager)
         {
             _launcherInfo = launcherInfo;
             _storageService = storageService;
+            _gmlManager = gmlManager;
         }
 
         public event IProfileProcedures.ProgressPackChanged? PackChanged;
@@ -368,15 +374,95 @@ namespace Gml.Core.Helpers.Profiles
             var totalFiles = fileInfos.Count();
             var processed = 0;
 
-            foreach (var file in fileInfos)
+            switch (_launcherInfo.StorageSettings.StorageType)
             {
-                await _storageService.SetAsync(file.Hash, file);
+                case StorageType.LocalStorage:
+                    foreach (var file in fileInfos)
+                    {
+                        await _storageService.SetAsync(file.Hash, file);
 
-                processed++;
+                        processed++;
 
-                var percentage = processed * 100 / totalFiles;
+                        var percentage = processed * 100 / totalFiles;
 
-                PackChanged?.Invoke(new ProgressChangedEventArgs(percentage, null));
+                        PackChanged?.Invoke(new ProgressChangedEventArgs(percentage, null));
+                    }
+
+                    break;
+                case StorageType.S3:
+
+                    var bucketName = "profiles";
+
+                    var minio = _gmlManager.Files is FileStorageProcedures storage
+                        ? storage.MinioClient
+                        : new MinioClient()
+                            .WithEndpoint(_launcherInfo.StorageSettings.StorageHost)
+                            .WithCredentials(_launcherInfo.StorageSettings.StorageLogin,
+                                _launcherInfo.StorageSettings.StoragePassword)
+                            .Build();
+
+                    var beArgs = new BucketExistsArgs().WithBucket(bucketName);
+
+                    bool found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
+
+                    if (!found)
+                    {
+                        var mbArgs = new MakeBucketArgs()
+                            .WithBucket(bucketName);
+
+                        await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
+                    }
+
+                    var tasks = fileInfos.Select(async file =>
+                    {
+                        var tags = new Dictionary<string, string>
+                        {
+                            { "hash", file.Hash },
+                            { "file-name", file.Name }
+                        };
+
+                        var fileCheck = new StatObjectArgs()
+                            .WithBucket(bucketName)
+                            .WithObject(file.Hash);
+
+                        try
+                        {
+                            // Пробуем получить объект
+                            await minio.StatObjectAsync(fileCheck);
+                        }
+                        catch (Minio.Exceptions.ObjectNotFoundException)
+                        {
+                            // Если объект не найден, загружаем его
+                            var putObjectArgs = new PutObjectArgs()
+                                .WithBucket(bucketName)
+                                .WithObject(file.Hash)
+                                .WithTagging(new Tagging(tags, true))
+                                .WithFileName(
+                                    Path.GetFullPath($"{_launcherInfo.InstallationDirectory}\\{file.Directory}"));
+
+                            await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                        }
+                        catch (Exception exception)
+                        {
+                            //ToDo: Sentry
+                            Console.WriteLine(exception);
+                        }
+                        finally
+                        {
+                            processed++;
+                            int percentage = processed * 100 / totalFiles;
+                            Debug.WriteLine(percentage);
+                            PackChanged?.Invoke(new ProgressChangedEventArgs(percentage, null));
+                        }
+                    }).ToList();
+
+                    await Task.WhenAll(tasks);
+
+                    Console.WriteLine("File uploaded successfully.");
+
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 

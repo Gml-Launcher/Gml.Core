@@ -1,5 +1,6 @@
 using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Auth;
+using GmlCore.Interfaces.Enums;
 
 namespace Gml.Models.Auth
 {

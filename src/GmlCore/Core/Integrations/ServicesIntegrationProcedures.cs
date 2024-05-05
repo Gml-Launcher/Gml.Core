@@ -7,6 +7,7 @@ using Gml.Core.Services.Storage;
 using Gml.Models.Auth;
 using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Auth;
+using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Integrations;
 
 namespace Gml.Core.Integrations
