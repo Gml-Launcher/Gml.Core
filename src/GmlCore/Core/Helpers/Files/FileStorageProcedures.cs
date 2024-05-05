@@ -51,8 +51,19 @@ namespace Gml.Core.Helpers.Files
                     localFileInfo = await _storage.GetAsync<LocalFileInfo>(fileHash).ConfigureAwait(false);
 
                     if (localFileInfo != null)
+                    {
+
                         localFileInfo.FullPath = Path.GetFullPath(string.Join("/", _launcherInfo.InstallationDirectory,
                             localFileInfo.Directory));
+
+                        using (var stream = new FileStream(localFileInfo.FullPath, FileMode.Open))
+                        {
+                            await stream.CopyToAsync(outputStream);
+                        }
+                    }
+
+
+
                     break;
 
                 case StorageType.S3:
