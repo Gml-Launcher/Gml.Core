@@ -59,12 +59,13 @@ namespace Gml.Core.Services.Storage
                 : default;
         }
 
-        public async Task SetUserAsync<T>(string login, T value)
+        public async Task SetUserAsync<T>(string login, string uuid, T value)
         {
             var serializedValue = JsonConvert.SerializeObject(value);
             var storageItem = new UserStorageItem
             {
                 Login = login,
+                Uuid = uuid,
                 TypeName = typeof(T).FullName,
                 Value = serializedValue
             };
@@ -75,6 +76,17 @@ namespace Gml.Core.Services.Storage
         public Task<int> SaveRecord<T>(T record)
         {
             return _database.InsertOrReplaceAsync(record);
+        }
+
+        public async Task<T?> GetUserByUuidAsync<T>(string uuid)
+        {
+            var storageItem = await _database.Table<UserStorageItem>()
+                .Where(si => si.Uuid == uuid)
+                .FirstOrDefaultAsync();
+
+            return storageItem != null
+                ? JsonConvert.DeserializeObject<T>(storageItem.Value)
+                : default;
         }
 
         private void InitializeTables()

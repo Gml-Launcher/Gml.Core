@@ -2,6 +2,7 @@
 using Gml.Core.Helpers.System;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
+using GmlCore.Interfaces.Storage;
 
 namespace Gml.Core.Launcher
 {
@@ -21,5 +22,6 @@ namespace Gml.Core.Launcher
         public string Name { get; }
         public string BaseDirectory { get; }
         public string InstallationDirectory { get; }
+        public IStorageSettings StorageSettings { get; set; }
     }
 }

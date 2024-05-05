@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Installer.Forge;
@@ -6,17 +5,15 @@ using CmlLib.Utils;
 using Gml;
 using Gml.Core.Launcher;
 using Gml.Core.User;
-using Gml.Models;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
-using OsType = Gml.Web.Api.Domains.System.OsType;
 
 namespace GmlCore.Tests;
 
 public class Tests
 {
-    private IGameProfile _testGameProfile = null!;
     private StartupOptions _options;
+    private IGameProfile _testGameProfile = null!;
 
     private GmlManager GmlManager { get; } = new(new GmlSettings("GamerVIILauncher"));
 
@@ -38,7 +35,8 @@ public class Tests
         };
     }
 
-    [Test, Order(0)]
+    [Test]
+    [Order(0)]
     public void InitializeTest()
     {
         Assert.Multiple(() =>
@@ -49,7 +47,8 @@ public class Tests
         });
     }
 
-    [Test, Order(1)]
+    [Test]
+    [Order(1)]
     public async Task CreateProfile()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
@@ -64,7 +63,8 @@ public class Tests
         });
     }
 
-    [Test, Order(2)]
+    [Test]
+    [Order(2)]
     public async Task AddProfile()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
@@ -78,7 +78,8 @@ public class Tests
         });
     }
 
-    [Test, Order(3)]
+    [Test]
+    [Order(3)]
     public async Task ValidateProfile()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
@@ -89,7 +90,8 @@ public class Tests
         Assert.Multiple(async () => { Assert.That(await _testGameProfile!.ValidateProfile(), Is.True); });
     }
 
-    [Test, Order(4)]
+    [Test]
+    [Order(4)]
     public async Task RemoveProfile()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
@@ -100,13 +102,15 @@ public class Tests
         await _testGameProfile.Remove();
     }
 
-    [Test, Order(5)]
+    [Test]
+    [Order(5)]
     public async Task ChangeLoaderTypeAndSaveProfiles()
     {
         await GmlManager.Profiles.SaveProfiles();
     }
 
-    [Test, Order(6)]
+    [Test]
+    [Order(6)]
     public async Task DownloadProfile()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
@@ -118,7 +122,8 @@ public class Tests
             await _testGameProfile.DownloadAsync(_options.OsType, _options.OsArch);
     }
 
-    [Test, Order(7)]
+    [Test]
+    [Order(7)]
     public async Task CheckIsFullLoaded()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
@@ -130,7 +135,8 @@ public class Tests
     }
 
 
-    [Test, Order(8)]
+    [Test]
+    [Order(8)]
     public async Task InstallForgeClient()
     {
         var forgeClient = await GmlManager.Profiles.GetProfile("Aztex")
@@ -153,7 +159,8 @@ public class Tests
     }
 
 
-    [Test, Order(9)]
+    [Test]
+    [Order(9)]
     public async Task ClientStartup()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
@@ -171,8 +178,8 @@ public class Tests
     }
 
 
-
-    [Test, Order(999)]
+    [Test]
+    [Order(999)]
     public async Task CheckInstallationFromOriginalCmlLib()
     {
         var path = new MinecraftPath();
@@ -185,7 +192,7 @@ public class Tests
         var launchOption = new MLaunchOption
         {
             MaximumRamMb = 1024,
-            Session = MSession.GetOfflineSession("TaiogStudio"),
+            Session = MSession.GetOfflineSession("TaiogStudio")
         };
 
         var process = await launcher.CreateProcessAsync(versionName, launchOption);
@@ -201,7 +208,6 @@ public class Tests
         // var myProcess = await _testGameProfile.CreateProcess(_options, User.Empty);
         //
         // Console.WriteLine();
-
 
 
         // process.Start();
@@ -233,6 +239,4 @@ public class Tests
         // processUtil.StartWithEvents();
         // await processUtil.WaitForExitTaskAsync();
     }
-
-
 }

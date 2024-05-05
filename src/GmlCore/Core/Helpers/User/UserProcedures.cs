@@ -32,9 +32,14 @@ namespace Gml.Core.Helpers.User
             authUser.Uuid = UsernameToUuid(login);
             authUser.ExpiredDate = DateTime.Now + TimeSpan.FromDays(30);
 
-            await _storage.SetUserAsync(login, authUser);
+            await _storage.SetUserAsync(login, authUser.Uuid, authUser);
 
             return authUser;
+        }
+
+        public async Task<IUser?> GetUserByUuid(string uuid)
+        {
+            return await _storage.GetUserByUuidAsync<AuthUser>(uuid);
         }
 
         private string GenerateAccessToken()

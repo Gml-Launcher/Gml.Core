@@ -5,7 +5,6 @@ using Gml.Core.Helpers.User;
 using Gml.Core.Integrations;
 using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
-using Gml.Core.StateMachine;
 using Gml.Models;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Integrations;
@@ -21,7 +20,7 @@ namespace Gml
             LauncherInfo = new LauncherInfo(settings);
             Storage = new SqliteStorageService(settings);
             GameLoader = new GameDownloaderProcedures(LauncherInfo, Storage, GameProfile.Empty);
-            Profiles = new ProfileProcedures(LauncherInfo, Storage);
+            Profiles = new ProfileProcedures(LauncherInfo, Storage, this);
             Files = new FileStorageProcedures(LauncherInfo, Storage);
             Integrations = new ServicesIntegrationProcedures(Storage);
             Users = new UserProcedures(Storage);
@@ -29,8 +28,6 @@ namespace Gml
 
         public IGameDownloaderProcedures GameLoader { get; }
         public IStorageService Storage { get; }
-
-        internal ProfileLoaderStateMachine ProfileLoaderState { get; }
         public ILauncherInfo LauncherInfo { get; }
         public IProfileProcedures Profiles { get; }
         public IFileStorageProcedures Files { get; }

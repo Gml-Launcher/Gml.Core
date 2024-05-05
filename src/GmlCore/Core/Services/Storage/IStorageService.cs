@@ -25,7 +25,6 @@ namespace Gml.Core.Services.Storage
         Task<T?> GetAsync<T>(string key);
 
         Task<T?> GetUserAsync<T>(string login);
-        Task SetUserAsync<T>(string login, T value);
 
         /// <summary>
         ///     Saves a record in local storage asynchronously.
@@ -34,5 +33,8 @@ namespace Gml.Core.Services.Storage
         /// <param name="record">The record to store.</param>
         /// <returns>An asynchronous operation that yields the number of records saved.</returns>
         Task<int> SaveRecord<T>(T record);
+
+        Task<T?> GetUserByUuidAsync<T>(string uuid);
+        Task SetUserAsync<T>(string login, string uuid, T value);
     }
 }
