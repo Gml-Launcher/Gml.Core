@@ -2,7 +2,6 @@ using Gml.Web.Api.Domains.Storage;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Storage;
-using NotImplementedException = System.NotImplementedException;
 
 namespace Gml.Core.Launcher
 {
