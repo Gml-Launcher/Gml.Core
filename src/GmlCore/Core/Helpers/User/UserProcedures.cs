@@ -47,11 +47,35 @@ namespace Gml.Core.Helpers.User
             return await _storage.GetUserByNameAsync<AuthUser>(userName);
         }
 
-        public async Task<bool> ValidateUser(string uuid, string accessToken)
+        public async Task<bool> ValidateUser(string userUuid, string serverUuid, string accessToken)
         {
-            var user = await GetUserByUuid(Guid.Parse(uuid).ToString().ToUpper());
+            var user = await GetUserByUuid(Guid.Parse(userUuid).ToString().ToUpper());
 
-            return user is not null && user.AccessToken.StartsWith(accessToken);
+            if (user is null)
+            {
+                return false;
+            }
+
+            user.ServerUuid = serverUuid;
+            user.ServerExpiredDate = DateTime.Now.AddMinutes(1);
+
+            await _storage.SetUserAsync(user.Name, user.Uuid, user);
+
+            return user.AccessToken.StartsWith(accessToken);
+        }
+
+        public async Task<bool> CanJoinToServer(IUser user, string serverId)
+        {
+            var isSuccess = user.ServerUuid == serverId && DateTime.Now <= user.ServerExpiredDate;
+
+            if (isSuccess)
+            {
+                user.ServerExpiredDate = DateTime.MinValue;
+                user.ServerUuid = string.Empty;
+                await _storage.SetUserAsync(user.Name, user.Uuid, user);
+            }
+
+            return isSuccess;
         }
 
         private string GenerateAccessToken()

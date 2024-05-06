@@ -9,5 +9,7 @@ namespace GmlCore.Interfaces.User
         string Uuid { get; set; }
         public DateTime ExpiredDate { get; set; }
         public string TextureUrl { get; set; }
+        public string ServerUuid { get; set; }
+        public DateTime ServerExpiredDate { get; set; }
     }
 }
