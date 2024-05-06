@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using GmlCore.Interfaces.User;
 
 namespace Gml.Core.Services.Storage
 {
@@ -34,6 +35,7 @@ namespace Gml.Core.Services.Storage
         /// <returns>An asynchronous operation that yields the number of records saved.</returns>
         Task<int> SaveRecord<T>(T record);
 
+        Task<T?> GetUserByNameAsync<T>(string userName);
         Task<T?> GetUserByUuidAsync<T>(string uuid);
         Task SetUserAsync<T>(string login, string uuid, T value);
     }

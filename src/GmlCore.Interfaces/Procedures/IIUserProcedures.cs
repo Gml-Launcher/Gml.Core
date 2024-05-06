@@ -7,5 +7,7 @@ namespace GmlCore.Interfaces.Procedures
     {
         Task<IUser> GetAuthData(string login, string password, string device);
         Task<IUser?> GetUserByUuid(string uuid);
+        Task<IUser?> GetUserByName(string userName);
+        Task<bool> ValidateUser(string uuid, string accessToken);
     }
 }
