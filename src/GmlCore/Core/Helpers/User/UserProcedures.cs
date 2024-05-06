@@ -42,6 +42,18 @@ namespace Gml.Core.Helpers.User
             return await _storage.GetUserByUuidAsync<AuthUser>(uuid);
         }
 
+        public async Task<IUser?> GetUserByName(string userName)
+        {
+            return await _storage.GetUserByNameAsync<AuthUser>(userName);
+        }
+
+        public async Task<bool> ValidateUser(string uuid, string accessToken)
+        {
+            var user = await GetUserByUuid(Guid.Parse(uuid).ToString().ToUpper());
+
+            return user is not null && user.AccessToken.StartsWith(accessToken);
+        }
+
         private string GenerateAccessToken()
         {
             var timestamp = DateTime.Now.Ticks.ToString();

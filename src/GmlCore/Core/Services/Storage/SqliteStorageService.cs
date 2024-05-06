@@ -78,6 +78,17 @@ namespace Gml.Core.Services.Storage
             return _database.InsertOrReplaceAsync(record);
         }
 
+        public async Task<T?> GetUserByNameAsync<T>(string userName)
+        {
+            var storageItem = await _database.Table<UserStorageItem>()
+                .Where(si => si.Login == userName)
+                .FirstOrDefaultAsync();
+
+            return storageItem != null
+                ? JsonConvert.DeserializeObject<T>(storageItem.Value)
+                : default;
+        }
+
         public async Task<T?> GetUserByUuidAsync<T>(string uuid)
         {
             var storageItem = await _database.Table<UserStorageItem>()
