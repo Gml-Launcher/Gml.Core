@@ -437,8 +437,7 @@ namespace Gml.Core.Helpers.Profiles
                                 .WithBucket(bucketName)
                                 .WithObject(file.Hash)
                                 .WithTagging(new Tagging(tags, true))
-                                .WithFileName(
-                                    Path.GetFullPath($"{_launcherInfo.InstallationDirectory}\\{file.Directory}"));
+                                .WithFileName(NormalizePath(_launcherInfo.InstallationDirectory, file.Directory));
 
                             await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
                         }
@@ -464,6 +463,21 @@ namespace Gml.Core.Helpers.Profiles
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private string NormalizePath(string directory, string fileDirectory)
+        {
+            directory = directory
+                .Replace('\\', Path.DirectorySeparatorChar)
+                .Replace('/', Path.DirectorySeparatorChar)
+                .TrimStart(Path.DirectorySeparatorChar);
+
+            fileDirectory = fileDirectory
+                .Replace('\\', Path.DirectorySeparatorChar)
+                .Replace('/', Path.DirectorySeparatorChar)
+                .TrimStart(Path.DirectorySeparatorChar);
+
+            return Path.Combine(directory, fileDirectory);
         }
 
         public async Task AddFileToWhiteList(IGameProfile profile, IFileInfo file)

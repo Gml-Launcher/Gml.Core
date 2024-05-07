@@ -14,7 +14,6 @@ namespace Gml.Core.Services.Storage
         private readonly string _databasePath;
         private readonly IGmlSettings _settings;
 
-
         public SqliteStorageService(IGmlSettings settings)
         {
             _settings = settings;
