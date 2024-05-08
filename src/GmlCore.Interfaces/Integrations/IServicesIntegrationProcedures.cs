@@ -19,5 +19,7 @@ namespace GmlCore.Interfaces.Integrations
         Task SetCloakServiceAsync(string url);
         Task<string?> GetSentryService();
         Task SetSentryService(string url);
+        Task UpdateDiscordRpc(IDiscordRpcClient client);
+        Task<IDiscordRpcClient?> GetDiscordRpc();
     }
 }
