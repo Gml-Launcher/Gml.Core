@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CmlLib.Core.Installer.FabricMC;
 using Gml.Core.Constants;
 using Gml.Core.Services.Storage;
 using Gml.Models.Auth;
+using Gml.Web.Api.Domains.Integrations;
 using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Auth;
 using GmlCore.Interfaces.Enums;
@@ -98,6 +100,18 @@ namespace Gml.Core.Integrations
         public Task SetSentryService(string url)
         {
             return _storage.SetAsync(StorageConstants.SentrySdnUrl, url);
+        }
+
+        public Task UpdateDiscordRpc(IDiscordRpcClient client)
+        {
+            return _storage.SetAsync(StorageConstants.DiscordRpcClient, client);
+        }
+
+        public async Task<IDiscordRpcClient?> GetDiscordRpc()
+        {
+            return await _storage
+                .GetAsync<DiscordRpcClient>(StorageConstants.DiscordRpcClient)
+                .ConfigureAwait(false);
         }
     }
 }
