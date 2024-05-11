@@ -139,7 +139,7 @@ namespace Gml.Core.Helpers.Profiles
 
                 if (info is GameProfileInfo profileInfo)
                 {
-                    var clientPath = _launcherInfo.InstallationDirectory + $"\\clients\\{profileInfo.ProfileName}";
+                    var clientPath = Path.Combine(_launcherInfo.InstallationDirectory, "clients", profileInfo.ProfileName);
 
                     if (Directory.Exists(clientPath)) Directory.Delete(clientPath, true);
                 }
