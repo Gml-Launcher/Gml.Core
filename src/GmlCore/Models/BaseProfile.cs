@@ -44,6 +44,7 @@ namespace Gml.Models
         public GameLoader Loader { get; set; }
         public string ClientPath { get; set; }
         public string IconBase64 { get; set; }
+        public string BackgroundImageKey { get; set; }
         public string Description { get; set; }
 
         [JsonConverter(typeof(LocalFileInfoConverter))]

@@ -49,8 +49,10 @@ namespace Gml.Core.Helpers.Profiles
         private List<IGameProfile> _gameProfiles = new();
 
 
-        public ProfileProcedures(ILauncherInfo launcherInfo,
-            IStorageService storageService, GmlManager gmlManager)
+        public ProfileProcedures(
+            ILauncherInfo launcherInfo,
+            IStorageService storageService,
+            GmlManager gmlManager)
         {
             _launcherInfo = launcherInfo;
             _storageService = storageService;
@@ -139,7 +141,8 @@ namespace Gml.Core.Helpers.Profiles
 
                 if (info is GameProfileInfo profileInfo)
                 {
-                    var clientPath = _launcherInfo.InstallationDirectory + $"\\clients\\{profileInfo.ProfileName}";
+                    var clientPath = Path.Combine(_launcherInfo.InstallationDirectory, "clients",
+                        profileInfo.ProfileName);
 
                     if (Directory.Exists(clientPath)) Directory.Delete(clientPath, true);
                 }
@@ -502,8 +505,11 @@ namespace Gml.Core.Helpers.Profiles
             }
         }
 
-        public async Task UpdateProfile(IGameProfile profile, string newProfileName, string newIcon,
-            string newDescription)
+        public async Task UpdateProfile(IGameProfile profile,
+            string newProfileName,
+            Stream? icon,
+            Stream? backgroundImage,
+            string updateDtoDescription)
         {
             var directory =
                 new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "clients", profile.Name));
@@ -515,8 +521,34 @@ namespace Gml.Core.Helpers.Profiles
             if (newDirectory.Exists && profile.Name != newProfileName)
                 return;
 
+            var iconBase64 = icon is null
+                ? profile.IconBase64
+                : await ConvertStreamToBase64Async(icon);
+
+            var backgroundKey = backgroundImage is null
+                ? profile.BackgroundImageKey
+                : await _gmlManager.Files.LoadFile(backgroundImage);
+
+            await UpdateProfile(profile, newProfileName, iconBase64, backgroundKey, updateDtoDescription, needRenameFolder, directory, newDirectory);
+        }
+
+        private async Task<string> ConvertStreamToBase64Async(Stream stream)
+        {
+            using(var memoryStream = new MemoryStream())
+            {
+                await stream.CopyToAsync(memoryStream);
+                var fileBytes = memoryStream.ToArray();
+                return Convert.ToBase64String(fileBytes);
+            }
+        }
+
+        private async Task UpdateProfile(IGameProfile profile, string newProfileName, string newIcon,
+            string backgroundImageKey,
+            string newDescription, bool needRenameFolder, DirectoryInfo directory, DirectoryInfo newDirectory)
+        {
             profile.Name = newProfileName;
             profile.IconBase64 = newIcon;
+            profile.BackgroundImageKey = backgroundImageKey;
             profile.Description = newDescription;
 
             profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile);

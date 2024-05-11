@@ -22,6 +22,7 @@ namespace GmlCore.Interfaces.Launcher
         GameLoader Loader { get; }
         string ClientPath { get; set; }
         string IconBase64 { get; set; }
+        string BackgroundImageKey { get; set; }
         string Description { get; set; }
         List<IFileInfo>? FileWhiteList { get; set; }
         DateTimeOffset CreateDate { get; set; }
