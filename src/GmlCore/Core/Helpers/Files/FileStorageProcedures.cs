@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using CmlLib.Core.Java;
 using Gml.Core.Services.Storage;
 using Gml.Core.System;
 using GmlCore.Interfaces.Enums;
@@ -11,11 +8,8 @@ using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.System;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
 using Minio;
-using Minio.DataModel;
 using Minio.DataModel.Args;
-using Minio.DataModel.Tags;
 
 namespace Gml.Core.Helpers.Files
 {
@@ -81,6 +75,7 @@ namespace Gml.Core.Helpers.Files
 
                     try
                     {
+                        //ToDo: Rewrite
                         GetObjectTagsArgs statObjectArgs = new GetObjectTagsArgs()
                             .WithBucket("profiles")
                             .WithObject(fileHash);
@@ -95,6 +90,16 @@ namespace Gml.Core.Helpers.Files
                         if (metadata is not null)
                         {
                             headers.Add("Content-Disposition", $"attachment; filename={metadata.Tags["file-name"]}");
+                            await MinioClient.GetObjectAsync(getObjectArgs);
+                        }
+                        else
+                        {
+                            getObjectArgs = new GetObjectArgs()
+                                .WithBucket("profile-backgrounds")
+                                .WithObject(fileHash)
+                                .WithCallbackStream(async (stream, token) => await stream.CopyToAsync(outputStream, token));
+
+                            headers.Add("Content-Disposition", $"attachment; filename={fileHash}");
                             await MinioClient.GetObjectAsync(getObjectArgs);
                         }
 
@@ -148,8 +153,10 @@ namespace Gml.Core.Helpers.Files
                     }
 
                     var putObjectArgs = new PutObjectArgs()
-                        .WithBucket("launcher")
+                        .WithBucket(bucketName)
+                        .WithContentType("application/octet-stream")
                         .WithObject(fileName)
+                        .WithObjectSize(fileStream.Length)
                         .WithStreamData(fileStream);
 
                     await MinioClient.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
