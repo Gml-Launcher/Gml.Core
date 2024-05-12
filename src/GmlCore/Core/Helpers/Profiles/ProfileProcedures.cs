@@ -374,7 +374,7 @@ namespace Gml.Core.Helpers.Profiles
             var files = await GetProfileFiles(profile);
 
             var fileInfos = files as IFileInfo[] ?? files.ToArray();
-            var totalFiles = fileInfos.Count();
+            var totalFiles = fileInfos.Length;
             var processed = 0;
 
             switch (_launcherInfo.StorageSettings.StorageType)
@@ -435,14 +435,19 @@ namespace Gml.Core.Helpers.Profiles
                         }
                         catch (Minio.Exceptions.ObjectNotFoundException)
                         {
-                            // Если объект не найден, загружаем его
-                            var putObjectArgs = new PutObjectArgs()
-                                .WithBucket(bucketName)
-                                .WithObject(file.Hash)
-                                .WithTagging(new Tagging(tags, true))
-                                .WithFileName(NormalizePath(_launcherInfo.InstallationDirectory, file.Directory));
+                            var filePath = NormalizePath(_launcherInfo.InstallationDirectory, file.Directory);
 
-                            await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                            if (File.Exists(filePath))
+                            {
+                                // Если объект не найден, загружаем его
+                                var putObjectArgs = new PutObjectArgs()
+                                    .WithBucket(bucketName)
+                                    .WithObject(file.Hash)
+                                    .WithTagging(new Tagging(tags, true))
+                                    .WithFileName(filePath);
+
+                                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                            }
                         }
                         catch (Exception exception)
                         {
