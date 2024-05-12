@@ -482,8 +482,8 @@ namespace Gml.Core.Helpers.Profiles
 
             fileDirectory = fileDirectory
                 .Replace('\\', Path.DirectorySeparatorChar)
-                .Replace('/', Path.DirectorySeparatorChar);
-                // .TrimStart(Path.DirectorySeparatorChar);
+                .Replace('/', Path.DirectorySeparatorChar)
+                .TrimStart(Path.DirectorySeparatorChar);
 
             return Path.Combine(directory, fileDirectory);
         }
