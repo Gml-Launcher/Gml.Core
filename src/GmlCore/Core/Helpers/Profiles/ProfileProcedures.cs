@@ -477,13 +477,13 @@ namespace Gml.Core.Helpers.Profiles
         {
             directory = directory
                 .Replace('\\', Path.DirectorySeparatorChar)
-                .Replace('/', Path.DirectorySeparatorChar)
-                .TrimStart(Path.DirectorySeparatorChar);
+                .Replace('/', Path.DirectorySeparatorChar);
+                // .TrimStart(Path.DirectorySeparatorChar);
 
             fileDirectory = fileDirectory
                 .Replace('\\', Path.DirectorySeparatorChar)
-                .Replace('/', Path.DirectorySeparatorChar)
-                .TrimStart(Path.DirectorySeparatorChar);
+                .Replace('/', Path.DirectorySeparatorChar);
+                // .TrimStart(Path.DirectorySeparatorChar);
 
             return Path.Combine(directory, fileDirectory);
         }
