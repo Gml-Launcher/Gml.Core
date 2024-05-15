@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\GmlCore\GmlCore.csproj"/>
+    <ProjectReference Include="..\..\src\Gml.Core\Gml.Core.csproj" />
   </ItemGroup>
 
 </Project>

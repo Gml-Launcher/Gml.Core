@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>Gml</RootNamespace>
-    <AssemblyName>GmlCore</AssemblyName>
     <Nullable>enable</Nullable>
     <LangVersion>9</LangVersion>
+    <PackageId>Gml.Core</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
