@@ -31,7 +31,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Gml.Core.Helpers.Profiles
 {
-    public class ProfileProcedures : IProfileProcedures, IProfileServersProcedures
+    public partial class ProfileProcedures : IProfileProcedures
     {
         public delegate void ProgressPackChanged(ProgressChangedEventArgs e);
 
@@ -73,6 +73,7 @@ namespace Gml.Core.Helpers.Profiles
                 throw new ProfileExistException(profile);
 
             profile.ProfileProcedures = this;
+            profile.ServerProcedures = this;
             profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile);
 
             if (profile.GameLoader is GameDownloaderProcedures gameLoader)
@@ -102,6 +103,7 @@ namespace Gml.Core.Helpers.Profiles
             var profile = new GameProfile(name, version, loader)
             {
                 ProfileProcedures = this,
+                ServerProcedures = this,
                 CreateDate = DateTimeOffset.Now,
                 Description = description,
                 IconBase64 = icon
@@ -652,6 +654,7 @@ namespace Gml.Core.Helpers.Profiles
             var gameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, gameProfile);
 
             gameProfile.ProfileProcedures = this;
+            gameProfile.ServerProcedures = this;
             gameProfile.GameLoader = gameLoader;
 
             gameProfile.LaunchVersion =

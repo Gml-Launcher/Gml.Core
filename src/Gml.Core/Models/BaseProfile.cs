@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Gml.Core.Helpers.Profiles;
 using Gml.Models.Converters;
 using Gml.Models.Enums;
 using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
+using GmlCore.Interfaces.Servers;
 using GmlCore.Interfaces.System;
 using GmlCore.Interfaces.User;
 using Newtonsoft.Json;
@@ -35,6 +37,7 @@ namespace Gml.Models
         internal NullableBool IsLoaded { get; set; }
 
         [JsonIgnore] public IProfileProcedures ProfileProcedures { get; set; }
+        [JsonIgnore] public IProfileServersProcedures ServerProcedures { get; set; }
 
         [JsonIgnore] public IGameDownloaderProcedures GameLoader { get; set; }
 
@@ -49,6 +52,8 @@ namespace Gml.Models
 
         [JsonConverter(typeof(LocalFileInfoConverter))]
         public List<IFileInfo>? FileWhiteList { get; set; }
+
+        public List<IProfileServer> Servers { get; set; } = new();
 
         public DateTimeOffset CreateDate { get; set; }
 
@@ -103,6 +108,11 @@ namespace Gml.Models
             CheckDispose();
 
             return ProfileProcedures.GetCacheProfile(this);
+        }
+
+        public Task<IProfileServer> AddMinecraftServer(string serverName, string address, int port)
+        {
+            return ServerProcedures.AddMinecraftServer(this, serverName, address, port);
         }
 
         public async Task<bool> CheckIsFullLoaded(IStartupOptions startupOptions)
