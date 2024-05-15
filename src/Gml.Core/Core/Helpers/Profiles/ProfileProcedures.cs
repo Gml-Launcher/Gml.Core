@@ -31,7 +31,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Gml.Core.Helpers.Profiles
 {
-    public class ProfileProcedures : IProfileProcedures
+    public class ProfileProcedures : IProfileProcedures, IProfileServersProcedures
     {
         public delegate void ProgressPackChanged(ProgressChangedEventArgs e);
 
