@@ -39,5 +39,7 @@ namespace GmlCore.Interfaces.Launcher
         Task<bool> CheckOsTypeLoaded(IStartupOptions startupOptions);
         Task<string[]> InstallAuthLib();
         Task<IGameProfileInfo?> GetCacheProfile();
+        void AddServer(IProfileServer server);
+        void RemoveServer(IProfileServer server);
     }
 }

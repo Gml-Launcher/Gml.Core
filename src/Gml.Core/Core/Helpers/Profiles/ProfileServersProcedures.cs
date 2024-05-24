@@ -40,10 +40,21 @@ public partial class ProfileProcedures : IProfileServersProcedures
             Port = port
         };
 
-        profile.Servers.Add(server);
+        profile.AddServer(server);
 
         await SaveProfiles();
 
         return server;
+    }
+
+    public void UpdateServerState(IProfileServer server)
+    {
+        if (server is MinecraftServer minecraftServer)
+        {
+            minecraftServer.Online = 10;
+            minecraftServer.MaxOnline = 1000;
+            minecraftServer.Version = "1.7.10";
+            minecraftServer.IsOnline = true;
+        }
     }
 }

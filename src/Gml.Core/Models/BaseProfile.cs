@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Gml.Core.Helpers.Profiles;
 using Gml.Models.Converters;
@@ -165,6 +168,16 @@ namespace Gml.Models
             }
 
             IsDisposed = true;
+        }
+
+        public virtual void AddServer(IProfileServer server)
+        {
+            Servers.Add(server);
+        }
+
+        public virtual void RemoveServer(IProfileServer server)
+        {
+            Servers.Remove(server);
         }
     }
 }
