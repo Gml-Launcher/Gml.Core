@@ -24,12 +24,15 @@ namespace Gml
             Files = new FileStorageProcedures(LauncherInfo, Storage);
             Integrations = new ServicesIntegrationProcedures(Storage);
             Users = new UserProcedures(Storage);
+
+            Servers = (IProfileServersProcedures)Profiles;
         }
 
         public IGameDownloaderProcedures GameLoader { get; }
         public IStorageService Storage { get; }
         public ILauncherInfo LauncherInfo { get; }
         public IProfileProcedures Profiles { get; }
+        public IProfileServersProcedures Servers { get; }
         public IFileStorageProcedures Files { get; }
         public IServicesIntegrationProcedures Integrations { get; }
         public IUserProcedures Users { get; }
