@@ -3,6 +3,8 @@ using Gml.Core.Launcher;
 using Gml.Core.User;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
+using Pingo;
+using Pingo.Status;
 
 namespace GmlCore.Tests;
 
@@ -121,6 +123,102 @@ public class Tests
                            ?? throw new Exception("Failed to create profile instance");
 
         await _testGameProfile.Remove();
+    }
+
+    [Test]
+    [Order(41)]
+    public async Task ServerPing1_20_6()
+    {
+        // 1.20.6
+        var options = new MinecraftPingOptions
+        {
+            Address = "95.216.62.163",
+            Port = 25597
+        };
+
+        var status = await Minecraft.PingAsync(options) as JavaStatus;
+
+        Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
+    }
+
+    [Test]
+    [Order(42)]
+    public async Task ServerPing1_7_10()
+    {
+        // 1.7.10
+        var options = new MinecraftPingOptions
+        {
+            Address = "95.217.100.49",
+            Port = 25606
+        };
+
+        var status = await Minecraft.PingAsync(options) as JavaStatus;
+
+        Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
+    }
+
+    [Test]
+    [Order(43)]
+    public async Task ServerPing1_5_2()
+    {
+        // 1.5.2
+        var options = new MinecraftPingOptions
+        {
+            Address = "45.93.200.16",
+            Port = 25573
+        };
+
+        var status = await Minecraft.PingAsync(options) as JavaStatus;
+
+        Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
+    }
+
+    [Test]
+    [Order(44)]
+    public async Task ServerPing1_12_2()
+    {
+        // 1.12.2
+        var options = new MinecraftPingOptions
+        {
+            Address = "82.146.60.132",
+            Port = 25565
+        };
+
+        var status = await Minecraft.PingAsync(options) as JavaStatus;
+
+        Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
+    }
+
+    [Test]
+    [Order(45)]
+    public async Task ServerPing1_16_5()
+    {
+        // 1.16.5
+        var options = new MinecraftPingOptions
+        {
+            Address = "65.108.21.255",
+            Port = 25738
+        };
+
+        var status = await Minecraft.PingAsync(options) as JavaStatus;
+
+        Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
+    }
+
+    [Test]
+    [Order(46)]
+    public async Task ServerPing1_20_1()
+    {
+        // 1.20.1
+        var options = new MinecraftPingOptions
+        {
+            Address = "95.216.92.82",
+            Port = 25654
+        };
+
+        var status = await Minecraft.PingAsync(options) as JavaStatus;
+
+        Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
     }
 
     [Test]

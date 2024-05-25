@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Gml.Core\Gml.Core.csproj" />
+    <ProjectReference Include="..\..\src\Pingo\Pingo\Pingo.csproj" />
   </ItemGroup>
 
 </Project>
