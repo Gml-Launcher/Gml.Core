@@ -37,7 +37,8 @@ public partial class ProfileProcedures : IProfileServersProcedures
         {
             Address = address,
             Name = serverName,
-            Port = port
+            Port = port,
+            ServerProcedures = this
         };
 
         profile.AddServer(server);
@@ -47,14 +48,16 @@ public partial class ProfileProcedures : IProfileServersProcedures
         return server;
     }
 
-    public void UpdateServerState(IProfileServer server)
+    public Task UpdateServerState(IProfileServer server)
     {
         if (server is MinecraftServer minecraftServer)
         {
-            minecraftServer.Online = 10;
+            minecraftServer.Online = 0;
             minecraftServer.MaxOnline = 1000;
             minecraftServer.Version = "1.7.10";
             minecraftServer.IsOnline = true;
         }
+
+        return Task.CompletedTask;
     }
 }

@@ -1,4 +1,6 @@
+using System;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.Servers;
 
@@ -17,8 +19,18 @@ public class MinecraftServer : IProfileServer
     public bool IsOnline { get; set; }
     public int Online { get; set; }
     public int MaxOnline { get; set; }
-    public void UpdateStatus()
+    public Task UpdateStatusAsync()
     {
-        ServerProcedures.UpdateServerState(this);
+        try
+        {
+            //ToDo: remove try/catch
+            return ServerProcedures.UpdateServerState(this);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+
+        return Task.CompletedTask;
     }
 }

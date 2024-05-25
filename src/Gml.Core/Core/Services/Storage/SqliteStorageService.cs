@@ -1,9 +1,10 @@
 ﻿using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
-using Newtonsoft.Json;
 using SQLite;
+using JsonConverter = System.Text.Json.Serialization.JsonConverter;
 
 namespace Gml.Core.Services.Storage
 {
@@ -25,7 +26,7 @@ namespace Gml.Core.Services.Storage
 
         public async Task SetAsync<T>(string key, T? value)
         {
-            var serializedValue = JsonConvert.SerializeObject(value);
+            var serializedValue = JsonSerializer.Serialize(value);
             var storageItem = new StorageItem
             {
                 Key = key,
@@ -43,7 +44,7 @@ namespace Gml.Core.Services.Storage
                 .FirstOrDefaultAsync();
 
             return storageItem != null
-                ? JsonConvert.DeserializeObject<T>(storageItem.Value)
+                ?  JsonSerializer.Deserialize<T>(storageItem.Value)
                 : default;
         }
 
@@ -54,13 +55,13 @@ namespace Gml.Core.Services.Storage
                 .FirstOrDefaultAsync();
 
             return storageItem != null
-                ? JsonConvert.DeserializeObject<T>(storageItem.Value)
+                ? JsonSerializer.Deserialize<T>(storageItem.Value)
                 : default;
         }
 
         public async Task SetUserAsync<T>(string login, string uuid, T value)
         {
-            var serializedValue = JsonConvert.SerializeObject(value);
+            var serializedValue = JsonSerializer.Serialize(value);
             var storageItem = new UserStorageItem
             {
                 Login = login,
@@ -84,7 +85,7 @@ namespace Gml.Core.Services.Storage
                 .FirstOrDefaultAsync();
 
             return storageItem != null
-                ? JsonConvert.DeserializeObject<T>(storageItem.Value)
+                ? JsonSerializer.Deserialize<T>(storageItem.Value)
                 : default;
         }
 
@@ -95,7 +96,7 @@ namespace Gml.Core.Services.Storage
                 .FirstOrDefaultAsync();
 
             return storageItem != null
-                ? JsonConvert.DeserializeObject<T>(storageItem.Value)
+                ? JsonSerializer.Deserialize<T>(storageItem.Value)
                 : default;
         }
 

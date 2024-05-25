@@ -12,6 +12,7 @@ public class Tests
     private IGameProfile _testGameProfile = null!;
 
     private GmlManager GmlManager { get; } = new(new GmlSettings("GamerVIILauncher"));
+    private const string ServerName = "Hitech #1";
 
     [SetUp]
     public async Task Setup()
@@ -88,6 +89,30 @@ public class Tests
 
     [Test]
     [Order(4)]
+    public async Task CreateServer()
+    {
+        _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech") ?? throw new Exception("Failed to create profile instance");
+
+        var server = await GmlManager.Servers.AddMinecraftServer(_testGameProfile, ServerName, "localhost", 25565);
+
+        Assert.That(server, Is.Not.Null);
+    }
+
+    [Test]
+    [Order(5)]
+    public async Task GetOnline()
+    {
+        _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech") ?? throw new Exception("Failed to create profile instance");
+
+        var server = _testGameProfile.Servers.First(c => c.Name == ServerName);
+
+        await server.UpdateStatusAsync();
+
+        Assert.That(server, Is.Not.Null);
+    }
+
+    [Test]
+    [Order(40)]
     public async Task RemoveProfile()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
@@ -99,14 +124,14 @@ public class Tests
     }
 
     [Test]
-    [Order(5)]
+    [Order(50)]
     public async Task ChangeLoaderTypeAndSaveProfiles()
     {
         await GmlManager.Profiles.SaveProfiles();
     }
 
     [Test]
-    [Order(6)]
+    [Order(60)]
     public async Task DownloadProfile()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
@@ -119,7 +144,7 @@ public class Tests
     }
 
     [Test]
-    [Order(7)]
+    [Order(70)]
     public async Task CheckIsFullLoaded()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
@@ -132,7 +157,7 @@ public class Tests
 
 
     [Test]
-    [Order(8)]
+    [Order(80)]
     public async Task InstallForgeClient()
     {
         var forgeClient = await GmlManager.Profiles.GetProfile("Aztex")
@@ -156,7 +181,7 @@ public class Tests
 
 
     [Test]
-    [Order(9)]
+    [Order(90)]
     public async Task ClientStartup()
     {
         // _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
@@ -175,7 +200,7 @@ public class Tests
 
 
     [Test]
-    [Order(999)]
+    [Order(900)]
     public async Task CheckInstallationFromOriginalCmlLib()
     {
         // var path = new MinecraftPath();
