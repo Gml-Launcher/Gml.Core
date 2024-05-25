@@ -1,6 +1,6 @@
+using System.Text.Json.Serialization;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.Servers;
-using Newtonsoft.Json;
 
 namespace Gml.Models.Servers;
 

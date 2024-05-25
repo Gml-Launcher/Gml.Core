@@ -1,4 +1,4 @@
-using Gml.Web.Api.Domains.Storage;
+using Gml.Models.Storage;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Storage;

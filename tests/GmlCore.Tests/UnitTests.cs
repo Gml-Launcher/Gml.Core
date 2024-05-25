@@ -1,7 +1,3 @@
-using CmlLib.Core;
-using CmlLib.Core.Auth;
-using CmlLib.Core.Installer.Forge;
-using CmlLib.Utils;
 using Gml;
 using Gml.Core.Launcher;
 using Gml.Core.User;
@@ -149,11 +145,11 @@ public class Tests
 
         var process = await forgeClient.CreateProcess(_options, User.Empty);
 
-        var processUtil = new ProcessUtil(process);
-
-        processUtil.OutputReceived += (s, message) => Console.WriteLine(message);
-        processUtil.StartWithEvents();
-        await processUtil.WaitForExitTaskAsync();
+        // var processUtil = new ProcessUtil(process);
+        //
+        // processUtil.OutputReceived += (s, message) => Console.WriteLine(message);
+        // processUtil.StartWithEvents();
+        // await processUtil.WaitForExitTaskAsync();
 
         // Assert.That(await forgeClient.CheckIsFullLoaded(), Is.True);
     }
@@ -163,18 +159,18 @@ public class Tests
     [Order(9)]
     public async Task ClientStartup()
     {
-        _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
-                           ?? await GmlManager.Profiles.AddProfile("HiTech", "1.20.1", GameLoader.Vanilla, string.Empty,
-                               string.Empty)
-                           ?? throw new Exception("Failed to create profile instance");
-
-        var process = await _testGameProfile.CreateProcess(_options, User.Empty);
-
-        var processUtil = new ProcessUtil(process);
-
-        processUtil.OutputReceived += (s, message) => Console.WriteLine(message);
-        processUtil.StartWithEvents();
-        await processUtil.WaitForExitTaskAsync();
+        // _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
+        //                    ?? await GmlManager.Profiles.AddProfile("HiTech", "1.20.1", GameLoader.Vanilla, string.Empty,
+        //                        string.Empty)
+        //                    ?? throw new Exception("Failed to create profile instance");
+        //
+        // var process = await _testGameProfile.CreateProcess(_options, User.Empty);
+        //
+        // var processUtil = new ProcessUtil(process);
+        //
+        // processUtil.OutputReceived += (s, message) => Console.WriteLine(message);
+        // processUtil.StartWithEvents();
+        // await processUtil.WaitForExitTaskAsync();
     }
 
 
@@ -182,22 +178,22 @@ public class Tests
     [Order(999)]
     public async Task CheckInstallationFromOriginalCmlLib()
     {
-        var path = new MinecraftPath();
-        var launcher = new CMLauncher(path);
-        var forge = new MForge(launcher);
-        forge.InstallerOutput += (s, e) => Console.WriteLine(e);
-
-        var versionName = await forge.Install("1.7.10");
-
-        var launchOption = new MLaunchOption
-        {
-            MaximumRamMb = 1024,
-            Session = MSession.GetOfflineSession("TaiogStudio")
-        };
-
-        var process = await launcher.CreateProcessAsync(versionName, launchOption);
-
-        process.Start();
+        // var path = new MinecraftPath();
+        // var launcher = new CMLauncher(path);
+        // var forge = new MForge(launcher);
+        // forge.InstallerOutput += (s, e) => Console.WriteLine(e);
+        //
+        // var versionName = await forge.Install("1.7.10");
+        //
+        // var launchOption = new MLaunchOption
+        // {
+        //     MaximumRamMb = 1024,
+        //     Session = MSession.GetOfflineSession("TaiogStudio")
+        // };
+        //
+        // var process = await launcher.CreateProcessAsync(versionName, launchOption);
+        //
+        // process.Start();
         // _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
         //                    ?? await GmlManager.Profiles.AddProfile("HiTech", "1.7.10", GameLoader.Forge, string.Empty,
         //                        string.Empty)

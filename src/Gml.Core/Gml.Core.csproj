@@ -18,9 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Gml.Common\Gml.Common\Gml.Common.csproj"/>
-    <ProjectReference Include="..\..\..\Gml.Web.Api.Domains\Gml.Web.Api.Domains.csproj" />
     <ProjectReference Include="..\CmlLib.Core.Installer.Forge\CmlLib.Core.Installer.Forge\CmlLib.Core.Installer.Forge.csproj"/>
+    <ProjectReference Include="..\Gml.Common\Gml.Common\Gml.Common.csproj" />
     <ProjectReference Include="..\Gml.Core.Interfaces\Gml.Core.Interfaces.csproj" />
   </ItemGroup>
 
