@@ -97,6 +97,7 @@ namespace Gml.Core.Helpers.Profiles
             {
                 ProfileProcedures = this,
                 ServerProcedures = this,
+                IsEnabled = true,
                 CreateDate = DateTimeOffset.Now,
                 Description = description,
                 IconBase64 = icon
@@ -507,7 +508,8 @@ namespace Gml.Core.Helpers.Profiles
             string newProfileName,
             Stream? icon,
             Stream? backgroundImage,
-            string updateDtoDescription)
+            string updateDtoDescription,
+            bool isEnabled)
         {
             var directory =
                 new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "clients", profile.Name));
@@ -527,7 +529,7 @@ namespace Gml.Core.Helpers.Profiles
                 ? profile.BackgroundImageKey
                 : await _gmlManager.Files.LoadFile(backgroundImage);
 
-            await UpdateProfile(profile, newProfileName, iconBase64, backgroundKey, updateDtoDescription, needRenameFolder, directory, newDirectory);
+            await UpdateProfile(profile, newProfileName, iconBase64, backgroundKey, updateDtoDescription, needRenameFolder, directory, newDirectory, isEnabled);
         }
 
         private async Task<string> ConvertStreamToBase64Async(Stream stream)
@@ -542,12 +544,14 @@ namespace Gml.Core.Helpers.Profiles
 
         private async Task UpdateProfile(IGameProfile profile, string newProfileName, string newIcon,
             string backgroundImageKey,
-            string newDescription, bool needRenameFolder, DirectoryInfo directory, DirectoryInfo newDirectory)
+            string newDescription, bool needRenameFolder, DirectoryInfo directory, DirectoryInfo newDirectory,
+            bool isEnabled)
         {
             profile.Name = newProfileName;
             profile.IconBase64 = newIcon;
             profile.BackgroundImageKey = backgroundImageKey;
             profile.Description = newDescription;
+            profile.IsEnabled = isEnabled;
 
             profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile);
 
