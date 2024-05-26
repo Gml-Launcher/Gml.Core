@@ -34,20 +34,17 @@ namespace Gml.Core.Helpers.Profiles
     public partial class ProfileProcedures : IProfileProcedures
     {
         public delegate void ProgressPackChanged(ProgressChangedEventArgs e);
+        public event IProfileProcedures.ProgressPackChanged? PackChanged;
 
         private const string AuthLibUrl =
             "https://github.com/yushijinhun/authlib-injector/releases/download/v1.2.4/authlib-injector-1.2.4.jar";
 
 
         private readonly ILauncherInfo _launcherInfo;
-
-
         private readonly IStorageService _storageService;
         private readonly GmlManager _gmlManager;
-
-
         private List<IGameProfile> _gameProfiles = new();
-
+        public bool CanUpdateAndRestore => !ProfileLoaderStateMachine.IsLoading;
 
         public ProfileProcedures(
             ILauncherInfo launcherInfo,
@@ -58,9 +55,6 @@ namespace Gml.Core.Helpers.Profiles
             _storageService = storageService;
             _gmlManager = gmlManager;
         }
-
-        public event IProfileProcedures.ProgressPackChanged? PackChanged;
-        public bool CanUpdateAndRestore => !ProfileLoaderStateMachine.IsLoading;
 
         public async Task AddProfile(IGameProfile? profile)
         {
@@ -86,7 +80,6 @@ namespace Gml.Core.Helpers.Profiles
 
             await _storageService.SetAsync(StorageConstants.GameProfiles, _gameProfiles);
         }
-
 
         public async Task<IGameProfile?> AddProfile(string name,
             string version,
@@ -121,7 +114,6 @@ namespace Gml.Core.Helpers.Profiles
 
             return Task.FromResult(true);
         }
-
 
         public Task RemoveProfile(IGameProfile profile)
         {
@@ -163,12 +155,12 @@ namespace Gml.Core.Helpers.Profiles
             {
                 profiles = profiles.Where(c => c != null).ToList();
 
-                foreach (var profile in profiles) await UpdateProfilesService(profile);
+                foreach (var profile in profiles)
+                    await UpdateProfilesService(profile);
 
                 _gameProfiles = new List<IGameProfile>(profiles);
             }
         }
-
 
         public Task RemoveProfile(int profileId)
         {
@@ -369,7 +361,6 @@ namespace Gml.Core.Helpers.Profiles
                 ProfileLoaderStateMachine.IsLoading = false;
             }
         }
-
 
         public async Task PackProfile(IGameProfile profile)
         {
@@ -653,13 +644,19 @@ namespace Gml.Core.Helpers.Profiles
         {
             var gameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, gameProfile);
 
+            foreach (var server in gameProfile.Servers)
+            {
+                server.ServerProcedures = _gmlManager.Servers;
+                gameProfile.ServerAdded.OnNext(server);
+            }
+
             gameProfile.ProfileProcedures = this;
             gameProfile.ServerProcedures = this;
             gameProfile.GameLoader = gameLoader;
-
             gameProfile.LaunchVersion =
                 await gameLoader.ValidateMinecraftVersion(gameProfile.GameVersion, gameProfile.Loader);
             gameProfile.GameVersion = gameLoader.InstallationVersion!.Id;
+
         }
 
         public IEnumerable<IFileInfo> GetWhiteListFilesProfileFiles(IEnumerable<IFileInfo> files)

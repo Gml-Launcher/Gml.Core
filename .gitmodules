@@ -4,3 +4,6 @@
 [submodule "src/CmlLib.ExtendedCore"]
 	path = src/CmlLib.ExtendedCore
 	url = https://github.com/GamerVII-NET/CmlLib.Core.git
+[submodule "src/Pingo"]
+	path = src/Pingo
+	url = https://github.com/GamerVII-NET/Pingo.git

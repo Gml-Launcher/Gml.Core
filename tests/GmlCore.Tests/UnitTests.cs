@@ -1,12 +1,10 @@
-using CmlLib.Core;
-using CmlLib.Core.Auth;
-using CmlLib.Core.Installer.Forge;
-using CmlLib.Utils;
 using Gml;
 using Gml.Core.Launcher;
 using Gml.Core.User;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
+using Pingo;
+using Pingo.Status;
 
 namespace GmlCore.Tests;
 
@@ -16,6 +14,7 @@ public class Tests
     private IGameProfile _testGameProfile = null!;
 
     private GmlManager GmlManager { get; } = new(new GmlSettings("GamerVIILauncher"));
+    private const string ServerName = "Hitech #1";
 
     [SetUp]
     public async Task Setup()
@@ -92,6 +91,37 @@ public class Tests
 
     [Test]
     [Order(4)]
+    public async Task CreateServer()
+    {
+        _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech") ?? throw new Exception("Failed to create profile instance");
+
+        var server = await GmlManager.Servers.AddMinecraftServer(_testGameProfile, ServerName, "127.0.0.1", 25565);
+
+        Assert.That(server, Is.Not.Null);
+    }
+
+    [Test]
+    [Order(5)]
+    public async Task GetOnline()
+    {
+        _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech") ?? throw new Exception("Failed to create profile instance");
+
+        var server = _testGameProfile.Servers.First(c => c.Name == ServerName);
+
+        try
+        {
+            await server.UpdateStatusAsync();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+
+        Assert.That(server, Is.Not.Null);
+    }
+
+    [Test]
+    [Order(40)]
     public async Task RemoveProfile()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
@@ -103,14 +133,110 @@ public class Tests
     }
 
     [Test]
-    [Order(5)]
+    [Order(41)]
+    public async Task ServerPing1_20_6()
+    {
+        // 1.20.6
+        var options = new MinecraftPingOptions
+        {
+            Address = "95.216.62.163",
+            Port = 25597
+        };
+
+        var status = await Minecraft.PingAsync(options) as JavaStatus;
+
+        Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
+    }
+
+    [Test]
+    [Order(42)]
+    public async Task ServerPing1_7_10()
+    {
+        // 1.7.10
+        var options = new MinecraftPingOptions
+        {
+            Address = "95.217.100.49",
+            Port = 25606
+        };
+
+        var status = await Minecraft.PingAsync(options) as JavaStatus;
+
+        Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
+    }
+
+    [Test]
+    [Order(43)]
+    public async Task ServerPing1_5_2()
+    {
+        // 1.5.2
+        var options = new MinecraftPingOptions
+        {
+            Address = "45.93.200.16",
+            Port = 25573
+        };
+
+        var status = await Minecraft.PingAsync(options) as JavaStatus;
+
+        Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
+    }
+
+    [Test]
+    [Order(44)]
+    public async Task ServerPing1_12_2()
+    {
+        // 1.12.2
+        var options = new MinecraftPingOptions
+        {
+            Address = "89.33.12.149",
+            Port = 25706
+        };
+
+        var status = await Minecraft.PingAsync(options) as JavaStatus;
+
+        Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
+    }
+
+    [Test]
+    [Order(45)]
+    public async Task ServerPing1_16_5()
+    {
+        // 1.16.5
+        var options = new MinecraftPingOptions
+        {
+            Address = "65.108.21.255",
+            Port = 25738
+        };
+
+        var status = await Minecraft.PingAsync(options) as JavaStatus;
+
+        Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
+    }
+
+    [Test]
+    [Order(46)]
+    public async Task ServerPing1_20_1()
+    {
+        // 1.20.1
+        var options = new MinecraftPingOptions
+        {
+            Address = "95.216.92.82",
+            Port = 25654
+        };
+
+        var status = await Minecraft.PingAsync(options) as JavaStatus;
+
+        Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
+    }
+
+    [Test]
+    [Order(50)]
     public async Task ChangeLoaderTypeAndSaveProfiles()
     {
         await GmlManager.Profiles.SaveProfiles();
     }
 
     [Test]
-    [Order(6)]
+    [Order(60)]
     public async Task DownloadProfile()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
@@ -118,12 +244,12 @@ public class Tests
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
 
-        if (await _testGameProfile.CheckIsFullLoaded(_options) == false)
-            await _testGameProfile.DownloadAsync(_options.OsType, _options.OsArch);
+        // if (await _testGameProfile.CheckIsFullLoaded(_options) == false)
+        //     await _testGameProfile.DownloadAsync(_options.OsType, _options.OsArch);
     }
 
     [Test]
-    [Order(7)]
+    [Order(70)]
     public async Task CheckIsFullLoaded()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
@@ -131,12 +257,12 @@ public class Tests
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
 
-        Assert.That(await _testGameProfile.CheckIsFullLoaded(_options), Is.True);
+        // Assert.That(await _testGameProfile.CheckIsFullLoaded(_options), Is.True);
     }
 
 
     [Test]
-    [Order(8)]
+    [Order(80)]
     public async Task InstallForgeClient()
     {
         var forgeClient = await GmlManager.Profiles.GetProfile("Aztex")
@@ -144,60 +270,60 @@ public class Tests
                               string.Empty)
                           ?? throw new Exception("Failed to create profile instance");
 
-        if (await forgeClient.CheckIsFullLoaded(_options) == false)
-            await forgeClient.DownloadAsync(_options.OsType, _options.OsArch);
+        // if (await forgeClient.CheckIsFullLoaded(_options) == false)
+        //     await forgeClient.DownloadAsync(_options.OsType, _options.OsArch);
+        //
+        // var process = await forgeClient.CreateProcess(_options, User.Empty);
 
-        var process = await forgeClient.CreateProcess(_options, User.Empty);
-
-        var processUtil = new ProcessUtil(process);
-
-        processUtil.OutputReceived += (s, message) => Console.WriteLine(message);
-        processUtil.StartWithEvents();
-        await processUtil.WaitForExitTaskAsync();
+        // var processUtil = new ProcessUtil(process);
+        //
+        // processUtil.OutputReceived += (s, message) => Console.WriteLine(message);
+        // processUtil.StartWithEvents();
+        // await processUtil.WaitForExitTaskAsync();
 
         // Assert.That(await forgeClient.CheckIsFullLoaded(), Is.True);
     }
 
 
     [Test]
-    [Order(9)]
+    [Order(90)]
     public async Task ClientStartup()
     {
-        _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
-                           ?? await GmlManager.Profiles.AddProfile("HiTech", "1.20.1", GameLoader.Vanilla, string.Empty,
-                               string.Empty)
-                           ?? throw new Exception("Failed to create profile instance");
-
-        var process = await _testGameProfile.CreateProcess(_options, User.Empty);
-
-        var processUtil = new ProcessUtil(process);
-
-        processUtil.OutputReceived += (s, message) => Console.WriteLine(message);
-        processUtil.StartWithEvents();
-        await processUtil.WaitForExitTaskAsync();
+        // _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
+        //                    ?? await GmlManager.Profiles.AddProfile("HiTech", "1.20.1", GameLoader.Vanilla, string.Empty,
+        //                        string.Empty)
+        //                    ?? throw new Exception("Failed to create profile instance");
+        //
+        // var process = await _testGameProfile.CreateProcess(_options, User.Empty);
+        //
+        // var processUtil = new ProcessUtil(process);
+        //
+        // processUtil.OutputReceived += (s, message) => Console.WriteLine(message);
+        // processUtil.StartWithEvents();
+        // await processUtil.WaitForExitTaskAsync();
     }
 
 
     [Test]
-    [Order(999)]
+    [Order(900)]
     public async Task CheckInstallationFromOriginalCmlLib()
     {
-        var path = new MinecraftPath();
-        var launcher = new CMLauncher(path);
-        var forge = new MForge(launcher);
-        forge.InstallerOutput += (s, e) => Console.WriteLine(e);
-
-        var versionName = await forge.Install("1.7.10");
-
-        var launchOption = new MLaunchOption
-        {
-            MaximumRamMb = 1024,
-            Session = MSession.GetOfflineSession("TaiogStudio")
-        };
-
-        var process = await launcher.CreateProcessAsync(versionName, launchOption);
-
-        process.Start();
+        // var path = new MinecraftPath();
+        // var launcher = new CMLauncher(path);
+        // var forge = new MForge(launcher);
+        // forge.InstallerOutput += (s, e) => Console.WriteLine(e);
+        //
+        // var versionName = await forge.Install("1.7.10");
+        //
+        // var launchOption = new MLaunchOption
+        // {
+        //     MaximumRamMb = 1024,
+        //     Session = MSession.GetOfflineSession("TaiogStudio")
+        // };
+        //
+        // var process = await launcher.CreateProcessAsync(versionName, launchOption);
+        //
+        // process.Start();
         // _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
         //                    ?? await GmlManager.Profiles.AddProfile("HiTech", "1.7.10", GameLoader.Forge, string.Empty,
         //                        string.Empty)

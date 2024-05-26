@@ -20,24 +20,43 @@ namespace Gml.Models
         private readonly Dictionary<IProfileServer, IDisposable> _serverTimers = new();
         private readonly Subject<IProfileServer> _serverAdded = new();
         private readonly Subject<IProfileServer> _serverRemoved = new();
+        internal Subject<IProfileServer> ServerAdded => _serverAdded;
+        internal Subject<IProfileServer> ServerRemoved => _serverRemoved;
+
+        [JsonConverter(typeof(ServerConverter))]
+        public List<MinecraftServer> Servers
+        {
+            get => base.Servers.Cast<MinecraftServer>().ToList();
+            set => base.Servers = value.Cast<IProfileServer>().ToList();
+        }
+
+        public static IGameProfile Empty { get; set; } =
+            new GameProfile("Empty", "0.0.0", GmlCore.Interfaces.Enums.GameLoader.Undefined);
 
         public GameProfile()
         {
+            _serverAdded.Subscribe(server =>
+            {
+                server.UpdateStatusAsync();
+
+                var timer = Observable
+                    .Interval(TimeSpan.FromMinutes(2))
+                    .Subscribe(_ => server.UpdateStatusAsync());
+
+                _serverTimers[server] = timer;
+            });
         }
 
         internal GameProfile(string name, string gameVersion, GameLoader gameLoader)
             : base(name, gameVersion, gameLoader)
         {
-            if (Servers.Any())
-            {
-
-            }
-
             _serverAdded.Subscribe(server =>
             {
+                server.UpdateStatusAsync();
+
                 var timer = Observable
-                    .Interval(TimeSpan.FromMinutes(1))
-                    .Subscribe(_ => server.UpdateStatus());
+                    .Interval(TimeSpan.FromMinutes(2))
+                    .Subscribe(_ => server.UpdateStatusAsync());
 
                 _serverTimers[server] = timer;
             });
@@ -59,16 +78,6 @@ namespace Gml.Models
             get => base.FileWhiteList?.Cast<LocalFileInfo>().ToList();
             set => base.FileWhiteList = value?.Cast<IFileInfo>().ToList();
         }
-
-        [JsonConverter(typeof(ServerConverter))]
-        public List<MinecraftServer> Servers
-        {
-            get => base.Servers.Cast<MinecraftServer>().ToList();
-            set => base.Servers = value.Cast<IProfileServer>().ToList();
-        }
-
-        public static IGameProfile Empty { get; set; } =
-            new GameProfile("Empty", "0.0.0", GmlCore.Interfaces.Enums.GameLoader.Undefined);
 
         public override void AddServer(IProfileServer server)
         {
