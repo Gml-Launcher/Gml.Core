@@ -52,7 +52,6 @@ public partial class ProfileProcedures : IProfileServersProcedures
 
     public async Task UpdateServerState(IProfileServer server)
     {
-
         if (server is MinecraftServer minecraftServer)
         {
             var options = new MinecraftPingOptions

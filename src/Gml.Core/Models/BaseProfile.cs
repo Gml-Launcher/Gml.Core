@@ -1,11 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using Gml.Core.Helpers.Profiles;
 using Gml.Models.Converters;
 using Gml.Models.Enums;
 using Gml.Web.Api.Domains.System;

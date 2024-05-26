@@ -32,8 +32,19 @@ namespace Gml.Models
 
         public static IGameProfile Empty { get; set; } =
             new GameProfile("Empty", "0.0.0", GmlCore.Interfaces.Enums.GameLoader.Undefined);
+
         public GameProfile()
         {
+            _serverAdded.Subscribe(server =>
+            {
+                server.UpdateStatusAsync();
+
+                var timer = Observable
+                    .Interval(TimeSpan.FromMinutes(2))
+                    .Subscribe(_ => server.UpdateStatusAsync());
+
+                _serverTimers[server] = timer;
+            });
         }
 
         internal GameProfile(string name, string gameVersion, GameLoader gameLoader)
@@ -41,6 +52,8 @@ namespace Gml.Models
         {
             _serverAdded.Subscribe(server =>
             {
+                server.UpdateStatusAsync();
+
                 var timer = Observable
                     .Interval(TimeSpan.FromMinutes(2))
                     .Subscribe(_ => server.UpdateStatusAsync());
