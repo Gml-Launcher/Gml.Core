@@ -68,4 +68,26 @@ public partial class ProfileProcedures : IProfileServersProcedures
             minecraftServer.IsOnline = status?.MaximumPlayers is not null;
         }
     }
+
+    public async Task RemoveServer(IGameProfile profile, string serverName)
+    {
+        if (profile == null)
+        {
+            throw new ArgumentNullException(nameof(profile), "Profile cannot be null.");
+        }
+
+        if (string.IsNullOrEmpty(serverName))
+        {
+            throw new ArgumentException("Server name cannot be null or empty.", nameof(serverName));
+        }
+
+        var server = profile.Servers.FirstOrDefault(c => c.Name == serverName);
+
+        if (server is not null)
+        {
+            profile.Servers.Remove(server);
+        }
+
+        await SaveProfiles();
+    }
 }
