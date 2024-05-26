@@ -23,7 +23,6 @@ public class MinecraftServer : IProfileServer
     {
         try
         {
-            //ToDo: remove try/catch
             return ServerProcedures.UpdateServerState(this);
         }
         catch (Exception e)
