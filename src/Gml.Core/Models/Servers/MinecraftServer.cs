@@ -17,8 +17,8 @@ public class MinecraftServer : IProfileServer
     public int Port { get; set; }
     public string Version { get; set; }
     public bool IsOnline { get; set; }
-    public int Online { get; set; }
-    public int MaxOnline { get; set; }
+    public int? Online { get; set; }
+    public int? MaxOnline { get; set; }
     public Task UpdateStatusAsync()
     {
         try

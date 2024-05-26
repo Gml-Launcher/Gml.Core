@@ -6,6 +6,8 @@ using Gml.Models.Servers;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.Servers;
+using Pingo;
+using Pingo.Status;
 
 namespace Gml.Core.Helpers.Profiles;
 
@@ -48,16 +50,23 @@ public partial class ProfileProcedures : IProfileServersProcedures
         return server;
     }
 
-    public Task UpdateServerState(IProfileServer server)
+    public async Task UpdateServerState(IProfileServer server)
     {
+
         if (server is MinecraftServer minecraftServer)
         {
-            minecraftServer.Online = 0;
-            minecraftServer.MaxOnline = 1000;
-            minecraftServer.Version = "1.7.10";
-            minecraftServer.IsOnline = true;
-        }
+            var options = new MinecraftPingOptions
+            {
+                Address = minecraftServer.Address,
+                Port = (ushort)minecraftServer.Port
+            };
 
-        return Task.CompletedTask;
+            var status = await Minecraft.PingAsync(options) as JavaStatus;
+
+            minecraftServer.Online = status?.OnlinePlayers;
+            minecraftServer.MaxOnline = status?.MaximumPlayers;
+            minecraftServer.Version = status?.Name ?? string.Empty;
+            minecraftServer.IsOnline = status?.MaximumPlayers is not null;
+        }
     }
 }
