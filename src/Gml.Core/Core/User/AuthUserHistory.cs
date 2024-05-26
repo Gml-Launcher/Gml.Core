@@ -4,7 +4,7 @@ namespace Gml.Core.User
 {
     public class AuthUserHistory
     {
-        internal AuthUserHistory()
+        public AuthUserHistory()
         {
         }
 
