@@ -19,6 +19,7 @@ namespace GmlCore.Interfaces.Launcher
         [JsonIgnore] IGameDownloaderProcedures GameLoader { get; set; }
 
         string Name { get; set; }
+        bool IsEnabled { get; set; }
         string GameVersion { get; set; }
         string LaunchVersion { get; set; }
         GameLoader Loader { get; }

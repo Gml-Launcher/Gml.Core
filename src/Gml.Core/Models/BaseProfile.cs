@@ -41,6 +41,7 @@ namespace Gml.Models
         [JsonIgnore] public IGameDownloaderProcedures GameLoader { get; set; }
 
         public string Name { get; set; }
+        public bool IsEnabled { get; set; }
         public string GameVersion { get; set; }
         public string LaunchVersion { get; set; }
         public GameLoader Loader { get; set; }
