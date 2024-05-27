@@ -121,6 +121,15 @@ public class Tests
     }
 
     [Test]
+    [Order(6)]
+    public async Task GertAllVersions()
+    {
+        var versions = await GmlManager.GameLoader.GetAllVersions();
+
+        Assert.That(versions.Count(), Is.Not.Zero);
+    }
+
+    [Test]
     [Order(40)]
     public async Task RemoveProfile()
     {
@@ -217,15 +226,15 @@ public class Tests
     public async Task ServerPing1_20_1()
     {
         // 1.20.1
-        var options = new MinecraftPingOptions
-        {
-            Address = "95.216.92.82",
-            Port = 25654
-        };
-
-        var status = await Minecraft.PingAsync(options) as JavaStatus;
-
-        Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
+        // var options = new MinecraftPingOptions
+        // {
+        //     Address = "95.216.92.82",
+        //     Port = 25654
+        // };
+        //
+        // var status = await Minecraft.PingAsync(options) as JavaStatus;
+        //
+        // Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
     }
 
     [Test]

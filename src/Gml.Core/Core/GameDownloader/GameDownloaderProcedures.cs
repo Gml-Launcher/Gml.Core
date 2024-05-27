@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -15,10 +16,12 @@ using CmlLib.Core.Version;
 using Gml.Core.Services.Storage;
 using Gml.Models;
 using Gml.Models.CmlLib;
+using Gml.Models.Minecraft;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.User;
+using GmlCore.Interfaces.Versions;
 using OsType = Gml.Web.Api.Domains.System.OsType;
 
 namespace Gml.Core.GameDownloader
@@ -30,6 +33,7 @@ namespace Gml.Core.GameDownloader
         private readonly ILauncherInfo _launcherInfo;
         private readonly CustomMinecraftPath _minecraftPath;
         private readonly IStorageService _storage;
+        private IEnumerable<MineVersion>? _allVersions;
 
 
         public GameDownloaderProcedures(ILauncherInfo launcherInfo, IStorageService storage, IGameProfile profile)
@@ -176,7 +180,6 @@ namespace Gml.Core.GameDownloader
             return Task.FromResult(false);
         }
 
-
         internal async Task<string> ValidateMinecraftVersion(string version, GameLoader loader)
         {
             if (InstallationVersion != null)
@@ -258,6 +261,15 @@ namespace Gml.Core.GameDownloader
             }
 
             return InstallationVersion.Id;
+        }
+
+        public async Task<IEnumerable<IVersion>> GetAllVersions()
+        {
+            var launcherInfo = new CMLauncher(new MinecraftPath());
+
+            _allVersions ??= (await launcherInfo.GetAllVersionsAsync()).Select(c => new MineVersion { Name = c.Name, IsRelease = c.Type == "release" });
+
+            return _allVersions;
         }
     }
 }
