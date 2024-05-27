@@ -121,6 +121,15 @@ public class Tests
     }
 
     [Test]
+    [Order(6)]
+    public async Task GertAllVersions()
+    {
+        var versions = await GmlManager.GameLoader.GetAllVersions();
+
+        Assert.That(versions.Count(), Is.Not.Zero);
+    }
+
+    [Test]
     [Order(40)]
     public async Task RemoveProfile()
     {
