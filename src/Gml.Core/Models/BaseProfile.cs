@@ -50,6 +50,7 @@ namespace Gml.Models
         public string BackgroundImageKey { get; set; }
         public string Description { get; set; }
 
+        public string JvmArguments { get; set; }
         [JsonConverter(typeof(LocalFileInfoConverter))]
         public List<IFileInfo>? FileWhiteList { get; set; }
 

@@ -30,6 +30,7 @@ namespace GmlCore.Interfaces.Launcher
         List<IFileInfo>? FileWhiteList { get; set; }
         List<IProfileServer> Servers { get; set; }
         DateTimeOffset CreateDate { get; set; }
+        string JvmArguments { get; set; }
 
         Task<bool> ValidateProfile();
         Task<bool> CheckIsFullLoaded(IStartupOptions startupOptions);
