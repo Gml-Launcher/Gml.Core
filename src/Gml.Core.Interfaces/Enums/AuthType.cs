@@ -8,4 +8,5 @@ public enum AuthType
     Azuriom = 3,
     EasyCabinet = 4,
     UnicoreCMS = 5,
+    CustomEndpoint = 6,
 }
