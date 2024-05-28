@@ -19,7 +19,7 @@ namespace Gml.Core.Helpers.User
             _storage = storage;
         }
 
-        public async Task<IUser> GetAuthData(string login, string password, string device)
+        public async Task<IUser> GetAuthData(string login, string password, string device, string? customUuid)
         {
             var authUser = await _storage.GetUserAsync<AuthUser>(login) ?? new AuthUser
             {
@@ -29,7 +29,7 @@ namespace Gml.Core.Helpers.User
             authUser.AuthHistory.Add(AuthUserHistory.Create(device));
             authUser.AuthHistory = authUser.AuthHistory.TakeLast(20).ToList();
             authUser.AccessToken = GenerateAccessToken();
-            authUser.Uuid = UsernameToUuid(login);
+            authUser.Uuid = customUuid ?? UsernameToUuid(login);
             authUser.ExpiredDate = DateTime.Now + TimeSpan.FromDays(30);
 
             await _storage.SetUserAsync(login, authUser.Uuid, authUser);

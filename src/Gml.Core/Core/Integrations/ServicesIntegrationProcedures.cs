@@ -36,7 +36,8 @@ namespace Gml.Core.Integrations
                 new AuthServiceInfo("DataLifeEngine", AuthType.DataLifeEngine),
                 new AuthServiceInfo("Azuriom", AuthType.Azuriom),
                 new AuthServiceInfo("EasyCabinet", AuthType.EasyCabinet),
-                new AuthServiceInfo("UnicoreCMS", AuthType.UnicoreCMS)
+                new AuthServiceInfo("UnicoreCMS", AuthType.UnicoreCMS),
+                new AuthServiceInfo("CustomEndpoint", AuthType.CustomEndpoint)
             }.AsEnumerable());
         }
 
