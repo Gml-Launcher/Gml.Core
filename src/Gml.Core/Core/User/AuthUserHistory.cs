@@ -14,15 +14,19 @@ namespace Gml.Core.User
         }
 
         public DateTime Date { get; set; }
-
         public string Device { get; set; }
+        public string? Address { get; set; }
+        public string Protocol { get; set; }
 
-        public static AuthUserHistory Create(string device)
+        public static AuthUserHistory Create(string device, string protocol, string? address)
         {
             return new AuthUserHistory(DateTime.Now)
             {
-                Device = device
+                Device = device,
+                Protocol = protocol,
+                Address = address
             };
         }
+
     }
 }

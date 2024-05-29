@@ -1,6 +1,6 @@
 using System;
+using System.Text.Json.Serialization;
 using GmlCore.Interfaces.User;
-using Newtonsoft.Json;
 
 namespace Gml.Core.User
 {
@@ -18,6 +18,8 @@ namespace Gml.Core.User
         public string Name { get; set; } = null!;
         public string TextureUrl { get; set; }
         public string ServerUuid { get; set; }
+
+        public bool IsBanned { get; set; }
         public DateTime ServerExpiredDate { get; set; }
         public string? AccessToken { get; set; }
         public string? Uuid { get; set; }
