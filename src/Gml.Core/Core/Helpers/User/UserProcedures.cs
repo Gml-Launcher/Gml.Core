@@ -84,6 +84,11 @@ namespace Gml.Core.Helpers.User
             return await _storage.GetUsersAsync<AuthUser>();
         }
 
+        public Task UpdateUser(IUser user)
+        {
+            return _storage.SetUserAsync(user.Name, user.Uuid, user);
+        }
+
         private string GenerateAccessToken()
         {
             var timestamp = DateTime.Now.Ticks.ToString();
