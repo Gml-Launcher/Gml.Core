@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,15 +20,19 @@ namespace Gml.Core.Helpers.User
             _storage = storage;
         }
 
-        public async Task<IUser> GetAuthData(string login, string password, string device, string? customUuid)
+        public async Task<IUser> GetAuthData(string login,
+            string password,
+            string device,
+            IPAddress? address,
+            string protocol,
+            string? customUuid)
         {
             var authUser = await _storage.GetUserAsync<AuthUser>(login) ?? new AuthUser
             {
                 Name = login
             };
 
-            authUser.AuthHistory.Add(AuthUserHistory.Create(device));
-            authUser.AuthHistory = authUser.AuthHistory.TakeLast(20).ToList();
+            authUser.AuthHistory.Add(AuthUserHistory.Create(device, protocol, address?.ToString()));
             authUser.AccessToken = GenerateAccessToken();
             authUser.Uuid = customUuid ?? UsernameToUuid(login);
             authUser.ExpiredDate = DateTime.Now + TimeSpan.FromDays(30);
