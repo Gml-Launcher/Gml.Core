@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using GmlCore.Interfaces.User;
 
@@ -38,5 +39,6 @@ namespace Gml.Core.Services.Storage
         Task<T?> GetUserByNameAsync<T>(string userName);
         Task<T?> GetUserByUuidAsync<T>(string uuid);
         Task SetUserAsync<T>(string login, string uuid, T value);
+        Task<IEnumerable<T>> GetUsersAsync<T>();
     }
 }

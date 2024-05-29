@@ -1,8 +1,11 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.User;
 using SQLite;
 using JsonConverter = System.Text.Json.Serialization.JsonConverter;
 
@@ -71,6 +74,16 @@ namespace Gml.Core.Services.Storage
             };
 
             await _database.InsertOrReplaceAsync(storageItem);
+        }
+
+        public async Task<IEnumerable<T>> GetUsersAsync<T>()
+        {
+            var users = (await _database
+                .Table<UserStorageItem>()
+                .ToListAsync())
+                .Select(x => JsonSerializer.Deserialize<T>(x.Value));
+
+            return users!;
         }
 
         public Task<int> SaveRecord<T>(T record)
