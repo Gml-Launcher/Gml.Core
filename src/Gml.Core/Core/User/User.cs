@@ -1,6 +1,6 @@
 using System;
+using System.Text.Json.Serialization;
 using GmlCore.Interfaces.User;
-using Newtonsoft.Json;
 
 namespace Gml.Core.User
 {
