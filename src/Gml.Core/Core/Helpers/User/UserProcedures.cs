@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
@@ -81,6 +82,16 @@ namespace Gml.Core.Helpers.User
             }
 
             return isSuccess;
+        }
+
+        public async Task<IEnumerable<IUser>> GetUsers()
+        {
+            return await _storage.GetUsersAsync<AuthUser>();
+        }
+
+        public Task UpdateUser(IUser user)
+        {
+            return _storage.SetUserAsync(user.Name, user.Uuid, user);
         }
 
         private string GenerateAccessToken()
