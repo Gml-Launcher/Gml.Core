@@ -91,7 +91,7 @@ namespace Gml.Core.Helpers.User
 
         public Task UpdateUser(IUser user)
         {
-            return _storage.SetUserAsync(user.Name, user.Uuid, user);
+            return _storage.SetUserAsync(user.Name, user.Uuid, (AuthUser)user);
         }
 
         private string GenerateAccessToken()
