@@ -24,16 +24,17 @@ namespace Gml.Core.Helpers.User
         public async Task<IUser> GetAuthData(string login,
             string password,
             string device,
-            IPAddress? address,
             string protocol,
-            string? customUuid)
+            IPAddress? address,
+            string? customUuid,
+            string? hwid)
         {
             var authUser = await _storage.GetUserAsync<AuthUser>(login) ?? new AuthUser
             {
                 Name = login
             };
 
-            authUser.AuthHistory.Add(AuthUserHistory.Create(device, protocol, address?.ToString()));
+            authUser.AuthHistory.Add(AuthUserHistory.Create(device, protocol, hwid, address?.ToString()));
             authUser.AccessToken = GenerateAccessToken();
             authUser.Uuid = customUuid ?? UsernameToUuid(login);
             authUser.ExpiredDate = DateTime.Now + TimeSpan.FromDays(30);
@@ -55,19 +56,18 @@ namespace Gml.Core.Helpers.User
 
         public async Task<bool> ValidateUser(string userUuid, string serverUuid, string accessToken)
         {
-            var user = await GetUserByUuid(Guid.Parse(userUuid).ToString().ToUpper());
-
-            if (user is null)
+            if (await GetUserByUuid(Guid.Parse(userUuid).ToString().ToUpper()) is not AuthUser user)
             {
                 return false;
             }
 
             user.ServerUuid = serverUuid;
             user.ServerExpiredDate = DateTime.Now.AddMinutes(1);
+            user.ServerJoinHistory.Add(new ServerJoinHistory(serverUuid, DateTime.Now));
 
-            await _storage.SetUserAsync(user.Name, user.Uuid, user);
+            await UpdateUser(user);
 
-            return user.AccessToken.StartsWith(accessToken);
+            return user.AccessToken?.StartsWith(accessToken) ?? false;
         }
 
         public async Task<bool> CanJoinToServer(IUser user, string serverId)
