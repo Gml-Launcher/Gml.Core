@@ -6,7 +6,7 @@ namespace Gml.Core.User
 {
     public class User : IUser
     {
-        [JsonIgnore] public bool IsValid => ExpiredDate != DateTime.MinValue && ExpiredDate > DateTime.Now;
+        [JsonIgnore] internal bool IsValid => ExpiredDate != DateTime.MinValue && ExpiredDate > DateTime.Now;
 
         public static IUser Empty { get; set; } = new User
         {

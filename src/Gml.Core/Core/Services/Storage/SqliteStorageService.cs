@@ -64,7 +64,7 @@ namespace Gml.Core.Services.Storage
 
         public async Task SetUserAsync<T>(string login, string uuid, T value)
         {
-            var serializedValue = JsonSerializer.Serialize(value);
+            var serializedValue = JsonSerializer.Serialize(value, new JsonSerializerOptions { WriteIndented = true });
             var storageItem = new UserStorageItem
             {
                 Login = login,
