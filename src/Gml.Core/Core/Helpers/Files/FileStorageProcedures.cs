@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Gml.Core.Services.Storage;
 using Gml.Core.System;
@@ -10,6 +12,7 @@ using GmlCore.Interfaces.System;
 using Microsoft.AspNetCore.Http;
 using Minio;
 using Minio.DataModel.Args;
+using Minio.DataModel.Tags;
 
 namespace Gml.Core.Helpers.Files
 {
@@ -37,7 +40,9 @@ namespace Gml.Core.Helpers.Files
             _storage = storage;
         }
 
-        public async Task<IFileInfo?> DownloadFileStream(string fileHash, Stream outputStream,
+        public async Task<IFileInfo?> DownloadFileStream(
+            string fileHash,
+            Stream outputStream,
             IHeaderDictionary headers)
         {
             LocalFileInfo? localFileInfo = default;
@@ -120,9 +125,12 @@ namespace Gml.Core.Helpers.Files
             return localFileInfo;
         }
 
-        public async Task<string> LoadFile(Stream fileStream)
+        public async Task<string> LoadFile(Stream fileStream,
+            string? folder = null,
+            string? defaultFileName = null,
+            Dictionary<string, string>? tags = null)
         {
-            var fileName = Guid.NewGuid().ToString();
+            var fileName = defaultFileName ?? Guid.NewGuid().ToString();
 
             switch (_launcherInfo.StorageSettings.StorageType)
             {
@@ -142,7 +150,8 @@ namespace Gml.Core.Helpers.Files
 
                 case StorageType.S3:
 
-                    string bucketName = "profile-backgrounds";
+                    string bucketName = folder ?? "other";
+
                     var beArgs = new BucketExistsArgs().WithBucket(bucketName);
                     bool found = await MinioClient.BucketExistsAsync(beArgs).ConfigureAwait(false);
 
@@ -154,14 +163,23 @@ namespace Gml.Core.Helpers.Files
                         await MinioClient.MakeBucketAsync(mbArgs).ConfigureAwait(false);
                     }
 
-                    var putObjectArgs = new PutObjectArgs()
-                        .WithBucket(bucketName)
-                        .WithContentType("application/octet-stream")
-                        .WithObject(fileName)
-                        .WithObjectSize(fileStream.Length)
-                        .WithStreamData(fileStream);
+                    if (fileStream.Length > 0)
+                    {
+                        var putObjectArgs = new PutObjectArgs()
+                            .WithContentType("application/octet-stream")
+                            .WithObjectSize(fileStream.Length)
+                            .WithStreamData(fileStream)
+                            .WithBucket(bucketName)
+                            .WithObject(fileName);
 
-                    await MinioClient.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                        if (tags is not null && tags.Any())
+                        {
+                            putObjectArgs.WithTagging(new Tagging(tags, true));
+                        }
+
+                        await MinioClient.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+                    }
+
                     break;
 
                 default:
@@ -171,7 +189,7 @@ namespace Gml.Core.Helpers.Files
             return fileName;
         }
 
-        public async Task<(Stream File, string fileName, long Length)> GetFileStream(string fileHash)
+        public async Task<(Stream File, string fileName, long Length)> GetFileStream(string fileHash, string? backet = null)
         {
             Stream fileStream = new MemoryStream();
             string fileName = string.Empty;
@@ -213,18 +231,33 @@ namespace Gml.Core.Helpers.Files
                             .WithBucket("profiles")
                             .WithObject(fileHash);
 
-                        var metadata = await MinioClient.GetObjectTagsAsync(statObjectArgs);
-
                         var getObjectArgs = new GetObjectArgs()
                             .WithBucket("profiles")
                             .WithObject(fileHash)
                             .WithCallbackStream(async (stream, token) => await stream.CopyToAsync(fileStream, token));
 
+                        var metadata = await MinioClient.GetObjectTagsAsync(statObjectArgs);
+
+                        if (metadata is null)
+                        {
+                            statObjectArgs = new GetObjectTagsArgs()
+                                .WithBucket("profile-backgrounds")
+                                .WithObject(fileHash);
+
+                            metadata = await MinioClient.GetObjectTagsAsync(statObjectArgs);
+
+
+                            getObjectArgs = new GetObjectArgs()
+                                .WithBucket("profile-backgrounds")
+                                .WithObject(fileHash)
+                                .WithCallbackStream(async (stream, token) => await stream.CopyToAsync(fileStream, token));
+                        }
+
                         if (metadata != null)
                         {
-                            fileName = metadata.Tags["file-name"];
-                            length = fileStream.Length;
+                            fileName = metadata.Tags?["file-name"] ?? fileHash;
                             await MinioClient.GetObjectAsync(getObjectArgs);
+                            length = fileStream.Length;
                         }
                     }
                     catch (Exception e)
@@ -241,6 +274,43 @@ namespace Gml.Core.Helpers.Files
             // Resetting the position for the caller to be able to read the stream from the beginning
             fileStream.Position = 0;
             return (fileStream, fileName, length);
+        }
+
+        public async Task<bool> CheckFileExists(string folder, string fileHash)
+        {
+            try
+            {
+                switch (_launcherInfo.StorageSettings.StorageType)
+                {
+                    case StorageType.LocalStorage:
+                        var localFileInfo = await _storage.GetAsync<LocalFileInfo>(fileHash).ConfigureAwait(false);
+
+                        return localFileInfo is not null;
+
+                    case StorageType.S3:
+                        var fileCheck = new StatObjectArgs()
+                            .WithBucket(folder)
+                            .WithObject(fileHash);
+
+                        await MinioClient.StatObjectAsync(fileCheck);
+                        return true;
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            catch (Minio.Exceptions.ObjectNotFoundException)
+            {
+                return false;
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+                return false;
+            }
+
+            return false;
         }
 
         private async Task ConvertStreamToFile(Stream input, string filePath)

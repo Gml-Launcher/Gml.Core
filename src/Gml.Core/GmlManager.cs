@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Gml.Core.Constants;
 using Gml.Core.GameDownloader;
@@ -46,13 +47,22 @@ namespace Gml
 
         public void RestoreSettings<T>() where T : IVersionFile
         {
-            var versionReleases = Storage.GetAsync<Dictionary<OsType, T?>>(StorageConstants.ActualVersionInfo).Result;
-
-            if (versionReleases is null) return;
-
-            foreach (var item in versionReleases)
+            try
             {
-                LauncherInfo.ActualLauncherVersion.Add(item.Key, item.Value);
+                var versionReleases = Storage.GetAsync<Dictionary<OsType, T?>>(StorageConstants.ActualVersionInfo).Result;
+
+                if (versionReleases is null) return;
+
+                foreach (var item in versionReleases)
+                {
+                    LauncherInfo.ActualLauncherVersion.Add(item.Key, item.Value);
+                }
+
+                Profiles.RestoreProfiles().Wait();
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
             }
         }
     }

@@ -30,7 +30,7 @@ public class LauncherProcedures : ILauncherProcedures
             throw new ArgumentNullException(nameof(version.File));
         }
 
-        version.Guid = await _files.LoadFile(version.File);
+        version.Guid = await _files.LoadFile(version.File, "launcher");
 
         _launcherInfo.ActualLauncherVersion[osTypeEnum] = version;
 
