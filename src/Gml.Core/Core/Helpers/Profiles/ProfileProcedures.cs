@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -46,7 +47,7 @@ namespace Gml.Core.Helpers.Profiles
         private readonly IStorageService _storageService;
         private readonly GmlManager _gmlManager;
         private List<IGameProfile> _gameProfiles = new();
-        private Dictionary<string, string> _fileHashCache = new();
+        private ConcurrentDictionary<string, string> _fileHashCache = new();
         public bool CanUpdateAndRestore => !ProfileLoaderStateMachine.IsLoading;
 
         public ProfileProcedures(
@@ -388,99 +389,49 @@ namespace Gml.Core.Helpers.Profiles
             var totalFiles = fileInfos.Length;
             var processed = 0;
 
-            switch (_launcherInfo.StorageSettings.StorageType)
+            foreach (var file in fileInfos)
             {
-                case StorageType.LocalStorage:
-                    foreach (var file in fileInfos)
+                var percentage = processed * 100 / totalFiles;
+                try
+                {
+                    var filePath = NormalizePath(_launcherInfo.InstallationDirectory, file.Directory);
+
+                    switch (_launcherInfo.StorageSettings.StorageType)
                     {
-                        await _storageService.SetAsync(file.Hash, file);
+                        case StorageType.LocalStorage:
+                            file.FullPath = filePath;
+                            await _storageService.SetAsync(file.Hash, file);
 
-                        processed++;
-
-                        var percentage = processed * 100 / totalFiles;
-
-                        PackChanged?.Invoke(new ProgressChangedEventArgs(percentage, null));
-                    }
-
-                    break;
-                case StorageType.S3:
-
-                    var bucketName = "profiles";
-
-                    var minio = _gmlManager.Files is FileStorageProcedures storage
-                        ? storage.MinioClient
-                        : new MinioClient()
-                            .WithEndpoint(_launcherInfo.StorageSettings.StorageHost)
-                            .WithCredentials(_launcherInfo.StorageSettings.StorageLogin,
-                                _launcherInfo.StorageSettings.StoragePassword)
-                            .Build();
-
-                    var beArgs = new BucketExistsArgs().WithBucket(bucketName);
-
-                    bool found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
-
-                    if (!found)
-                    {
-                        var mbArgs = new MakeBucketArgs()
-                            .WithBucket(bucketName);
-
-                        await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
-                    }
-
-                    var tasks = fileInfos.Select(async file =>
-                    {
-                        var tags = new Dictionary<string, string>
-                        {
-                            { "hash", file.Hash },
-                            { "file-name", file.Name }
-                        };
-
-                        var fileCheck = new StatObjectArgs()
-                            .WithBucket(bucketName)
-                            .WithObject(file.Hash);
-
-                        try
-                        {
-                            // Пробуем получить объект
-                            await minio.StatObjectAsync(fileCheck);
-                        }
-                        catch (Minio.Exceptions.ObjectNotFoundException)
-                        {
-                            var filePath = NormalizePath(_launcherInfo.InstallationDirectory, file.Directory);
-
-                            if (File.Exists(filePath))
-                            {
-                                // Если объект не найден, загружаем его
-                                var putObjectArgs = new PutObjectArgs()
-                                    .WithBucket(bucketName)
-                                    .WithObject(file.Hash)
-                                    .WithTagging(new Tagging(tags, true))
-                                    .WithFileName(filePath);
-
-                                await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
-                            }
-                        }
-                        catch (Exception exception)
-                        {
-                            //ToDo: Sentry
-                            Console.WriteLine(exception);
-                        }
-                        finally
-                        {
-                            processed++;
-                            int percentage = processed * 100 / totalFiles;
-                            Debug.WriteLine(percentage);
                             PackChanged?.Invoke(new ProgressChangedEventArgs(percentage, null));
-                        }
-                    }).ToList();
 
-                    await Task.WhenAll(tasks);
+                            break;
+                        case StorageType.S3:
+                            var tags = new Dictionary<string, string>
+                            {
+                                { "hash", file.Hash },
+                                { "file-name", file.Name }
+                            };
+                            if (await _gmlManager.Files.CheckFileExists("profiles", file.Hash) == false)
+                            {
+                                await _gmlManager.Files.LoadFile(File.OpenRead(filePath), "profiles", file.Hash, tags);
+                            }
 
-                    Console.WriteLine("File uploaded successfully.");
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception);
+                    throw;
+                }
+                finally
+                {
+                    PackChanged?.Invoke(new ProgressChangedEventArgs(percentage, null));
+                }
 
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                processed++;
             }
         }
 
@@ -545,7 +496,7 @@ namespace Gml.Core.Helpers.Profiles
 
             var backgroundKey = backgroundImage is null
                 ? profile.BackgroundImageKey
-                : await _gmlManager.Files.LoadFile(backgroundImage);
+                : await _gmlManager.Files.LoadFile(backgroundImage, "profile-backgrounds");
 
             await UpdateProfile(profile, newProfileName, iconBase64, backgroundKey, updateDtoDescription,
                 needRenameFolder, directory, newDirectory, isEnabled, jvmArguments);
