@@ -46,6 +46,7 @@ namespace Gml.Core.Helpers.Profiles
         private readonly IStorageService _storageService;
         private readonly GmlManager _gmlManager;
         private List<IGameProfile> _gameProfiles = new();
+        private Dictionary<string, string> _fileHashCache = new();
         public bool CanUpdateAndRestore => !ProfileLoaderStateMachine.IsLoading;
 
         public ProfileProcedures(
@@ -221,6 +222,7 @@ namespace Gml.Core.Helpers.Profiles
             return _gameProfiles.AsEnumerable();
         }
 
+
         public async Task<IEnumerable<IFileInfo>> GetProfileFiles(IGameProfile baseProfile)
         {
             var profileDirectoryInfo = new DirectoryInfo(baseProfile.ClientPath);
@@ -229,17 +231,28 @@ namespace Gml.Core.Helpers.Profiles
 
             var localFilesInfo = await Task.WhenAll(localFiles.AsParallel().Select(c =>
             {
-                using (var algorithm = new SHA256Managed())
+                string hash;
+
+                if (_fileHashCache.TryGetValue(c.FullName, out var value))
                 {
-                    var hash = SystemHelper.CalculateFileHash(c.FullName, algorithm);
-                    return Task.FromResult(new LocalFileInfo
-                    {
-                        Name = c.Name,
-                        Directory = c.FullName.Replace(_launcherInfo.InstallationDirectory, string.Empty),
-                        Size = c.Length,
-                        Hash = hash
-                    });
+                    hash = value;
                 }
+                else
+                {
+                    using (var algorithm = new SHA256Managed())
+                    {
+                        hash = SystemHelper.CalculateFileHash(c.FullName, algorithm);
+                        _fileHashCache[c.FullName] = hash;
+                    }
+                }
+
+                return Task.FromResult(new LocalFileInfo
+                {
+                    Name = c.Name,
+                    Directory = c.FullName.Replace(_launcherInfo.InstallationDirectory, string.Empty),
+                    Size = c.Length,
+                    Hash = hash
+                });
             }));
 
             return localFilesInfo;
