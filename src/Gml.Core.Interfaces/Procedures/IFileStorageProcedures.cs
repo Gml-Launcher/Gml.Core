@@ -9,5 +9,6 @@ namespace GmlCore.Interfaces.Procedures
     {
         Task<IFileInfo?> DownloadFileStream(string fileHash, Stream outputStream, IHeaderDictionary headers);
         Task<string> LoadFile(Stream fileStream);
+        Task<(Stream File, string fileName, long Length)> GetFileStream(string fileHash);
     }
 }

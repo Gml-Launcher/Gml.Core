@@ -12,6 +12,7 @@ namespace GmlCore.Interfaces
         public IFileStorageProcedures Files { get; }
         public IServicesIntegrationProcedures Integrations { get; }
         public IUserProcedures Users { get; }
+        public ILauncherProcedures Launcher { get; }
         IProfileServersProcedures Servers { get; }
     }
 }

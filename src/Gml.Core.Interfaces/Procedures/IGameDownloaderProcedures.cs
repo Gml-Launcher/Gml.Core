@@ -28,5 +28,6 @@ namespace GmlCore.Interfaces.Procedures
         Task<bool> CheckClientExists(IGameProfile baseProfile);
         Task<bool> CheckOsTypeLoaded(IGameProfile baseProfile, IStartupOptions startupOptions);
         Task<IEnumerable<IVersion>> GetAllVersions();
+        Task<IEnumerable<string>> GetAllowVersions(GameLoader gameLoader, string? minecraftVersion);
     }
 }

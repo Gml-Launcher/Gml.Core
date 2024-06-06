@@ -10,5 +10,7 @@ namespace Gml.Core.Constants
         public const string SentrySdnUrl = "SentrySdnUrl";
         public const string DiscordRpcClient = "DiscordRpcClient";
         public const string Settings = "Settings";
+        public const string ActualVersion = "ActualVersion";
+        public const string ActualVersionInfo = "ActualVersionInfo";
     }
 }

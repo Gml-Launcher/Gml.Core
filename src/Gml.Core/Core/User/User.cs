@@ -16,7 +16,7 @@ namespace Gml.Core.User
         };
 
         public string Name { get; set; } = null!;
-        public string TextureUrl { get; set; }
+        public string TextureSkinUrl { get; set; }
         public string ServerUuid { get; set; }
 
         public bool IsBanned { get; set; }

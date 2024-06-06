@@ -52,11 +52,12 @@ namespace Gml.Core.Helpers.Files
                         return localFileInfo;
                     }
 
-                    if (Path.GetFileName(localFileInfo?.FullPath) is {} fileName && Guid.TryParse(fileName, out var guid) && localFileInfo!.FullPath.Contains("Attachments"))
+                    if (Path.GetFileName(localFileInfo?.FullPath) is { } fileName &&
+                        Guid.TryParse(fileName, out var guid) && localFileInfo!.FullPath.Contains("Attachments"))
                     {
                         // Если это дополнительный файл
-
-                    }else if (localFileInfo != null) // Загрузка файлов minecraft
+                    }
+                    else if (localFileInfo != null) // Загрузка файлов minecraft
                     {
                         // Если это файл профиля
                         localFileInfo.FullPath = Path.GetFullPath(string.Join("/", _launcherInfo.InstallationDirectory,
@@ -97,7 +98,8 @@ namespace Gml.Core.Helpers.Files
                             getObjectArgs = new GetObjectArgs()
                                 .WithBucket("profile-backgrounds")
                                 .WithObject(fileHash)
-                                .WithCallbackStream(async (stream, token) => await stream.CopyToAsync(outputStream, token));
+                                .WithCallbackStream(async (stream, token) =>
+                                    await stream.CopyToAsync(outputStream, token));
 
                             headers.Add("Content-Disposition", $"attachment; filename={fileHash}");
                             await MinioClient.GetObjectAsync(getObjectArgs);
@@ -167,6 +169,78 @@ namespace Gml.Core.Helpers.Files
             }
 
             return fileName;
+        }
+
+        public async Task<(Stream File, string fileName, long Length)> GetFileStream(string fileHash)
+        {
+            Stream fileStream = new MemoryStream();
+            string fileName = string.Empty;
+            long length = 0;
+
+            switch (_launcherInfo.StorageSettings.StorageType)
+            {
+                case StorageType.LocalStorage:
+                    var localFileInfo = await _storage.GetAsync<LocalFileInfo>(fileHash).ConfigureAwait(false);
+
+                    if (localFileInfo is not null)
+                    {
+                        // If it's an additional file
+                        if (Path.GetFileName(localFileInfo.FullPath) is { } name && Guid.TryParse(name, out _))
+                        {
+                            // fileStream = [ Something related to additional files ]
+                        }
+                        // If it is a Minecraft file
+                        else
+                        {
+                            // fileStream = [ Something related to Minecraft files ]
+                        }
+
+                        using (var stream = new FileStream(localFileInfo.FullPath, FileMode.Open))
+                        {
+                            await stream.CopyToAsync(fileStream);
+                        }
+
+                        fileName = localFileInfo.Name;
+                        length = fileStream.Length;
+                    }
+
+                    break;
+
+                case StorageType.S3:
+                    try
+                    {
+                        var statObjectArgs = new GetObjectTagsArgs()
+                            .WithBucket("profiles")
+                            .WithObject(fileHash);
+
+                        var metadata = await MinioClient.GetObjectTagsAsync(statObjectArgs);
+
+                        var getObjectArgs = new GetObjectArgs()
+                            .WithBucket("profiles")
+                            .WithObject(fileHash)
+                            .WithCallbackStream(async (stream, token) => await stream.CopyToAsync(fileStream, token));
+
+                        if (metadata != null)
+                        {
+                            fileName = metadata.Tags["file-name"];
+                            length = fileStream.Length;
+                            await MinioClient.GetObjectAsync(getObjectArgs);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
+
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            // Resetting the position for the caller to be able to read the stream from the beginning
+            fileStream.Position = 0;
+            return (fileStream, fileName, length);
         }
 
         private async Task ConvertStreamToFile(Stream input, string filePath)
