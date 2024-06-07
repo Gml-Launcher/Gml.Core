@@ -4,9 +4,13 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using System.Xml;
 using Gml.Core.Services.Storage;
 using Gml.Core.User;
+using Gml.Models.Converters;
+using Gml.Web.Api.Domains.User;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.User;
 
@@ -29,7 +33,10 @@ namespace Gml.Core.Helpers.User
             string? customUuid,
             string? hwid)
         {
-            var authUser = await _storage.GetUserAsync<AuthUser>(login) ?? new AuthUser
+            var authUser = await _storage.GetUserAsync<AuthUser>(login, new JsonSerializerOptions
+            {
+                Converters = { new SessionConverter() }
+            }) ?? new AuthUser
             {
                 Name = login
             };
@@ -46,12 +53,18 @@ namespace Gml.Core.Helpers.User
 
         public async Task<IUser?> GetUserByUuid(string uuid)
         {
-            return await _storage.GetUserByUuidAsync<AuthUser>(uuid);
+            return await _storage.GetUserByUuidAsync<AuthUser>(uuid, new JsonSerializerOptions
+            {
+                Converters = { new SessionConverter() }
+            });
         }
 
         public async Task<IUser?> GetUserByName(string userName)
         {
-            return await _storage.GetUserByNameAsync<AuthUser>(userName);
+            return await _storage.GetUserByNameAsync<AuthUser>(userName, new JsonSerializerOptions
+            {
+                Converters = { new SessionConverter() }
+            });
         }
 
         public async Task<bool> ValidateUser(string userUuid, string serverUuid, string accessToken)
@@ -86,12 +99,29 @@ namespace Gml.Core.Helpers.User
 
         public async Task<IEnumerable<IUser>> GetUsers()
         {
-            return await _storage.GetUsersAsync<AuthUser>();
+            return await _storage.GetUsersAsync<AuthUser>(new JsonSerializerOptions
+            {
+                Converters = { new SessionConverter() }
+            });
         }
 
         public Task UpdateUser(IUser user)
         {
             return _storage.SetUserAsync(user.Name, user.Uuid, (AuthUser)user);
+        }
+
+        public Task StartSession(IUser user)
+        {
+            user.Sessions.Add(new GameSession());
+
+            return UpdateUser(user);
+        }
+
+        public Task EndSession(IUser user)
+        {
+            user.Sessions.Last().EndDate = DateTimeOffset.Now;
+
+            return UpdateUser(user);
         }
 
         private string GenerateAccessToken()

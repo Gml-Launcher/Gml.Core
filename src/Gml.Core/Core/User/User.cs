@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using GmlCore.Interfaces.User;
 
@@ -24,5 +25,6 @@ namespace Gml.Core.User
         public string? AccessToken { get; set; }
         public string? Uuid { get; set; }
         public DateTime ExpiredDate { get; set; }
+        public List<ISession> Sessions { get; set; } = [];
     }
 }

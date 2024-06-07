@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 using GmlCore.Interfaces.User;
 
@@ -26,7 +27,7 @@ namespace Gml.Core.Services.Storage
         /// <returns>An asynchronous operation that yields the retrieved value.</returns>
         Task<T?> GetAsync<T>(string key);
 
-        Task<T?> GetUserAsync<T>(string login);
+        Task<T?> GetUserAsync<T>(string login, JsonSerializerOptions jsonSerializerOptions);
 
         /// <summary>
         ///     Saves a record in local storage asynchronously.
@@ -36,9 +37,9 @@ namespace Gml.Core.Services.Storage
         /// <returns>An asynchronous operation that yields the number of records saved.</returns>
         Task<int> SaveRecord<T>(T record);
 
-        Task<T?> GetUserByNameAsync<T>(string userName);
-        Task<T?> GetUserByUuidAsync<T>(string uuid);
+        Task<T?> GetUserByNameAsync<T>(string userName, JsonSerializerOptions jsonSerializerOptions);
+        Task<T?> GetUserByUuidAsync<T>(string uuid, JsonSerializerOptions jsonSerializerOptions);
         Task SetUserAsync<T>(string login, string uuid, T value);
-        Task<IEnumerable<T>> GetUsersAsync<T>();
+        Task<IEnumerable<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions);
     }
 }
