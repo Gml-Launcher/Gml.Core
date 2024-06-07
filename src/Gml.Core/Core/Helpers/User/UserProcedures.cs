@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
-using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -13,22 +11,17 @@ using Gml.Core.Services.Storage;
 using Gml.Core.User;
 using Gml.Models.Converters;
 using Gml.Web.Api.Domains.User;
-using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.User;
-using Microsoft.IdentityModel.Tokens;
-using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace Gml.Core.Helpers.User
 {
     public class UserProcedures : IUserProcedures
     {
-        private readonly IGmlSettings _settings;
         private readonly IStorageService _storage;
 
-        public UserProcedures(IGmlSettings settings, IStorageService storage)
+        public UserProcedures(IStorageService storage)
         {
-            _settings = settings;
             _storage = storage;
         }
 
@@ -49,7 +42,7 @@ namespace Gml.Core.Helpers.User
             };
 
             authUser.AuthHistory.Add(AuthUserHistory.Create(device, protocol, hwid, address?.ToString()));
-            authUser.AccessToken = GenerateJwtToken(login);
+            authUser.AccessToken = GenerateAccessToken();
             authUser.Uuid = customUuid ?? UsernameToUuid(login);
             authUser.ExpiredDate = DateTime.Now + TimeSpan.FromDays(30);
 
@@ -131,29 +124,15 @@ namespace Gml.Core.Helpers.User
             return UpdateUser(user);
         }
 
-        private string GenerateJwtToken(string login)
+        private string GenerateAccessToken()
         {
-            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.SecurityKey));
-            var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
+            var timestamp = DateTime.Now.Ticks.ToString();
+            var guidPart1 = Guid.NewGuid().ToString();
+            var guidPart2 = Guid.NewGuid().ToString();
+            var secretKey = "YourSecretKey"; // ToDo: Export to constant .env
 
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Jti, DateTime.Now.Ticks.ToString()),
-                new Claim(JwtRegisteredClaimNames.UniqueName, login),
-                new Claim(JwtRegisteredClaimNames.Name, login)
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: _settings.Name,
-                audience: _settings.Name,
-                expires: DateTime.Now.AddHours(1),
-                claims: claims,
-                signingCredentials: signingCredentials
-            );
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            return tokenHandler.WriteToken(token);
+            var textBytes = Encoding.UTF8.GetBytes(timestamp + secretKey + guidPart1 + guidPart2);
+            return Convert.ToBase64String(textBytes);
         }
 
         private string UsernameToUuid(string username)
