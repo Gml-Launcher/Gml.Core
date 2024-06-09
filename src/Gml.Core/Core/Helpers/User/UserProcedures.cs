@@ -1,23 +1,34 @@
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using System.Xml;
 using Gml.Core.Services.Storage;
 using Gml.Core.User;
+using Gml.Models.Converters;
+using Gml.Web.Api.Domains.User;
+using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.User;
+using Microsoft.IdentityModel.Tokens;
+using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace Gml.Core.Helpers.User
 {
     public class UserProcedures : IUserProcedures
     {
+        private readonly IGmlSettings _settings;
         private readonly IStorageService _storage;
 
-        public UserProcedures(IStorageService storage)
+        public UserProcedures(IGmlSettings settings, IStorageService storage)
         {
+            _settings = settings;
             _storage = storage;
         }
 
@@ -29,13 +40,16 @@ namespace Gml.Core.Helpers.User
             string? customUuid,
             string? hwid)
         {
-            var authUser = await _storage.GetUserAsync<AuthUser>(login) ?? new AuthUser
+            var authUser = await _storage.GetUserAsync<AuthUser>(login, new JsonSerializerOptions
+            {
+                Converters = { new SessionConverter() }
+            }) ?? new AuthUser
             {
                 Name = login
             };
 
             authUser.AuthHistory.Add(AuthUserHistory.Create(device, protocol, hwid, address?.ToString()));
-            authUser.AccessToken = GenerateAccessToken();
+            authUser.AccessToken = GenerateJwtToken(login);
             authUser.Uuid = customUuid ?? UsernameToUuid(login);
             authUser.ExpiredDate = DateTime.Now + TimeSpan.FromDays(30);
 
@@ -46,12 +60,18 @@ namespace Gml.Core.Helpers.User
 
         public async Task<IUser?> GetUserByUuid(string uuid)
         {
-            return await _storage.GetUserByUuidAsync<AuthUser>(uuid);
+            return await _storage.GetUserByUuidAsync<AuthUser>(uuid, new JsonSerializerOptions
+            {
+                Converters = { new SessionConverter() }
+            });
         }
 
         public async Task<IUser?> GetUserByName(string userName)
         {
-            return await _storage.GetUserByNameAsync<AuthUser>(userName);
+            return await _storage.GetUserByNameAsync<AuthUser>(userName, new JsonSerializerOptions
+            {
+                Converters = { new SessionConverter() }
+            });
         }
 
         public async Task<bool> ValidateUser(string userUuid, string serverUuid, string accessToken)
@@ -86,7 +106,10 @@ namespace Gml.Core.Helpers.User
 
         public async Task<IEnumerable<IUser>> GetUsers()
         {
-            return await _storage.GetUsersAsync<AuthUser>();
+            return await _storage.GetUsersAsync<AuthUser>(new JsonSerializerOptions
+            {
+                Converters = { new SessionConverter() }
+            });
         }
 
         public Task UpdateUser(IUser user)
@@ -94,15 +117,43 @@ namespace Gml.Core.Helpers.User
             return _storage.SetUserAsync(user.Name, user.Uuid, (AuthUser)user);
         }
 
-        private string GenerateAccessToken()
+        public Task StartSession(IUser user)
         {
-            var timestamp = DateTime.Now.Ticks.ToString();
-            var guidPart1 = Guid.NewGuid().ToString();
-            var guidPart2 = Guid.NewGuid().ToString();
-            var secretKey = "YourSecretKey"; // ToDo: Export to constant .env
+            user.Sessions.Add(new GameSession());
 
-            var textBytes = Encoding.UTF8.GetBytes(timestamp + secretKey + guidPart1 + guidPart2);
-            return Convert.ToBase64String(textBytes);
+            return UpdateUser(user);
+        }
+
+        public Task EndSession(IUser user)
+        {
+            user.Sessions.Last().EndDate = DateTimeOffset.Now;
+
+            return UpdateUser(user);
+        }
+
+        private string GenerateJwtToken(string login)
+        {
+            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.SecurityKey));
+            var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Jti, DateTime.Now.Ticks.ToString()),
+                new Claim(JwtRegisteredClaimNames.UniqueName, login),
+                new Claim(JwtRegisteredClaimNames.Name, login)
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: _settings.Name,
+                audience: _settings.Name,
+                expires: DateTime.Now.AddHours(1),
+                claims: claims,
+                signingCredentials: signingCredentials
+            );
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            return tokenHandler.WriteToken(token);
         }
 
         private string UsernameToUuid(string username)

@@ -5,9 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
-using GmlCore.Interfaces.User;
 using SQLite;
-using JsonConverter = System.Text.Json.Serialization.JsonConverter;
 
 namespace Gml.Core.Services.Storage
 {
@@ -51,14 +49,14 @@ namespace Gml.Core.Services.Storage
                 : default;
         }
 
-        public async Task<T?> GetUserAsync<T>(string login)
+        public async Task<T?> GetUserAsync<T>(string login, JsonSerializerOptions jsonSerializerOptions)
         {
             var storageItem = await _database.Table<UserStorageItem>()
                 .Where(si => si.Login == login)
                 .FirstOrDefaultAsync();
 
             return storageItem != null
-                ? JsonSerializer.Deserialize<T>(storageItem.Value)
+                ? JsonSerializer.Deserialize<T>(storageItem.Value, jsonSerializerOptions)
                 : default;
         }
 
@@ -76,12 +74,12 @@ namespace Gml.Core.Services.Storage
             await _database.InsertOrReplaceAsync(storageItem);
         }
 
-        public async Task<IEnumerable<T>> GetUsersAsync<T>()
+        public async Task<IEnumerable<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions)
         {
             var users = (await _database
                 .Table<UserStorageItem>()
                 .ToListAsync())
-                .Select(x => JsonSerializer.Deserialize<T>(x.Value));
+                .Select(x => JsonSerializer.Deserialize<T>(x.Value, jsonSerializerOptions));
 
             return users!;
         }
@@ -91,25 +89,25 @@ namespace Gml.Core.Services.Storage
             return _database.InsertOrReplaceAsync(record);
         }
 
-        public async Task<T?> GetUserByNameAsync<T>(string userName)
+        public async Task<T?> GetUserByNameAsync<T>(string userName, JsonSerializerOptions jsonSerializerOptions)
         {
             var storageItem = await _database.Table<UserStorageItem>()
                 .Where(si => si.Login == userName)
                 .FirstOrDefaultAsync();
 
             return storageItem != null
-                ? JsonSerializer.Deserialize<T>(storageItem.Value)
+                ? JsonSerializer.Deserialize<T>(storageItem.Value, jsonSerializerOptions)
                 : default;
         }
 
-        public async Task<T?> GetUserByUuidAsync<T>(string uuid)
+        public async Task<T?> GetUserByUuidAsync<T>(string uuid, JsonSerializerOptions jsonSerializerOptions)
         {
             var storageItem = await _database.Table<UserStorageItem>()
                 .Where(si => si.Uuid == uuid)
                 .FirstOrDefaultAsync();
 
             return storageItem != null
-                ? JsonSerializer.Deserialize<T>(storageItem.Value)
+                ? JsonSerializer.Deserialize<T>(storageItem.Value, jsonSerializerOptions)
                 : default;
         }
 

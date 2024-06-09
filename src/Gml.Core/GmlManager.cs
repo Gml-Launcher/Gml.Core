@@ -29,7 +29,7 @@ namespace Gml
             Profiles = new ProfileProcedures(LauncherInfo, Storage, this);
             Files = new FileStorageProcedures(LauncherInfo, Storage);
             Integrations = new ServicesIntegrationProcedures(Storage);
-            Users = new UserProcedures(Storage);
+            Users = new UserProcedures(settings, Storage);
             Launcher = new LauncherProcedures(LauncherInfo, Storage, Files);
 
             Servers = (IProfileServersProcedures)Profiles;
