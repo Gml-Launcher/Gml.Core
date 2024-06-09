@@ -13,7 +13,7 @@ public class Tests
     private StartupOptions _options;
     private IGameProfile _testGameProfile = null!;
 
-    private GmlManager GmlManager { get; } = new(new GmlSettings("GamerVIILauncher"));
+    private GmlManager GmlManager { get; } = new(new GmlSettings("GamerVIILauncher", "gfweagertghuysergfbsuyerbgiuyserg"));
     private const string ServerName = "Hitech #1";
 
     [SetUp]
