@@ -140,7 +140,8 @@ namespace Gml.Core.Helpers.User
             {
                 new Claim(JwtRegisteredClaimNames.Sub, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, DateTime.Now.Ticks.ToString()),
-                new Claim(JwtRegisteredClaimNames.UniqueName, login)
+                new Claim(JwtRegisteredClaimNames.UniqueName, login),
+                new Claim(JwtRegisteredClaimNames.Name, login)
             };
 
             var token = new JwtSecurityToken(
