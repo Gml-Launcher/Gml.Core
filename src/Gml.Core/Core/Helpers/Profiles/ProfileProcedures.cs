@@ -9,6 +9,12 @@ using System.Net.Http;
 using System.Reactive.Subjects;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using CmlLib.Core;
+using CmlLib.Core.Installer.Forge;
+using CmlLib.Core.Installer.Forge.Versions;
+using CmlLib.Core.ModLoaders.FabricMC;
+using CmlLib.Core.ModLoaders.LiteLoader;
+using CmlLib.Core.VersionMetadata;
 using CommunityToolkit.Diagnostics;
 using Gml.Common;
 using Gml.Core.Constants;
@@ -43,6 +49,11 @@ namespace Gml.Core.Helpers.Profiles
         private readonly GmlManager _gmlManager;
         private List<IGameProfile> _gameProfiles = new();
         private ConcurrentDictionary<string, string> _fileHashCache = new();
+        private VersionMetadataCollection? _vanillaVersions;
+        private ConcurrentDictionary<string, IEnumerable<ForgeVersion>>? _forgeVersions = new();
+        private IReadOnlyCollection<string>? _fabricVersions;
+        private IReadOnlyList<LiteLoaderVersion>? _liteLoaderVersions;
+
         public ProfileProcedures(
             ILauncherInfo launcherInfo,
             IStorageService storageService,
@@ -323,7 +334,7 @@ namespace Gml.Core.Helpers.Profiles
                 Description = profile.Description,
                 ClientVersion = profile.GameVersion,
                 HasUpdate = profile.State != ProfileState.Loading,
-                MinecraftVersion = profile.LaunchVersion.Split('-').First()
+                MinecraftVersion = profile.LaunchVersion?.Split('-')?.First()
             };
         }
 
@@ -590,6 +601,56 @@ namespace Gml.Core.Helpers.Profiles
         public Task<IFileInfo[]> GetAllProfileFiles(IGameProfile baseProfile)
         {
             return baseProfile.GameLoader.GetAllFiles();
+        }
+
+        public async Task<IEnumerable<string>> GetAllowVersions(GameLoader gameLoader, string? minecraftVersion)
+        {
+            var anyLauncher = new MinecraftLauncher();
+
+            switch (gameLoader)
+            {
+                case GameLoader.Undefined:
+                    break;
+                case GameLoader.Vanilla:
+
+                    _vanillaVersions ??= await anyLauncher.GetAllVersionsAsync();
+                    return _vanillaVersions.Where(c => c.Type == "release").Select(c => c.Name);
+
+                case GameLoader.Forge:
+
+                    var forge = new ForgeInstaller(anyLauncher);
+                    var versionMapper = new ForgeInstallerVersionMapper();
+
+                    if (!_forgeVersions.Any(c => c.Key == minecraftVersion))
+                    {
+                        _forgeVersions[minecraftVersion] = await forge.GetForgeVersions(minecraftVersion);
+                    }
+
+                    return _forgeVersions[minecraftVersion]
+                        .Select(c => versionMapper.CreateInstaller(c).VersionName);
+
+                    break;
+                case GameLoader.Fabric:
+
+                    var fabricLoader = new FabricInstaller(new HttpClient());
+                    _fabricVersions ??= await fabricLoader.GetSupportedVersionNames();
+
+                    return _fabricVersions;
+
+                case GameLoader.LiteLoader:
+                    var liteLoaderVersionLoader = new LiteLoaderInstaller(new HttpClient());
+
+                    _liteLoaderVersions ??= await liteLoaderVersionLoader.GetAllLiteLoaders();
+
+                    return _liteLoaderVersions
+                        .Select(c => c)
+                        .Where(c => c.BaseVersion == minecraftVersion)
+                        .Select(c => c.Version)!;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
+            }
+
+            return [];
         }
 
         private string ValidatePath(string path, OsType osType)

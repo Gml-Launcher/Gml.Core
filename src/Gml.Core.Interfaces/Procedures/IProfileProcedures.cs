@@ -48,5 +48,6 @@ namespace GmlCore.Interfaces.Procedures
         Task CreateModsFolder(IGameProfile profile);
         Task<IEnumerable<IFileInfo>> GetProfileFiles(IGameProfile profile, string osName, string osArchitecture);
         Task<IFileInfo[]> GetAllProfileFiles(IGameProfile baseProfile);
+        Task<IEnumerable<string>> GetAllowVersions(GameLoader result, string? minecraftVersion);
     }
 }

@@ -21,7 +21,7 @@ namespace GmlCore.Interfaces.Launcher
         string Name { get; set; }
         bool IsEnabled { get; set; }
         string GameVersion { get; set; }
-        string LaunchVersion { get; set; }
+        string? LaunchVersion { get; set; }
         GameLoader Loader { get; }
         string ClientPath { get; set; }
         string IconBase64 { get; set; }

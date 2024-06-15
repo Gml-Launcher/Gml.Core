@@ -43,7 +43,7 @@ namespace Gml.Models
         public string Name { get; set; }
         public bool IsEnabled { get; set; }
         public string GameVersion { get; set; }
-        public string LaunchVersion { get; set; }
+        public string? LaunchVersion { get; set; }
         public GameLoader Loader { get; set; }
         public string ClientPath { get; set; }
         public string IconBase64 { get; set; }
