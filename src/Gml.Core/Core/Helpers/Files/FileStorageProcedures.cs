@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Gml.Core.Services.Storage;
-using Gml.Core.System;
+using Gml.Models.System;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
@@ -213,13 +213,10 @@ namespace Gml.Core.Helpers.Files
                             // fileStream = [ Something related to Minecraft files ]
                         }
 
-                        using (var stream = new FileStream(localFileInfo.FullPath, FileMode.Open))
-                        {
-                            await stream.CopyToAsync(fileStream);
-                        }
+                        fileStream = new FileStream(localFileInfo.FullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
                         fileName = localFileInfo.Name;
-                        length = fileStream.Length;
+                        length = new FileInfo(localFileInfo.FullPath).Length;
                     }
 
                     break;
