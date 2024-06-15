@@ -11,7 +11,9 @@ namespace Gml.Core.Launcher
             ScreenHeight = 500,
             ScreenWidth = 500,
             MaximumRamMb = 1024,
-            MinimumRamMb = 1024
+            MinimumRamMb = 1024,
+            OsName = "windows",
+            OsArch = "64"
         };
 
         public int MinimumRamMb { get; set; }
@@ -21,7 +23,7 @@ namespace Gml.Core.Launcher
         public int ScreenHeight { get; set; }
         public string? ServerIp { get; set; }
         public int ServerPort { get; set; }
-        public OsType OsType { get; set; }
+        public string OsName { get; set; }
         public string OsArch { get; set; }
     }
 }
