@@ -43,7 +43,7 @@ namespace Gml.Models
         public string Name { get; set; }
         public bool IsEnabled { get; set; }
         public string GameVersion { get; set; }
-        public string LaunchVersion { get; set; }
+        public string? LaunchVersion { get; set; }
         public GameLoader Loader { get; set; }
         public string ClientPath { get; set; }
         public string IconBase64 { get; set; }
@@ -51,6 +51,8 @@ namespace Gml.Models
         public string Description { get; set; }
 
         public string JvmArguments { get; set; }
+        public ProfileState State { get; set; }
+
         [JsonConverter(typeof(LocalFileInfoConverter))]
         public List<IFileInfo>? FileWhiteList { get; set; }
 
@@ -69,32 +71,36 @@ namespace Gml.Models
             return IsValidProfile == NullableBool.True;
         }
 
-        public async Task DownloadAsync(OsType osType, string osArch)
+        public async Task DownloadAsync()
         {
             CheckDispose();
 
-            await ProfileProcedures.DownloadProfileAsync(this, osType, osArch);
+            await ProfileProcedures.DownloadProfileAsync(this);
         }
 
         public Task<Process> CreateProcess(IStartupOptions startupOptions, IUser user)
         {
             CheckDispose();
 
-            return GameLoader.CreateProfileProcess(this, startupOptions, user, false, Array.Empty<string>());
+            return GameLoader.CreateProcess(startupOptions, user, false, []);
         }
 
-        public Task<bool> CheckClientExists()
+        public async Task<bool> CheckClientExists()
         {
             CheckDispose();
 
-            return GameLoader.CheckClientExists(this);
+            //ToDo: Доделать
+            // return GameLoader.CheckClientExists(this);
+            return true;
         }
 
-        public Task<bool> CheckOsTypeLoaded(IStartupOptions startupOptions)
+        public async Task<bool> CheckOsTypeLoaded(IStartupOptions startupOptions)
         {
             CheckDispose();
 
-            return GameLoader.CheckOsTypeLoaded(this, startupOptions);
+            //ToDo: Доделать
+            // return GameLoader.CheckOsTypeLoaded(this, startupOptions);
+            return true;
         }
 
         public Task<string[]> InstallAuthLib()
@@ -120,7 +126,10 @@ namespace Gml.Models
         {
             CheckDispose();
 
-            return await GameLoader.IsFullLoaded(this, startupOptions);
+            //ToDo: Доделать
+            // return await GameLoader.IsFullLoaded(this, startupOptions);
+
+            return true;
         }
 
         public async Task Remove()
@@ -144,9 +153,10 @@ namespace Gml.Models
         {
             CheckDispose();
 
-            IsLoaded = await GameLoader.IsFullLoaded(this)
-                ? NullableBool.True
-                : NullableBool.False;
+            //ToDo: Доделать
+            // IsLoaded = await GameLoader.IsFullLoaded(this)
+            //     ? NullableBool.True
+            //     : NullableBool.False;
 
             return IsValidProfile == NullableBool.True;
         }
@@ -176,6 +186,21 @@ namespace Gml.Models
         public virtual void RemoveServer(IProfileServer server)
         {
             Servers.Remove(server);
+        }
+
+        public Task CreateModsFolder()
+        {
+            return ProfileProcedures.CreateModsFolder(this);
+        }
+
+        public Task<IEnumerable<IFileInfo>> GetProfileFiles(string osName, string osArchitecture)
+        {
+            return ProfileProcedures.GetProfileFiles(this, osName, osArchitecture);
+        }
+
+        public Task<IFileInfo[]> GetAllProfileFiles()
+        {
+            return ProfileProcedures.GetAllProfileFiles(this);
         }
     }
 }

@@ -5,16 +5,16 @@ namespace Gml.Models.CmlLib
 {
     public class CustomMinecraftPath : MinecraftPath
     {
-        public CustomMinecraftPath(string basePath)
+        public CustomMinecraftPath(string rootDirectory, string profilePath, string platform, string architecture)
         {
-            BasePath = NormalizePath(basePath);
+            BasePath = profilePath;
 
-            Library = NormalizePath(Path.Combine(BasePath, "libraries"));
-            Versions = NormalizePath(Path.Combine(BasePath, "client"));
+            Library = NormalizePath(Path.Combine(BasePath, "libraries", platform, architecture));
+
             Resource = NormalizePath(Path.Combine(BasePath, "resources"));
-
-            Runtime = NormalizePath(Path.Combine(BasePath, "runtime"));
-            Assets = NormalizePath(Path.Combine(BasePath, "assets"));
+            Versions = NormalizePath(Path.Combine(BasePath, "client"));
+            Runtime = NormalizePath(Path.Combine(rootDirectory, "runtime"));
+            Assets = NormalizePath(Path.Combine(rootDirectory, "assets"));
 
             CreateDirs();
         }

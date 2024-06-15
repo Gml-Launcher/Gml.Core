@@ -1,7 +1,6 @@
-using System.IO;
 using GmlCore.Interfaces.System;
 
-namespace Gml.Core.System
+namespace Gml.Models.System
 {
     public class LocalFileInfo : IFileInfo
     {
