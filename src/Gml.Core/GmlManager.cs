@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Gml.Core.Constants;
-using Gml.Core.GameDownloader;
 using Gml.Core.Helpers.Files;
+using Gml.Core.Helpers.Game;
 using Gml.Core.Helpers.Launcher;
 using Gml.Core.Helpers.Profiles;
 using Gml.Core.Helpers.User;
@@ -25,7 +25,6 @@ namespace Gml
         {
             LauncherInfo = new LauncherInfo(settings);
             Storage = new SqliteStorageService(settings);
-            GameLoader = new GameDownloaderProcedures(LauncherInfo, Storage, GameProfile.Empty);
             Profiles = new ProfileProcedures(LauncherInfo, Storage, this);
             Files = new FileStorageProcedures(LauncherInfo, Storage);
             Integrations = new ServicesIntegrationProcedures(Storage);
@@ -34,8 +33,6 @@ namespace Gml
 
             Servers = (IProfileServersProcedures)Profiles;
         }
-
-        public IGameDownloaderProcedures GameLoader { get; }
         public IStorageService Storage { get; }
         public ILauncherInfo LauncherInfo { get; }
         public IProfileProcedures Profiles { get; }
@@ -49,6 +46,8 @@ namespace Gml
         {
             try
             {
+                Profiles.RestoreProfiles().Wait();
+
                 var versionReleases = Storage.GetAsync<Dictionary<OsType, T?>>(StorageConstants.ActualVersionInfo).Result;
 
                 if (versionReleases is null) return;
@@ -58,7 +57,6 @@ namespace Gml
                     LauncherInfo.ActualLauncherVersion.Add(item.Key, item.Value);
                 }
 
-                Profiles.RestoreProfiles().Wait();
             }
             catch (Exception exception)
             {

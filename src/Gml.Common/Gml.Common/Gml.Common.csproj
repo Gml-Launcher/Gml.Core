@@ -5,4 +5,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Gml.Core.Interfaces\Gml.Core.Interfaces.csproj" />
+  </ItemGroup>
+
 </Project>
