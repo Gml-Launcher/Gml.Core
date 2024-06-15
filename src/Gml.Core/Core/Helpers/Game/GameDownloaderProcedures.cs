@@ -98,7 +98,7 @@ namespace Gml.Core.Helpers.Game
 
             if (runtimeFolder is null)
             {
-                throw new NotSupportedException("Operation system not supported");
+                return [];
             }
 
             // All assets, ToDo: Change to current profile assets
