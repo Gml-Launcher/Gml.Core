@@ -222,7 +222,6 @@ public class GameDownloader
                     JavaPath = _buildJavaPath,
                     CancellationToken = cancellationToken
                 });
-
                 // var process = await launcher.CreateProcessAsync(loadVersion, new MLaunchOption()).AsTask();
             }
             catch (Exception exception)
