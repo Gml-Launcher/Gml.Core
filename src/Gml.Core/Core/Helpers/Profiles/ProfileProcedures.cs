@@ -41,7 +41,7 @@ namespace Gml.Core.Helpers.Profiles
         public IObservable<double> PackChanged => _packChanged;
 
         private const string AuthLibUrl =
-            "https://github.com/yushijinhun/authlib-injector/releases/download/v1.2.4/authlib-injector-1.2.4.jar";
+            "https://github.com/yushijinhun/authlib-injector/releases/download/v1.2.5/authlib-injector-1.2.5.jar";
 
 
         private readonly ILauncherInfo _launcherInfo;
@@ -281,7 +281,7 @@ namespace Gml.Core.Helpers.Profiles
 
             if (files!.Any(c => c.Name == Path.GetFileName(AuthLibUrl)))
             {
-                var authLibRelativePath = Path.Combine(profile.ClientPath, "libraries", Path.GetFileName(AuthLibUrl));
+                var authLibRelativePath = Path.Combine(profile.ClientPath, "libraries", "custom", Path.GetFileName(AuthLibUrl));
                 jvmArgs.Add($"-javaagent:{authLibRelativePath}={{authEndpoint}}");
             }
 
@@ -359,7 +359,6 @@ namespace Gml.Core.Helpers.Profiles
                 var files = (await GetProfileFiles(profile)).ToList();
                 var files2 = GetWhiteListFilesProfileFiles(files);
 
-
                 await SaveProfiles();
 
                 return new GameProfileInfo
@@ -375,7 +374,7 @@ namespace Gml.Core.Helpers.Profiles
             }
             catch (Exception exception)
             {
-                throw new Exception($"Не удалось восстановить игровой профиль. {exception.Message}");
+                throw new Exception($"Не удалось восстановить игровой профиль. {exception}");
             }
             finally
             {
@@ -549,7 +548,7 @@ namespace Gml.Core.Helpers.Profiles
                 authLibPath.Create();
 
             if (downloadingFileInfo.Exists && downloadingFileInfo.Length > 0)
-                return [$"-javaagent:{{localPath}}\\libraries\\{authlibFileName}={{authEndpoint}}"];
+                return [$"-javaagent:{{localPath}}\\libraries\\custom\\{authlibFileName}={{authEndpoint}}"];
 
             using (var httpClient = new HttpClient())
             {
@@ -565,7 +564,7 @@ namespace Gml.Core.Helpers.Profiles
 
             downloadingFileInfo.Refresh();
 
-            return [$"-javaagent:{{localPath}}\\libraries\\{authlibFileName}={{authEndpoint}}"];
+            return [$"-javaagent:{{localPath}}\\libraries\\custom\\{authlibFileName}={{authEndpoint}}"];
         }
 
         public async Task<IGameProfileInfo?> GetCacheProfile(IGameProfile baseProfile)
