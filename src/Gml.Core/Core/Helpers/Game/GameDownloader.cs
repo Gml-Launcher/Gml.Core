@@ -93,7 +93,7 @@ public class GameDownloader
         var progressSubject = new Subject<string>();
 
         progressSubject
-            .Buffer(TimeSpan.FromSeconds(3))
+            .Buffer(TimeSpan.FromSeconds(2))
             .Select(items => string.Join(Environment.NewLine, items))
             .Subscribe(combinedText =>
             {
