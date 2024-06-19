@@ -93,7 +93,7 @@ public class GameDownloader
         var progressSubject = new Subject<string>();
 
         progressSubject
-            .Buffer(TimeSpan.FromSeconds(3))
+            .Buffer(TimeSpan.FromSeconds(2))
             .Select(items => string.Join(Environment.NewLine, items))
             .Subscribe(combinedText =>
             {
@@ -222,6 +222,7 @@ public class GameDownloader
                     JavaPath = _buildJavaPath,
                     CancellationToken = cancellationToken
                 });
+
                 // var process = await launcher.CreateProcessAsync(loadVersion, new MLaunchOption()).AsTask();
             }
             catch (Exception exception)
@@ -449,7 +450,8 @@ public class GameDownloader
                         ScreenWidth = startupOptions.ScreenWidth,
                         ServerIp = startupOptions.ServerIp,
                         ServerPort = startupOptions.ServerPort,
-                        Session = session
+                        Session = session,
+                        ExtraJvmArguments = jvmArguments.Select(c => new MArgument(c))
                     }).AsTask();
                 }
                 catch (Exception exception)
@@ -471,7 +473,8 @@ public class GameDownloader
             ServerIp = startupOptions.ServerIp,
             ServerPort = startupOptions.ServerPort,
             Session = session,
-            PathSeparator = startupOptions.OsName == "windows" ? ";" : ":"
+            PathSeparator = startupOptions.OsName == "windows" ? ";" : ":",
+            ExtraJvmArguments = jvmArguments.Select(c => new MArgument(c))
         }).AsTask();
     }
 
