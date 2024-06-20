@@ -66,6 +66,24 @@ namespace Gml.Core.Helpers.Game
                 SearchOption.AllDirectories));
             directoryFiles.AddRange(Directory.GetFiles(Path.Combine(anyLauncher.MinecraftPath.BasePath), "*.*",
                 SearchOption.AllDirectories));
+
+            var basePath = Path.Combine(anyLauncher.MinecraftPath.BasePath);
+            var excludedDirectories = new[] { "client", "libraries", "resources" }
+                .Select(x => Path.Combine(basePath, x))
+                .ToList();
+
+            var filesInBasePath = Directory.EnumerateFiles(basePath); // Getting files in base directory
+
+            var allFiles = filesInBasePath
+                .Concat(
+                    Directory.EnumerateDirectories(basePath, "*", SearchOption.AllDirectories)
+                        .Where(dir => !excludedDirectories.Any(dir.StartsWith))
+                        .SelectMany(Directory.EnumerateFiles)
+                )
+                .ToList();
+
+            directoryFiles.AddRange(allFiles);
+
             var localFilesInfo = await GetHashFiles(directoryFiles, []);
             localFilesInfo = localFilesInfo
                 .GroupBy(c => c.Hash)
@@ -117,6 +135,23 @@ namespace Gml.Core.Helpers.Game
             var librariesDirectory = Path.Combine(launcher.MinecraftPath.BasePath, "libraries", osName, osArchitecture);
             var customLibraries = Path.Combine(launcher.MinecraftPath.BasePath, "libraries", "custom");
 
+            var basePath = Path.Combine(launcher.MinecraftPath.BasePath);
+            var excludedDirectories = new[] { "client", "libraries", "resources" }
+                .Select(x => Path.Combine(basePath, x))
+                .ToList();
+
+            var filesInBasePath = Directory.EnumerateFiles(basePath); // Getting files in base directory
+
+            var allFiles = filesInBasePath
+                .Concat(
+                    Directory.EnumerateDirectories(basePath, "*", SearchOption.AllDirectories)
+                        .Where(dir => !excludedDirectories.Any(dir.StartsWith))
+                        .SelectMany(Directory.EnumerateFiles)
+                )
+                .ToList();
+
+            systemFiles.AddRange(allFiles);
+
             if (Directory.Exists(librariesDirectory))
             {
                 systemFiles.AddRange(Directory.GetFiles(librariesDirectory, "*.*", SearchOption.AllDirectories));
@@ -126,7 +161,6 @@ namespace Gml.Core.Helpers.Game
             {
                 systemFiles.AddRange(Directory.GetFiles(customLibraries, "*.*", SearchOption.AllDirectories));
             }
-
 
             return await GetHashFiles(systemFiles, []);
         }
