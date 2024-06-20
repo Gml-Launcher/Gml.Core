@@ -74,9 +74,14 @@ public class GameDownloaderProcedures : IGameDownloaderProcedures
             .Select(x => Path.Combine(basePath, x))
             .ToList();
 
-        var allFiles = Directory.EnumerateDirectories(basePath, "*", SearchOption.AllDirectories)
-            .Where(dir => !excludedDirectories.Any(x => dir.StartsWith(x)))
-            .SelectMany(dir => Directory.EnumerateFiles(dir))
+        var filesInBasePath = Directory.EnumerateFiles(basePath); // Getting files in base directory
+
+        var allFiles = filesInBasePath
+            .Concat(
+                Directory.EnumerateDirectories(basePath, "*", SearchOption.AllDirectories)
+                    .Where(dir => !excludedDirectories.Any(dir.StartsWith))
+                    .SelectMany(Directory.EnumerateFiles)
+            )
             .ToList();
 
         directoryFiles.AddRange(allFiles);
@@ -138,9 +143,14 @@ public class GameDownloaderProcedures : IGameDownloaderProcedures
             .Select(x => Path.Combine(basePath, x))
             .ToList();
 
-        var allFiles = Directory.EnumerateDirectories(basePath, "*", SearchOption.AllDirectories)
-            .Where(dir => !excludedDirectories.Any(dir.StartsWith))
-            .SelectMany(Directory.EnumerateFiles)
+        var filesInBasePath = Directory.EnumerateFiles(basePath); // Getting files in base directory
+
+        var allFiles = filesInBasePath
+            .Concat(
+                Directory.EnumerateDirectories(basePath, "*", SearchOption.AllDirectories)
+                    .Where(dir => !excludedDirectories.Any(dir.StartsWith))
+                    .SelectMany(Directory.EnumerateFiles)
+            )
             .ToList();
 
         systemFiles.AddRange(allFiles);
