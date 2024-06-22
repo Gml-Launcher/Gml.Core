@@ -48,7 +48,7 @@ public class GameDownloader
     private Subject<Exception> _exception = new();
     private SyncProgress<ByteProgress> _byteProgress;
     private SyncProgress<InstallerProgressChangedEventArgs> _fileProgress;
-    private Dictionary<GameLoader, Func<string, CancellationToken, Task<string>>> _downloadMethods;
+    private Dictionary<GameLoader, Func<string, string?, CancellationToken, Task<string>>> _downloadMethods;
     private CancellationTokenSource _cancellationTokenSource;
     private string? _buildJavaPath;
     private int _steps;
@@ -61,12 +61,16 @@ public class GameDownloader
         {
             "linux", [
                 "https://mirror.recloud.tech/openjdk-22_linux-x64_bin.zip",
+                "https://mirror.recloud.host/openjdk-22_linux-x64_bin.zip",
+                "https://mr-1.recloud.tech/openjdk-22_linux-x64_bin.zip",
                 "http://localhost/openjdk-22_linux-x64_bin.zip",
             ]
         },
         {
             "windows", [
                 "https://mirror.recloud.tech/openjdk-22_windows-x64_bin.zip",
+                "https://mirror.recloud.host/openjdk-22_windows-x64_bin.zip",
+                "https://mr-1.recloud.tech/openjdk-22_windows-x64_bin.zip",
                 "http://localhost/openjdk-22_windows-x64_bin.zip",
             ]
         },
@@ -74,7 +78,7 @@ public class GameDownloader
 
     public GameDownloader(IGameProfile profile, ILauncherInfo launcherInfo)
     {
-        _downloadMethods = new Dictionary<GameLoader, Func<string, CancellationToken, Task<string>>>()
+        _downloadMethods = new Dictionary<GameLoader, Func<string, string?, CancellationToken, Task<string>>>
         {
             { GameLoader.Vanilla, DownloadVanilla },
             { GameLoader.Forge, DownloadForge },
@@ -106,7 +110,7 @@ public class GameDownloader
         _fileProgress = new SyncProgress<InstallerProgressChangedEventArgs>(e =>
         {
             if (e.Name != null)
-                progressSubject.OnNext(e.Name);
+                progressSubject.OnNext($"[{DateTime.Now:HH:m:ss:fff}] [INFO] {e.Name}");
         });
 
         foreach (var platform in _platforms)
@@ -126,7 +130,7 @@ public class GameDownloader
         }
     }
 
-    public async Task<string> DownloadGame(GameLoader loader, string version)
+    public async Task<string> DownloadGame(GameLoader loader, string version, string? launchVersion)
     {
         _cancellationTokenSource = new CancellationTokenSource();
         _profile.State = ProfileState.Loading;
@@ -142,7 +146,7 @@ public class GameDownloader
         await CheckBuildJava();
         OnStep();
 
-        return await _downloadMethods[loader](version, _cancellationTokenSource.Token);
+        return await _downloadMethods[loader](version, launchVersion, _cancellationTokenSource.Token);
     }
 
     private void OnStep()
@@ -154,7 +158,7 @@ public class GameDownloader
         _currentStep++;
     }
 
-    private async Task<string> DownloadVanilla(string version, CancellationToken cancellationToken)
+    private async Task<string> DownloadVanilla(string version, string? launchVersion, CancellationToken cancellationToken)
     {
         foreach (var launcher in _launchers.Values)
         {
@@ -177,12 +181,12 @@ public class GameDownloader
         return await Task.FromResult(version);
     }
 
-    private async Task<string> DownloadForge(string version, CancellationToken cancellationToken)
+    private async Task<string> DownloadForge(string version, string? launchVersion, CancellationToken cancellationToken)
     {
         _loadLog.OnNext("Load starting...");
         string loadVersion = string.Empty;
         ForgeVersion? bestVersion = default;
-        IEnumerable<ForgeVersion>? forgeVersions = default;
+        ForgeVersion[]? forgeVersions = default;
 
         foreach (var launcher in _launchers.Values)
         {
@@ -191,23 +195,13 @@ public class GameDownloader
                 _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
                 var forge = new ForgeInstaller(launcher);
 
-                var minecraftVersion = version.Split('-').First();
-                var forgeVersion = string.Empty;
+                forgeVersions ??= (await forge.GetForgeVersions(version)).ToArray();
 
-                forgeVersions ??= await forge.GetForgeVersions(minecraftVersion);
-
-                if (version.Contains("Forge") && bestVersion is null)
-                {
-                    forgeVersion = version.Split('-')[1].Replace("Forge", string.Empty);
-                    bestVersion = forgeVersions.FirstOrDefault(v => v.ForgeVersionName == forgeVersion);
-                }
-                else
-                {
-                    bestVersion ??=
-                        forgeVersions.FirstOrDefault(v => v.IsRecommendedVersion) ??
-                        forgeVersions.FirstOrDefault(v => v.IsLatestVersion) ??
-                        forgeVersions.FirstOrDefault();
-                }
+                bestVersion ??=
+                    forgeVersions.FirstOrDefault(v => v.ForgeVersionName == launchVersion) ??
+                    forgeVersions.FirstOrDefault(v => v.IsRecommendedVersion) ??
+                    forgeVersions.FirstOrDefault(v => v.IsLatestVersion) ??
+                    forgeVersions.FirstOrDefault();
 
                 if (bestVersion is null)
                 {
@@ -240,7 +234,7 @@ public class GameDownloader
         return await Task.FromResult(loadVersion);
     }
 
-    private async Task<string> DownloadFabric(string version, CancellationToken cancellationToken)
+    private async Task<string> DownloadFabric(string version, string? launchVersion, CancellationToken cancellationToken)
     {
         var versionInfo = string.Empty;
         var fabricLoader = new FabricInstaller(new HttpClient());
@@ -270,7 +264,7 @@ public class GameDownloader
         return versionInfo;
     }
 
-    private async Task<string> DownloadLiteLoader(string version, CancellationToken cancellationToken)
+    private async Task<string> DownloadLiteLoader(string version, string? launchVersion, CancellationToken cancellationToken)
     {
         var versionInfo = string.Empty;
         var liteLoader = new LiteLoaderInstaller(new HttpClient());

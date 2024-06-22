@@ -42,9 +42,9 @@ namespace Gml.Core.Helpers.Game
         public IObservable<string> LoadLog => _gameLoader.LoadLog;
         public IObservable<Exception> LoadException => _gameLoader.LoadException;
 
-        public Task<string> DownloadGame(string version, GameLoader loader)
+        public Task<string> DownloadGame(string version, string? launchVersion, GameLoader loader)
         {
-            return _gameLoader.DownloadGame(loader, version);
+            return _gameLoader.DownloadGame(loader, version, launchVersion);
         }
 
         public async Task<Process> CreateProcess(IStartupOptions startupOptions, IUser user, bool needDownload,
