@@ -114,6 +114,14 @@ namespace Gml.Core.Helpers.Game
                     launcher.MinecraftPath.Runtime, $"{osName}??{osArchitecture}", SearchOption.AllDirectories)
                 .FirstOrDefault();
 
+            if (string.IsNullOrEmpty(runtimeFolder) && osName == "linux")
+            {
+                runtimeFolder = Directory
+                    .GetDirectories(
+                        launcher.MinecraftPath.Runtime, $"{osName}", SearchOption.AllDirectories)
+                    .FirstOrDefault();
+            }
+
             if (runtimeFolder is null)
             {
                 return [];
