@@ -30,7 +30,6 @@ namespace Gml.Common
                 default:
                     throw new ArgumentOutOfRangeException(nameof(osType), osType, null);
             }
-
         }
     }
 }
