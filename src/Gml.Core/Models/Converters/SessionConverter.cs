@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Gml.Web.Api.Domains.User;
+using Gml.Models.Sessions;
 using GmlCore.Interfaces.User;
 
 namespace Gml.Models.Converters;
