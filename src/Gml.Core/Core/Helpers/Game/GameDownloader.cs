@@ -239,22 +239,20 @@ public class GameDownloader
     {
         _loadLog.OnNext("Load starting...");
         string loadVersion = string.Empty;
-        ForgeVersion? bestVersion = default;
-        ForgeVersion[]? forgeVersions = default;
+        NeoForgeVersion? bestVersion = default;
+        NeoForgeVersion[]? forgeVersions = default;
 
         foreach (var launcher in _launchers.Values)
         {
             try
             {
                 _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
-                var forge = new ForgeInstaller(launcher);
+                var forge = new NeoForgeInstaller(launcher);
 
                 forgeVersions ??= (await forge.GetForgeVersions(version)).ToArray();
 
                 bestVersion ??=
-                    forgeVersions.FirstOrDefault(v => v.ForgeVersionName == launchVersion) ??
-                    forgeVersions.FirstOrDefault(v => v.IsRecommendedVersion) ??
-                    forgeVersions.FirstOrDefault(v => v.IsLatestVersion) ??
+                    forgeVersions.FirstOrDefault(v => v.VersionName == launchVersion) ??
                     forgeVersions.FirstOrDefault();
 
                 if (bestVersion is null)
@@ -262,7 +260,7 @@ public class GameDownloader
                     throw new InvalidOperationException("Cannot find any version");
                 }
 
-                loadVersion = await forge.Install(bestVersion, new ForgeInstallOptions
+                loadVersion = await forge.Install(bestVersion, new NeoForgeInstallOptions
                 {
                     SkipIfAlreadyInstalled = false,
                     ByteProgress = _byteProgress,
@@ -271,7 +269,7 @@ public class GameDownloader
                     CancellationToken = cancellationToken
                 });
 
-                // var process = await launcher.CreateProcessAsync(loadVersion, new MLaunchOption()).AsTask();
+                var process = await launcher.CreateProcessAsync(loadVersion, new MLaunchOption()).AsTask();
             }
             catch (Exception exception)
             {

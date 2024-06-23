@@ -51,6 +51,7 @@ namespace Gml.Core.Helpers.Profiles
         private ConcurrentDictionary<string, string> _fileHashCache = new();
         private VersionMetadataCollection? _vanillaVersions;
         private ConcurrentDictionary<string, IEnumerable<ForgeVersion>>? _forgeVersions = new();
+        private ConcurrentDictionary<string, IEnumerable<NeoForgeVersion>>? _neoForgeVersions = new();
         private IReadOnlyCollection<string>? _fabricVersions;
         private IReadOnlyList<LiteLoaderVersion>? _liteLoaderVersions;
 
@@ -131,12 +132,11 @@ namespace Gml.Core.Helpers.Profiles
                     return versions.Any(c => c.Equals(version));
                 case GameLoader.LiteLoader:
                     return versions.Any(c => c.Equals(loaderVersion));
+                case GameLoader.NeoForge:
+                    return versions.Any(c => c.Equals(loaderVersion));
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dtoGameLoader), dtoGameLoader, null);
             }
-
-
-
 
             return true;
         }
@@ -672,6 +672,17 @@ namespace Gml.Core.Helpers.Profiles
                             .Where(c => c.BaseVersion == minecraftVersion)
                             .Select(c => c.Version)!;
                     case GameLoader.NeoForge:
+                        var neoForge = new NeoForgeInstaller(anyLauncher);
+                        var neoForgeVersionMapper = new NeoForgeInstallerVersionMapper();
+
+                        if (!_neoForgeVersions.Any(c => c.Key == minecraftVersion))
+                        {
+                            _neoForgeVersions[minecraftVersion] = await neoForge.GetForgeVersions(minecraftVersion);
+                        }
+
+                        return _neoForgeVersions[minecraftVersion]
+                            .Select(c => neoForgeVersionMapper.CreateInstaller(c).VersionName)
+                            .Reverse();
                     default:
                         throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
                 }
