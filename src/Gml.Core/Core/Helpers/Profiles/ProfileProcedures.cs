@@ -671,6 +671,7 @@ namespace Gml.Core.Helpers.Profiles
                             .Select(c => c)
                             .Where(c => c.BaseVersion == minecraftVersion)
                             .Select(c => c.Version)!;
+                    case GameLoader.NeoForge:
                     default:
                         throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
                 }
