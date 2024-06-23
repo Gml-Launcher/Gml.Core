@@ -83,7 +83,8 @@ public class GameDownloader
             { GameLoader.Vanilla, DownloadVanilla },
             { GameLoader.Forge, DownloadForge },
             { GameLoader.Fabric, DownloadFabric },
-            { GameLoader.LiteLoader, DownloadLiteLoader }
+            { GameLoader.LiteLoader, DownloadLiteLoader },
+            { GameLoader.NeoForge, DownloadNeoForge }
         };
 
         _profile = profile;
@@ -182,6 +183,59 @@ public class GameDownloader
     }
 
     private async Task<string> DownloadForge(string version, string? launchVersion, CancellationToken cancellationToken)
+    {
+        _loadLog.OnNext("Load starting...");
+        string loadVersion = string.Empty;
+        ForgeVersion? bestVersion = default;
+        ForgeVersion[]? forgeVersions = default;
+
+        foreach (var launcher in _launchers.Values)
+        {
+            try
+            {
+                _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
+                var forge = new ForgeInstaller(launcher);
+
+                forgeVersions ??= (await forge.GetForgeVersions(version)).ToArray();
+
+                bestVersion ??=
+                    forgeVersions.FirstOrDefault(v => v.ForgeVersionName == launchVersion) ??
+                    forgeVersions.FirstOrDefault(v => v.IsRecommendedVersion) ??
+                    forgeVersions.FirstOrDefault(v => v.IsLatestVersion) ??
+                    forgeVersions.FirstOrDefault();
+
+                if (bestVersion is null)
+                {
+                    throw new InvalidOperationException("Cannot find any version");
+                }
+
+                loadVersion = await forge.Install(bestVersion, new ForgeInstallOptions
+                {
+                    SkipIfAlreadyInstalled = false,
+                    ByteProgress = _byteProgress,
+                    FileProgress = _fileProgress,
+                    JavaPath = _buildJavaPath,
+                    CancellationToken = cancellationToken
+                });
+
+                // var process = await launcher.CreateProcessAsync(loadVersion, new MLaunchOption()).AsTask();
+            }
+            catch (Exception exception)
+            {
+                _exception.OnNext(exception);
+                _loadLog.OnNext(
+                    $"Launcher for {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} not installed!");
+            }
+            finally
+            {
+                OnStep();
+            }
+        }
+
+        return await Task.FromResult(loadVersion);
+    }
+
+    private async Task<string> DownloadNeoForge(string version, string? launchVersion, CancellationToken cancellationToken)
     {
         _loadLog.OnNext("Load starting...");
         string loadVersion = string.Empty;

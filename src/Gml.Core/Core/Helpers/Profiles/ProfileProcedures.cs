@@ -24,7 +24,6 @@ using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
 using Gml.Models;
 using Gml.Models.System;
-using Gml.Web.Api.Domains.Exceptions;
 using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
