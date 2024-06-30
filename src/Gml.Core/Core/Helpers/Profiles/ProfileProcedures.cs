@@ -41,8 +41,7 @@ namespace Gml.Core.Helpers.Profiles
         public IObservable<double> PackChanged => _packChanged;
 
         private const string AuthLibUrl =
-            "https://github.com/yushijinhun/authlib-injector/releases/download/v1.2.5/authlib-injector-1.2.5.jar";
-
+            "https://github.com/Gml-Launcher/Gml.Authlib.Injector/releases/download/authlib-injector-1.2.5-alpha-1/authlib-injector-1.2.5-alpha-1.jar";
 
         private readonly ILauncherInfo _launcherInfo;
         private readonly IStorageService _storageService;
