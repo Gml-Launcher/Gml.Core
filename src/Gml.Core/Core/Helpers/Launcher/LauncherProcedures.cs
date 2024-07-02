@@ -99,7 +99,7 @@ public class LauncherProcedures : ILauncherProcedures
 
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                command = $"/c {dotnetPath} publish ./src/Gml.Launcher/ -r {version} -p:PublishSingleFile=true --self-contained false -p:IncludeNativeLibrariesForSelfExtract=true";
+                command = $"/c {dotnetPath} publish ./src/Gml.Launcher/ -r {version} -c Release -f net8.0 -p:PublishSingleFile=true --self-contained true -p:IncludeNativeLibrariesForSelfExtract=true -p:IncludeAllContentForSelfExtract=true -p:PublishReadyToRun=true";
                 processStartInfo = new ProcessStartInfo("cmd", command)
                 {
                     WorkingDirectory = projectPath
@@ -107,7 +107,7 @@ public class LauncherProcedures : ILauncherProcedures
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                command = $"{dotnetPath} publish ./src/Gml.Launcher/ -r {version} -p:PublishSingleFile=true --self-contained false -p:IncludeNativeLibrariesForSelfExtract=true";
+                command = $"{dotnetPath} publish ./src/Gml.Launcher/ -r {version} -c Release -f net8.0 -p:PublishSingleFile=true --self-contained true -p:IncludeNativeLibrariesForSelfExtract=true -p:IncludeAllContentForSelfExtract=true -p:PublishReadyToRun=true";
                 processStartInfo = new ProcessStartInfo("/bin/bash", "-c \"" + command + "\"")
                 {
                     WorkingDirectory = projectPath
