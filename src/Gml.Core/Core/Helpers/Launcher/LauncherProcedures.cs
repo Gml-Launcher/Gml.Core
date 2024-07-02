@@ -46,22 +46,50 @@ public class LauncherProcedures : ILauncherProcedures
         _files = files;
     }
 
-    public async Task<string> CreateVersion(IVersionFile version, OsType osTypeEnum)
+    public async Task<string> CreateVersion(IVersionFile version, ILauncherBuild launcherBuild)
     {
-        if (version.File is null)
+
+        var versions = Directory
+            .GetDirectories(launcherBuild.Path)
+            .Select(c => new DirectoryInfo(c));
+
+        foreach (var versionInfo in versions)
         {
-            throw new ArgumentNullException(nameof(version.File));
+            var localVersion = version.Clone() as IVersionFile;
+
+            var splitVersionInfo = versionInfo.Name.Split('-');
+            var osName = splitVersionInfo.First();
+            var osArch = splitVersionInfo.Last();
+
+            var executeFile = versionInfo.GetFiles("*.*")
+                .FirstOrDefault(file => !file.Extension.Equals(".pdb", StringComparison.OrdinalIgnoreCase));
+
+            if (executeFile != null)
+            {
+                localVersion!.Guid = await _files.LoadFile(File.OpenRead(executeFile.FullName), Path.Combine("launcher", osName, osArch), $"{versionInfo.Name}-{executeFile.Name}");
+            }
+
+            _launcherInfo.ActualLauncherVersion[versionInfo.Name] = localVersion;
+            await _storage.SetAsync(StorageConstants.ActualVersion, version.Version);
+            await _storage.SetAsync(StorageConstants.ActualVersionInfo, _launcherInfo.ActualLauncherVersion);
         }
 
-        version.Guid = await _files.LoadFile(version.File, "launcher");
+        Console.WriteLine();
 
-        _launcherInfo.ActualLauncherVersion[osTypeEnum] = version;
-
-        await _storage.SetAsync(StorageConstants.ActualVersion, version.Guid);
-        await _storage.SetAsync(StorageConstants.ActualVersionInfo, _launcherInfo.ActualLauncherVersion);
-
-        await version.File.DisposeAsync();
-        version.File = null;
+        // if (version.File is null)
+        // {
+        //     throw new ArgumentNullException(nameof(version.File));
+        // }
+        //
+        // version.Guid = await _files.LoadFile(version.File, "launcher");
+        //
+        // _launcherInfo.ActualLauncherVersion[osTypeEnum] = version;
+        //
+        // await _storage.SetAsync(StorageConstants.ActualVersion, version.Guid);
+        // await _storage.SetAsync(StorageConstants.ActualVersionInfo, _launcherInfo.ActualLauncherVersion);
+        //
+        // await version.File.DisposeAsync();
+        // version.File = null;
 
         return version.Guid;
 

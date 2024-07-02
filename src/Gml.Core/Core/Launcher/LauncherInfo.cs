@@ -20,7 +20,7 @@ namespace Gml.Core.Launcher
         public string InstallationDirectory => _settings.InstallationDirectory;
         public IGmlSettings Settings => _settings;
         public IStorageSettings StorageSettings { get; set; } = new StorageSettings();
-        public Dictionary<OsType, IVersionFile?> ActualLauncherVersion { get; set; } = new();
+        public Dictionary<string, IVersionFile?> ActualLauncherVersion { get; set; } = new();
 
         public LauncherInfo(IGmlSettings settings)
         {
@@ -55,6 +55,11 @@ namespace Gml.Core.Launcher
             });
 
             return Task.FromResult(versions.OfType<ILauncherBuild>());
+        }
+
+        public async Task<ILauncherBuild?> GetBuild(string name)
+        {
+            return (await GetBuilds()).FirstOrDefault(c => c.Name == name);
         }
     }
 }

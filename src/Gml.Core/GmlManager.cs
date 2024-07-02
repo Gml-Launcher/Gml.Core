@@ -52,7 +52,7 @@ namespace Gml
             {
                 Profiles.RestoreProfiles().Wait();
 
-                var versionReleases = Storage.GetAsync<Dictionary<OsType, T?>>(StorageConstants.ActualVersionInfo).Result;
+                var versionReleases = Storage.GetAsync<Dictionary<string, T?>>(StorageConstants.ActualVersionInfo).Result;
 
                 if (versionReleases is null) return;
 

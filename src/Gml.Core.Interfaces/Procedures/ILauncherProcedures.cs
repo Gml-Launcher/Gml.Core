@@ -8,7 +8,7 @@ namespace GmlCore.Interfaces.Procedures;
 
 public interface ILauncherProcedures
 {
-    Task<string> CreateVersion(IVersionFile version, OsType osTypeEnum);
+    Task<string> CreateVersion(IVersionFile version, ILauncherBuild launcherBuild);
     Task Build(string version);
     IObservable<string> BuildLogs { get; }
 }
