@@ -12,6 +12,7 @@ namespace GmlCore.Interfaces.Launcher
         public string InstallationDirectory { get; }
         public IStorageSettings StorageSettings { get; set; }
         Dictionary<OsType, IVersionFile?> ActualLauncherVersion { get; set; }
+        IGmlSettings Settings { get; }
         void UpdateSettings(StorageType storageType, string storageHost, string storageLogin, string storagePassword);
     }
 }

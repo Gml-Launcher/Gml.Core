@@ -14,6 +14,7 @@ namespace Gml.Core.Launcher
         public string Name => _settings.Name;
         public string BaseDirectory => _settings.BaseDirectory;
         public string InstallationDirectory => _settings.InstallationDirectory;
+        public IGmlSettings Settings => _settings;
         public IStorageSettings StorageSettings { get; set; } = new StorageSettings();
         public Dictionary<OsType, IVersionFile?> ActualLauncherVersion { get; set; } = new();
 

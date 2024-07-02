@@ -8,10 +8,12 @@ namespace Gml.Core.Launcher
 {
     public class GmlSettings : IGmlSettings
     {
-        private readonly ISystemProcedures _systemProcedures = new SystemProcedures();
+        private readonly ISystemProcedures _systemProcedures;
+        public ISystemProcedures SystemProcedures => _systemProcedures;
 
         public GmlSettings(string name, string securityKey, string? baseDirectory = null)
         {
+            _systemProcedures = new SystemProcedures(this);
             Name = name;
             FolderName = _systemProcedures.CleanFolderName(name);
             SecurityKey = securityKey;

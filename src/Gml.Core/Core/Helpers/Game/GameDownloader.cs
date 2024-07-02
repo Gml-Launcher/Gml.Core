@@ -20,10 +20,12 @@ using CmlLib.Core.ModLoaders.LiteLoader;
 using CmlLib.Core.ProcessBuilder;
 using CmlLib.Core.Rules;
 using CmlLib.Core.Version;
+using Gml.Core.Helpers.Mirrors;
 using Gml.Core.Services.System;
 using Gml.Models.CmlLib;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.User;
 
 namespace Gml.Core.Helpers.Game;
@@ -32,6 +34,7 @@ public class GameDownloader
 {
     private readonly IGameProfile _profile;
     private readonly ILauncherInfo _launcherInfo;
+    private readonly ISystemProcedures _systemProcedures;
 
     public IObservable<double> FullPercentages => _fullPercentages;
     public IObservable<double> LoadPercentages => _loadPercentages;
@@ -54,28 +57,6 @@ public class GameDownloader
     private int _steps;
     private int _currentStep;
 
-
-
-    private static Dictionary<string, string[]> _javaMirrors = new()
-    {
-        {
-            "linux", [
-                "https://mirror.recloud.tech/openjdk-22_linux-x64_bin.zip",
-                "https://mirror.recloud.host/openjdk-22_linux-x64_bin.zip",
-                "https://mr-1.recloud.tech/openjdk-22_linux-x64_bin.zip",
-                "http://localhost/openjdk-22_linux-x64_bin.zip",
-            ]
-        },
-        {
-            "windows", [
-                "https://mirror.recloud.tech/openjdk-22_windows-x64_bin.zip",
-                "https://mirror.recloud.host/openjdk-22_windows-x64_bin.zip",
-                "https://mr-1.recloud.tech/openjdk-22_windows-x64_bin.zip",
-                "http://localhost/openjdk-22_windows-x64_bin.zip",
-            ]
-        },
-    };
-
     public GameDownloader(IGameProfile profile, ILauncherInfo launcherInfo)
     {
         _downloadMethods = new Dictionary<GameLoader, Func<string, string?, CancellationToken, Task<string>>>
@@ -89,6 +70,7 @@ public class GameDownloader
 
         _profile = profile;
         _launcherInfo = launcherInfo;
+        _systemProcedures = launcherInfo.Settings.SystemProcedures;
 
         _byteProgress = new SyncProgress<ByteProgress>(e =>
         {
@@ -380,98 +362,21 @@ public class GameDownloader
             Directory.CreateDirectory(javaDirectory);
             // ToDo: Вынести пинг в другой класс
             _loadLog.OnNext("Get Java mirror...");
-            var mirror = await GetAvailableMirrorAsync(system);
+            var mirror = await _systemProcedures.GetAvailableMirrorAsync(MirrorsHelper.JavaMirrors);
             _byteProgress.Report(new ByteProgress(0, 100));
             var tempZipFilePath = Path.Combine(javaDirectory, "java.zip");
             _loadLog.OnNext("Start downloading java...");
-            await DownloadFileAsync(mirror, tempZipFilePath);
+            await _systemProcedures.DownloadFileAsync(mirror, tempZipFilePath);
             _loadLog.OnNext("Download complete. Extracting...");
-            ExtractZipFile(tempZipFilePath, jdkPath);
+            _systemProcedures.ExtractZipFile(tempZipFilePath, jdkPath);
             _loadLog.OnNext($"Extraction complete. Java executable path: {javaPath}");
             if (system == "linux")
             {
-                SetFileExecutable(javaPath);
+                _systemProcedures.SetFileExecutable(javaPath);
             }
         }
 
         _buildJavaPath = javaPath;
-    }
-
-    public async Task<string> GetAvailableMirrorAsync(string platform)
-    {
-        if (_javaMirrors.TryGetValue(platform, out string[] mirrors))
-        {
-            using HttpClient client = new();
-            foreach (string url in mirrors)
-            {
-                try
-                {
-                    HttpResponseMessage response = await client.GetAsync(url);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        return url;
-                    }
-                }
-                catch (HttpRequestException)
-                {
-                    // Ignore the exception and try the next URL
-                }
-                catch (Exception)
-                {
-                    // Ignore the exception and try the next URL
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public async Task DownloadFileAsync(string url, string destinationFilePath)
-    {
-        using HttpClient client = new();
-        using HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
-        response.EnsureSuccessStatusCode();
-        await using Stream contentStream = await response.Content.ReadAsStreamAsync(),
-            fileStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None,
-                8192, true);
-        var buffer = new byte[8192];
-        int bytesRead;
-        while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
-        {
-            await fileStream.WriteAsync(buffer, 0, bytesRead);
-        }
-    }
-    public void ExtractZipFile(string zipFilePath, string extractPath)
-    {
-        if (Directory.Exists(extractPath))
-        {
-            Directory.Delete(extractPath, true);
-        }
-        ZipFile.ExtractToDirectory(zipFilePath, extractPath);
-        File.Delete(zipFilePath);
-    }
-
-    public void SetFileExecutable(string filePath)
-    {
-        var process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "chmod",
-                Arguments = $"+x {filePath}",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            }
-        };
-        process.Start();
-        process.WaitForExit();
-        if (process.ExitCode != 0)
-        {
-            var error = process.StandardError.ReadToEnd();
-            Console.WriteLine($"Error setting executable permissions: {error}");
-        }
     }
 
     public async Task<Process> GetProcessAsync(IStartupOptions startupOptions, IUser user, bool needDownload, string[] jvmArguments)
