@@ -109,6 +109,11 @@ public class LauncherProcedures : ILauncherProcedures
         {
             "win-x86",
             "win-x64",
+            "win-arm",
+            "win-arm64",
+            "linux-musl-x64",
+            "linux-arm",
+            "linux-arm64",
             "linux-x64"
         };
 
