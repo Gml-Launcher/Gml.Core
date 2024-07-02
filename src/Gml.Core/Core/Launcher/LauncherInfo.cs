@@ -1,4 +1,8 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Gml.Models.Launcher;
 using Gml.Models.Storage;
 using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Enums;
@@ -33,6 +37,24 @@ namespace Gml.Core.Launcher
             StorageSettings.StorageLogin = storageLogin;
             StorageSettings.StorageType = storageType;
             StorageSettings.StorageHost = storageHost;
+        }
+
+        public Task<IEnumerable<ILauncherBuild>> GetBuilds()
+        {
+            var versionsPath = Path.Combine(InstallationDirectory, "LauncherBuilds");
+
+            var directoryInfo = new DirectoryInfo(versionsPath);
+
+            var builds = directoryInfo.GetDirectories();
+
+            var versions = builds.Select(c => new LauncherBuild
+            {
+                Name = c.Name,
+                Path = c.FullName,
+                DateTime = c.CreationTime
+            });
+
+            return Task.FromResult(versions.OfType<ILauncherBuild>());
         }
     }
 }
