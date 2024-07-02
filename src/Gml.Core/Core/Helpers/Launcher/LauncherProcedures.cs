@@ -125,8 +125,8 @@ public class LauncherProcedures : ILauncherProcedures
                     StartInfo = processStartInfo
                 };
 
-                process.OutputDataReceived += (sender, e) => _logsBuffer.OnNext(e.Data);
-                process.ErrorDataReceived += (sender, e) => _logsBuffer.OnNext(e.Data);
+                process.OutputDataReceived += (sender, e) => _logsBuffer.OnNext($"[{DateTime.Now:HH:m:ss:fff}] [INFO] {e.Data}");
+                process.ErrorDataReceived += (sender, e) => _logsBuffer.OnNext($"[{DateTime.Now:HH:m:ss:fff}] [INFO] {e.Data}");
 
                 process.Start();
 
