@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.Sockets;
 using Gml;
 using Gml.Core.Launcher;
@@ -351,6 +352,33 @@ public class Tests
         // Assert.That(await _testGameProfile.CheckIsFullLoaded(_options), Is.True);
     }
 
+    [Test]
+    [Order(75)]
+    public async Task CheckInstallDotnet()
+    {
+        var isInstalled = await GmlManager.System.InstallDotnet();
+
+        Assert.That(isInstalled, Is.True);
+    }
+
+    [Test]
+    [Order(76)]
+    public async Task BuildDotnet()
+    {
+        var isBuild = false;
+
+        if (await GmlManager.System.InstallDotnet())
+        {
+            GmlManager.Launcher.BuildLogs.Subscribe(log =>
+            {
+                Console.WriteLine(log);
+                Debug.WriteLine(log);
+            });
+            await GmlManager.Launcher.Build("dev");
+        }
+
+        // Assert.That(isInstalled, Is.True);
+    }
 
     [Test]
     [Order(80)]

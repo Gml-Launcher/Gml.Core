@@ -5,6 +5,7 @@ using Gml.Core.Helpers.Files;
 using Gml.Core.Helpers.Game;
 using Gml.Core.Helpers.Launcher;
 using Gml.Core.Helpers.Profiles;
+using Gml.Core.Helpers.System;
 using Gml.Core.Helpers.User;
 using Gml.Core.Integrations;
 using Gml.Core.Launcher;
@@ -21,8 +22,11 @@ namespace Gml
 {
     public class GmlManager : IGmlManager
     {
+        private readonly IGmlSettings _settings;
+
         public GmlManager(IGmlSettings settings)
         {
+            _settings = settings;
             LauncherInfo = new LauncherInfo(settings);
             Storage = new SqliteStorageService(settings);
             Profiles = new ProfileProcedures(LauncherInfo, Storage, this);
@@ -30,7 +34,6 @@ namespace Gml
             Integrations = new ServicesIntegrationProcedures(Storage);
             Users = new UserProcedures(settings, Storage);
             Launcher = new LauncherProcedures(LauncherInfo, Storage, Files);
-
             Servers = (IProfileServersProcedures)Profiles;
         }
         public IStorageService Storage { get; }
@@ -41,6 +44,7 @@ namespace Gml
         public IServicesIntegrationProcedures Integrations { get; }
         public IUserProcedures Users { get; }
         public ILauncherProcedures Launcher { get; }
+        public ISystemProcedures System => _settings.SystemProcedures;
 
         public void RestoreSettings<T>() where T : IVersionFile
         {
@@ -48,7 +52,7 @@ namespace Gml
             {
                 Profiles.RestoreProfiles().Wait();
 
-                var versionReleases = Storage.GetAsync<Dictionary<OsType, T?>>(StorageConstants.ActualVersionInfo).Result;
+                var versionReleases = Storage.GetAsync<Dictionary<string, T?>>(StorageConstants.ActualVersionInfo).Result;
 
                 if (versionReleases is null) return;
 
