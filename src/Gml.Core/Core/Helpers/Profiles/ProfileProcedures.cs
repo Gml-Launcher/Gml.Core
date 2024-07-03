@@ -341,6 +341,7 @@ namespace Gml.Core.Helpers.Profiles
                     JavaPath = javaPath,
                     ClientVersion = profile.GameVersion,
                     MinecraftVersion = profile.LaunchVersion?.Split('-').First(),
+                    LaunchVersion = profile.LaunchVersion,
                     Files = files!.OfType<LocalFileInfo>(),
                     WhiteListFiles = profile.FileWhiteList?.OfType<LocalFileInfo>().ToList() ??
                                      new List<LocalFileInfo>()
@@ -355,6 +356,7 @@ namespace Gml.Core.Helpers.Profiles
                 IconBase64 = profile.IconBase64,
                 Description = profile.Description,
                 ClientVersion = profile.GameVersion,
+                LaunchVersion = profile.LaunchVersion,
                 HasUpdate = profile.State != ProfileState.Loading,
                 MinecraftVersion = profile.LaunchVersion?.Split('-')?.First()
             };

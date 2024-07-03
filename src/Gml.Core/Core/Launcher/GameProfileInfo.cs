@@ -15,6 +15,7 @@ namespace Gml.Core.Launcher
         public string ProfileName { get; set; }
         public string MinecraftVersion { get; set; }
         public string ClientVersion { get; set; }
+        public string LaunchVersion { get; set; }
         public string Arguments { get; set; }
         public string JvmArguments { get; set; }
     }
