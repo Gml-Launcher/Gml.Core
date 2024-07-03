@@ -340,7 +340,7 @@ namespace Gml.Core.Helpers.Profiles
                     Arguments = arguments,
                     JavaPath = javaPath,
                     ClientVersion = profile.GameVersion,
-                    MinecraftVersion = profile.LaunchVersion?.Split('-').First(),
+                    MinecraftVersion = profile.GameVersion,
                     LaunchVersion = profile.LaunchVersion,
                     Files = files!.OfType<LocalFileInfo>(),
                     WhiteListFiles = profile.FileWhiteList?.OfType<LocalFileInfo>().ToList() ??
@@ -358,7 +358,7 @@ namespace Gml.Core.Helpers.Profiles
                 ClientVersion = profile.GameVersion,
                 LaunchVersion = profile.LaunchVersion,
                 HasUpdate = profile.State != ProfileState.Loading,
-                MinecraftVersion = profile.LaunchVersion?.Split('-')?.First()
+                MinecraftVersion = profile.GameVersion
             };
         }
 
