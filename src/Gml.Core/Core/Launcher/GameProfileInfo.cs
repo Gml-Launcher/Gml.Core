@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Gml.Models.System;
+using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 
 namespace Gml.Core.Launcher
@@ -9,6 +10,7 @@ namespace Gml.Core.Launcher
         public string JavaPath { get; set; }
         public string IconBase64 { get; set; }
         public string Description { get; set; }
+        public ProfileState State { get; set; }
         public IEnumerable<LocalFileInfo> Files { get; set; }
         public IEnumerable<LocalFileInfo> WhiteListFiles { get; set; }
         public bool HasUpdate { get; set; }
