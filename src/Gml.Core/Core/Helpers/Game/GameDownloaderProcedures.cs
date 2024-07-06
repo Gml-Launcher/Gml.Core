@@ -28,7 +28,9 @@ namespace Gml.Core.Helpers.Game
 
         private readonly GameDownloader _gameLoader;
 
-        public GameDownloaderProcedures(ILauncherInfo launcherInfo, IStorageService storageService,
+        public GameDownloaderProcedures(
+            ILauncherInfo launcherInfo,
+            IStorageService storageService,
             IGameProfile profile)
         {
             _launcherInfo = launcherInfo;

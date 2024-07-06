@@ -339,8 +339,10 @@ namespace Gml.Core.Helpers.Profiles
                     HasUpdate = profile.State != ProfileState.Loading,
                     Arguments = arguments,
                     JavaPath = javaPath,
+                    State = profile.State,
                     ClientVersion = profile.GameVersion,
-                    MinecraftVersion = profile.LaunchVersion?.Split('-').First(),
+                    MinecraftVersion = profile.GameVersion,
+                    LaunchVersion = profile.LaunchVersion,
                     Files = files!.OfType<LocalFileInfo>(),
                     WhiteListFiles = profile.FileWhiteList?.OfType<LocalFileInfo>().ToList() ??
                                      new List<LocalFileInfo>()
@@ -352,11 +354,13 @@ namespace Gml.Core.Helpers.Profiles
                 ProfileName = profile.Name,
                 Arguments = string.Empty,
                 JavaPath = string.Empty,
+                State = profile.State,
                 IconBase64 = profile.IconBase64,
                 Description = profile.Description,
                 ClientVersion = profile.GameVersion,
+                LaunchVersion = profile.LaunchVersion,
                 HasUpdate = profile.State != ProfileState.Loading,
-                MinecraftVersion = profile.LaunchVersion?.Split('-')?.First()
+                MinecraftVersion = profile.GameVersion
             };
         }
 
