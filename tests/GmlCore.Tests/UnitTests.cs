@@ -189,7 +189,7 @@ public class Tests
             // 1.20.6
             var options = new MinecraftPingOptions
             {
-                Address = "147.45.254.230",
+                Address = "81.31.245.168",
                 Port = 25571
             };
 
@@ -212,7 +212,7 @@ public class Tests
             // 1.7.10
             var options = new MinecraftPingOptions
             {
-                Address = "147.45.254.230",
+                Address = "81.31.245.168",
                 Port = 25567
             };
 
@@ -235,7 +235,7 @@ public class Tests
             // 1.5.2
             var options = new MinecraftPingOptions
             {
-                Address = "147.45.254.230",
+                Address = "81.31.245.168",
                 Port = 25566
             };
 
@@ -258,7 +258,7 @@ public class Tests
             // 1.12.2
             var options = new MinecraftPingOptions
             {
-                Address = "147.45.254.230",
+                Address = "81.31.245.168",
                 Port = 25568
             };
 
@@ -281,7 +281,7 @@ public class Tests
             // 1.16.5
             var options = new MinecraftPingOptions
             {
-                Address = "147.45.254.230",
+                Address = "81.31.245.168",
                 Port = 25569
             };
 
@@ -304,7 +304,7 @@ public class Tests
             // 1.20.1
             var options = new MinecraftPingOptions
             {
-                Address = "147.45.254.230",
+                Address = "81.31.245.168",
                 Port = 25570
             };
 
@@ -406,7 +406,6 @@ public class Tests
         // Assert.That(await forgeClient.CheckIsFullLoaded(), Is.True);
     }
 
-
     [Test]
     [Order(90)]
     public async Task ClientStartup()
@@ -424,7 +423,6 @@ public class Tests
         // processUtil.StartWithEvents();
         // await processUtil.WaitForExitTaskAsync();
     }
-
 
     [Test]
     [Order(900)]
