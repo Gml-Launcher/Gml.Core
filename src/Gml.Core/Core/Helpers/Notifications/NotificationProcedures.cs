@@ -82,4 +82,9 @@ public class NotificationProcedures(IStorageService storage) : INotificationProc
 
         _notifications.OnNext(notification);
     }
+
+    public async Task Retore()
+    {
+        _notificationsHistory = await storage.GetAsync<List<Notification>>(StorageConstants.Settings) ?? [];
+    }
 }

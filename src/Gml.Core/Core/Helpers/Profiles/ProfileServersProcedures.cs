@@ -52,9 +52,9 @@ public partial class ProfileProcedures : IProfileServersProcedures
 
     public async Task UpdateServerState(IProfileServer server)
     {
-        try
+        if (server is MinecraftServer minecraftServer)
         {
-            if (server is MinecraftServer minecraftServer)
+            try
             {
                 var options = new MinecraftPingOptions
                 {
@@ -69,10 +69,13 @@ public partial class ProfileProcedures : IProfileServersProcedures
                 minecraftServer.Version = status?.Name ?? string.Empty;
                 minecraftServer.IsOnline = status?.MaximumPlayers is not null;
             }
-        }
-        catch (Exception exception)
-        {
-            Console.WriteLine(exception);
+            catch (Exception exception)
+            {
+                minecraftServer.Online = null;
+                minecraftServer.MaxOnline = null;
+                minecraftServer.IsOnline = false;
+                Console.WriteLine(exception);
+            }
         }
     }
 

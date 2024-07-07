@@ -54,6 +54,7 @@ namespace Gml
             try
             {
                 Profiles.RestoreProfiles().Wait();
+                Notifications.Retore().Wait();
 
                 var versionReleases = Storage.GetAsync<Dictionary<string, T?>>(StorageConstants.ActualVersionInfo).Result;
 
