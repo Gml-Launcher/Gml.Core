@@ -31,7 +31,7 @@ namespace Gml
             LauncherInfo = new LauncherInfo(settings);
             Storage = new SqliteStorageService(settings);
             Notifications = new NotificationProcedures(Storage);
-            Profiles = new ProfileProcedures(LauncherInfo, Storage, this);
+            Profiles = new ProfileProcedures(LauncherInfo, Storage, Notifications, this);
             Files = new FileStorageProcedures(LauncherInfo, Storage);
             Integrations = new ServicesIntegrationProcedures(Storage);
             Users = new UserProcedures(settings, Storage);
