@@ -52,20 +52,27 @@ public partial class ProfileProcedures : IProfileServersProcedures
 
     public async Task UpdateServerState(IProfileServer server)
     {
-        if (server is MinecraftServer minecraftServer)
+        try
         {
-            var options = new MinecraftPingOptions
+            if (server is MinecraftServer minecraftServer)
             {
-                Address = minecraftServer.Address,
-                Port = (ushort)minecraftServer.Port
-            };
+                var options = new MinecraftPingOptions
+                {
+                    Address = minecraftServer.Address,
+                    Port = (ushort)minecraftServer.Port
+                };
 
-            var status = await Minecraft.PingAsync(options) as JavaStatus;
+                var status = await Minecraft.PingAsync(options) as JavaStatus;
 
-            minecraftServer.Online = status?.OnlinePlayers;
-            minecraftServer.MaxOnline = status?.MaximumPlayers;
-            minecraftServer.Version = status?.Name ?? string.Empty;
-            minecraftServer.IsOnline = status?.MaximumPlayers is not null;
+                minecraftServer.Online = status?.OnlinePlayers;
+                minecraftServer.MaxOnline = status?.MaximumPlayers;
+                minecraftServer.Version = status?.Name ?? string.Empty;
+                minecraftServer.IsOnline = status?.MaximumPlayers is not null;
+            }
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine(exception);
         }
     }
 
