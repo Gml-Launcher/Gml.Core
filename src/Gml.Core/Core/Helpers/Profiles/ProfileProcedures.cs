@@ -46,6 +46,7 @@ namespace Gml.Core.Helpers.Profiles
         private readonly ILauncherInfo _launcherInfo;
         private readonly IStorageService _storageService;
         private readonly GmlManager _gmlManager;
+        private readonly INotificationProcedures _notifications;
         private List<IGameProfile> _gameProfiles = new();
         private ConcurrentDictionary<string, string> _fileHashCache = new();
         private VersionMetadataCollection? _vanillaVersions;
@@ -57,11 +58,13 @@ namespace Gml.Core.Helpers.Profiles
         public ProfileProcedures(
             ILauncherInfo launcherInfo,
             IStorageService storageService,
+            INotificationProcedures notifications,
             GmlManager gmlManager)
         {
             _launcherInfo = launcherInfo;
             _storageService = storageService;
             _gmlManager = gmlManager;
+            _notifications = notifications;
         }
 
         public async Task AddProfile(IGameProfile? profile)
@@ -76,7 +79,7 @@ namespace Gml.Core.Helpers.Profiles
 
             profile.ProfileProcedures = this;
             profile.ServerProcedures = this;
-            profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile);
+            profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications);
 
             _gameProfiles.Add(profile);
 
@@ -552,7 +555,7 @@ namespace Gml.Core.Helpers.Profiles
             profile.IsEnabled = isEnabled;
             profile.JvmArguments = jvmArguments;
 
-            profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile);
+            profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications);
 
             await SaveProfiles();
             await RestoreProfiles();
@@ -719,7 +722,7 @@ namespace Gml.Core.Helpers.Profiles
             gameProfile.State = ProfileState.Ready;
             gameProfile.ProfileProcedures = this;
             gameProfile.ServerProcedures = this;
-            gameProfile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, gameProfile);
+            gameProfile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, gameProfile, _notifications);
             // gameProfile.LaunchVersion =
             //     await gameLoader.ValidateMinecraftVersion(gameProfile.GameVersion, gameProfile.Loader);
             // gameProfile.GameVersion = gameLoader.InstallationVersion!.Id;

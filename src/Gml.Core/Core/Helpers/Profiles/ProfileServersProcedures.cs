@@ -54,18 +54,28 @@ public partial class ProfileProcedures : IProfileServersProcedures
     {
         if (server is MinecraftServer minecraftServer)
         {
-            var options = new MinecraftPingOptions
+            try
             {
-                Address = minecraftServer.Address,
-                Port = (ushort)minecraftServer.Port
-            };
+                var options = new MinecraftPingOptions
+                {
+                    Address = minecraftServer.Address,
+                    Port = (ushort)minecraftServer.Port
+                };
 
-            var status = await Minecraft.PingAsync(options) as JavaStatus;
+                var status = await Minecraft.PingAsync(options) as JavaStatus;
 
-            minecraftServer.Online = status?.OnlinePlayers;
-            minecraftServer.MaxOnline = status?.MaximumPlayers;
-            minecraftServer.Version = status?.Name ?? string.Empty;
-            minecraftServer.IsOnline = status?.MaximumPlayers is not null;
+                minecraftServer.Online = status?.OnlinePlayers;
+                minecraftServer.MaxOnline = status?.MaximumPlayers;
+                minecraftServer.Version = status?.Name ?? string.Empty;
+                minecraftServer.IsOnline = status?.MaximumPlayers is not null;
+            }
+            catch (Exception exception)
+            {
+                minecraftServer.Online = null;
+                minecraftServer.MaxOnline = null;
+                minecraftServer.IsOnline = false;
+                Console.WriteLine(exception);
+            }
         }
     }
 

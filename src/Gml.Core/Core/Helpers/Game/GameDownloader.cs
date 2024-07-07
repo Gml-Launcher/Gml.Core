@@ -34,6 +34,7 @@ public class GameDownloader
 {
     private readonly IGameProfile _profile;
     private readonly ILauncherInfo _launcherInfo;
+    private readonly INotificationProcedures _notifications;
     private readonly ISystemProcedures _systemProcedures;
 
     public IObservable<double> FullPercentages => _fullPercentages;
@@ -57,7 +58,7 @@ public class GameDownloader
     private int _steps;
     private int _currentStep;
 
-    public GameDownloader(IGameProfile profile, ILauncherInfo launcherInfo)
+    public GameDownloader(IGameProfile profile, ILauncherInfo launcherInfo, INotificationProcedures notifications)
     {
         _downloadMethods = new Dictionary<GameLoader, Func<string, string?, CancellationToken, Task<string>>>
         {
@@ -70,6 +71,7 @@ public class GameDownloader
 
         _profile = profile;
         _launcherInfo = launcherInfo;
+        _notifications = notifications;
         _systemProcedures = launcherInfo.Settings.SystemProcedures;
 
         _byteProgress = new SyncProgress<ByteProgress>(e =>
@@ -119,7 +121,10 @@ public class GameDownloader
         _profile.State = ProfileState.Loading;
 
         if (!_downloadMethods.ContainsKey(loader))
+        {
+            await _notifications.SendMessage("Ошибка", "Попытка создать профиль с неверным", NotificationType.Error);
             throw new ArgumentOutOfRangeException(nameof(loader), loader, null);
+        }
 
         _loadPercentages.OnNext(0);
         _fullPercentages.OnNext(0);
@@ -153,6 +158,7 @@ public class GameDownloader
             }
             catch (Exception exception)
             {
+                await _notifications.SendMessage("Ошибка", exception);
                 _exception.OnNext(exception);
             }
             finally
@@ -188,6 +194,7 @@ public class GameDownloader
 
                 if (bestVersion is null)
                 {
+                    await _notifications.SendMessage("Ошибка", "Не удалось определить версию для загрузки", NotificationType.Error);
                     throw new InvalidOperationException("Cannot find any version");
                 }
 
@@ -204,9 +211,11 @@ public class GameDownloader
             }
             catch (Exception exception)
             {
+                var message =
+                    $"Клиент для {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} не был установлен!";
+                await _notifications.SendMessage(message, exception);
                 _exception.OnNext(exception);
-                _loadLog.OnNext(
-                    $"Launcher for {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} not installed!");
+                _loadLog.OnNext(message);
             }
             finally
             {
@@ -241,6 +250,7 @@ public class GameDownloader
 
                 if (bestVersion is null)
                 {
+                    await _notifications.SendMessage("Ошибка", "Не удалось определить версию для загрузки", NotificationType.Error);
                     throw new InvalidOperationException("Cannot find any version");
                 }
 
@@ -257,9 +267,11 @@ public class GameDownloader
             }
             catch (Exception exception)
             {
+                var message =
+                    $"Клиент для {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} не был установлен!";
+                await _notifications.SendMessage(message, exception);
                 _exception.OnNext(exception);
-                _loadLog.OnNext(
-                    $"Launcher for {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} not installed!");
+                _loadLog.OnNext(message);
             }
             finally
             {
@@ -287,9 +299,11 @@ public class GameDownloader
             }
             catch (Exception exception)
             {
+                var message =
+                    $"Клиент для {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} не был установлен!";
+                await _notifications.SendMessage(message, exception);
                 _exception.OnNext(exception);
-                _loadLog.OnNext(
-                    $"Launcher for {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} not installed!");
+                _loadLog.OnNext(message);
             }
             finally
             {
@@ -331,9 +345,11 @@ public class GameDownloader
             }
             catch (Exception exception)
             {
+                var message =
+                    $"Клиент для {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} не был установлен!";
+                await _notifications.SendMessage(message, exception);
                 _exception.OnNext(exception);
-                _loadLog.OnNext(
-                    $"Launcher for {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} not installed!");
+                _loadLog.OnNext(message);
             }
             finally
             {
@@ -383,6 +399,7 @@ public class GameDownloader
     {
         if (!_launchers.TryGetValue($"{startupOptions.OsName}/{startupOptions.OsArch}", out var launcher))
         {
+            await _notifications.SendMessage("Ошибка", "Выбранная операционная система не поддерживается", NotificationType.Error);
             throw new NotSupportedException("Operation system not supported");
         }
 
@@ -409,9 +426,11 @@ public class GameDownloader
                 }
                 catch (Exception exception)
                 {
+                    var message =
+                        $"Не удалось восстановить профиль {_profile.Name}, {anyLauncher.RulesContext.OS.Name}, {anyLauncher.RulesContext.OS.Arch}";
+                    await _notifications.SendMessage(message, exception);
                     _exception.OnNext(exception);
-                    _loadLog.OnNext(
-                        $"Не удалось восстановить профиль {_profile.Name}, {anyLauncher.RulesContext.OS.Name}, {anyLauncher.RulesContext.OS.Arch}");
+                    _loadLog.OnNext(message);
                 }
             }
         }
