@@ -14,6 +14,7 @@ public class NotificationProcedures(IStorageService storage) : INotificationProc
 {
     private ISubject<INotification> _notifications = new Subject<INotification>();
     public IObservable<INotification> Notifications => _notifications;
+    public IEnumerable<INotification> History => _notificationsHistory;
     private List<Notification> _notificationsHistory = new();
 
     public async Task SendMessage(string message)
