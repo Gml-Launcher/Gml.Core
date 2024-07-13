@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -50,9 +51,9 @@ namespace Gml.Core.Helpers.Profiles
         private List<IGameProfile> _gameProfiles = new();
         private ConcurrentDictionary<string, string> _fileHashCache = new();
         private VersionMetadataCollection? _vanillaVersions;
+        private ConcurrentDictionary<string, IEnumerable<string>> _fabricVersions = new();
         private ConcurrentDictionary<string, IEnumerable<ForgeVersion>>? _forgeVersions = new();
         private ConcurrentDictionary<string, IEnumerable<NeoForgeVersion>>? _neoForgeVersions = new();
-        private IReadOnlyCollection<string>? _fabricVersions;
         private IReadOnlyList<LiteLoaderVersion>? _liteLoaderVersions;
 
         public ProfileProcedures(
@@ -131,7 +132,7 @@ namespace Gml.Core.Helpers.Profiles
                 case GameLoader.Forge:
                     return versions.Any(c => c.Equals(loaderVersion));
                 case GameLoader.Fabric:
-                    return versions.Any(c => c.Equals(version));
+                    return versions.Any(c => c.Equals(loaderVersion));
                 case GameLoader.LiteLoader:
                     return versions.Any(c => c.Equals(loaderVersion));
                 case GameLoader.NeoForge:
@@ -664,9 +665,22 @@ namespace Gml.Core.Helpers.Profiles
                     case GameLoader.Fabric:
 
                         var fabricLoader = new FabricInstaller(new HttpClient());
-                        _fabricVersions ??= await fabricLoader.GetSupportedVersionNames();
 
-                        return _fabricVersions;
+                        var loaders = await fabricLoader.GetLoaders(minecraftVersion);
+
+                        var versions = loaders
+                            .Where(c => !string.IsNullOrEmpty(c.Version))
+                            .OrderBy(c => c.Stable)
+                            .Select(c => c.Version!)
+                            .ToList()
+                            .AsReadOnly();
+
+                        if (!_fabricVersions.Any(c => c.Key == minecraftVersion))
+                        {
+                            _fabricVersions[minecraftVersion] = versions;
+                        }
+
+                        return _fabricVersions[minecraftVersion];
 
                     case GameLoader.LiteLoader:
                         var liteLoaderVersionLoader = new LiteLoaderInstaller(new HttpClient());

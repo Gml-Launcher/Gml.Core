@@ -274,12 +274,19 @@ public class GameDownloader
     {
         var versionInfo = string.Empty;
         var fabricLoader = new FabricInstaller(new HttpClient());
+        FabricLoader? fabricVersion = default;
 
         foreach (var launcher in _launchers.Values)
             try
             {
                 _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
-                versionInfo = await fabricLoader.Install(version, launcher.MinecraftPath);
+                if (fabricVersion is null)
+                {
+                    var versionLoaders = await fabricLoader.GetLoaders(version);
+                    fabricVersion = versionLoaders.First(c => c.Version == launchVersion);
+                }
+
+                versionInfo = await fabricLoader.Install(version, fabricVersion.Version!, launcher.MinecraftPath);
 
                 await launcher.InstallAndBuildProcessAsync(
                     versionInfo, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
