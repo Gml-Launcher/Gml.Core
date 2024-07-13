@@ -153,7 +153,7 @@ public class Tests
     [Order(8)]
     public async Task GetFabricVersions()
     {
-        var versions = await GmlManager.Profiles.GetAllowVersions(GameLoader.Fabric, string.Empty);
+        var versions = await GmlManager.Profiles.GetAllowVersions(GameLoader.Fabric, "1.20.1");
 
         Assert.That(versions.Count(), Is.Not.Zero);
     }
