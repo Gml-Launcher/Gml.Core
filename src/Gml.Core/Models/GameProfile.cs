@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
@@ -17,7 +18,7 @@ namespace Gml.Models
     public class GameProfile : BaseProfile
     {
 
-        private readonly Dictionary<IProfileServer, IDisposable> _serverTimers = new();
+        private readonly ConcurrentDictionary<IProfileServer, IDisposable> _serverTimers = new();
         private readonly Subject<IProfileServer> _serverAdded = new();
         private readonly Subject<IProfileServer> _serverRemoved = new();
         internal Subject<IProfileServer> ServerAdded => _serverAdded;
@@ -35,38 +36,30 @@ namespace Gml.Models
 
         public GameProfile()
         {
-            _serverAdded.Subscribe(server =>
-            {
-                server.UpdateStatusAsync();
+            _serverAdded.Subscribe(CreateServerListener);
+        }
 
-                var timer = Observable
-                    .Interval(TimeSpan.FromMinutes(2))
-                    .Subscribe(_ => server.UpdateStatusAsync());
+        private async void CreateServerListener(IProfileServer server)
+        {
+            await server.UpdateStatusAsync();
 
-                _serverTimers[server] = timer;
-            });
+            var timer = Observable.Interval(TimeSpan.FromMinutes(2))
+                .Subscribe(_ => server.UpdateStatusAsync());
+
+            _serverTimers.TryAdd(server, timer);
         }
 
         internal GameProfile(string name, string gameVersion, GameLoader gameLoader)
             : base(name, gameVersion, gameLoader)
         {
-            _serverAdded.Subscribe(server =>
-            {
-                server.UpdateStatusAsync();
-
-                var timer = Observable
-                    .Interval(TimeSpan.FromMinutes(2))
-                    .Subscribe(_ => server.UpdateStatusAsync());
-
-                _serverTimers[server] = timer;
-            });
+            _serverAdded.Subscribe(CreateServerListener);
 
             _serverRemoved.Subscribe(server =>
             {
                 if (_serverTimers.TryGetValue(server, out var timer))
                 {
                     timer.Dispose();
-                    _serverTimers.Remove(server);
+                    _serverTimers.TryRemove(server, out _);
                 }
             });
         }
@@ -81,6 +74,11 @@ namespace Gml.Models
 
         public override void AddServer(IProfileServer server)
         {
+            if (Servers.Any(c => c.Name == server.Name))
+            {
+                throw new Exception($"Сервер с наименованием {server.Name} уже существует!");
+            }
+
             base.Servers.Add(server);
             _serverAdded.OnNext(server);
         }

@@ -4,6 +4,7 @@ using Gml.Core.Constants;
 using Gml.Core.Helpers.Files;
 using Gml.Core.Helpers.Game;
 using Gml.Core.Helpers.Launcher;
+using Gml.Core.Helpers.Notifications;
 using Gml.Core.Helpers.Profiles;
 using Gml.Core.Helpers.System;
 using Gml.Core.Helpers.User;
@@ -29,7 +30,8 @@ namespace Gml
             _settings = settings;
             LauncherInfo = new LauncherInfo(settings);
             Storage = new SqliteStorageService(settings);
-            Profiles = new ProfileProcedures(LauncherInfo, Storage, this);
+            Notifications = new NotificationProcedures(Storage);
+            Profiles = new ProfileProcedures(LauncherInfo, Storage, Notifications, this);
             Files = new FileStorageProcedures(LauncherInfo, Storage);
             Integrations = new ServicesIntegrationProcedures(Storage);
             Users = new UserProcedures(settings, Storage);
@@ -45,12 +47,14 @@ namespace Gml
         public IUserProcedures Users { get; }
         public ILauncherProcedures Launcher { get; }
         public ISystemProcedures System => _settings.SystemProcedures;
+        public INotificationProcedures Notifications { get; }
 
         public void RestoreSettings<T>() where T : IVersionFile
         {
             try
             {
                 Profiles.RestoreProfiles().Wait();
+                Notifications.Retore().Wait();
 
                 var versionReleases = Storage.GetAsync<Dictionary<string, T?>>(StorageConstants.ActualVersionInfo).Result;
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -46,22 +47,25 @@ namespace Gml.Core.Helpers.Profiles
         private readonly ILauncherInfo _launcherInfo;
         private readonly IStorageService _storageService;
         private readonly GmlManager _gmlManager;
+        private readonly INotificationProcedures _notifications;
         private List<IGameProfile> _gameProfiles = new();
         private ConcurrentDictionary<string, string> _fileHashCache = new();
         private VersionMetadataCollection? _vanillaVersions;
+        private ConcurrentDictionary<string, IEnumerable<string>> _fabricVersions = new();
         private ConcurrentDictionary<string, IEnumerable<ForgeVersion>>? _forgeVersions = new();
         private ConcurrentDictionary<string, IEnumerable<NeoForgeVersion>>? _neoForgeVersions = new();
-        private IReadOnlyCollection<string>? _fabricVersions;
         private IReadOnlyList<LiteLoaderVersion>? _liteLoaderVersions;
 
         public ProfileProcedures(
             ILauncherInfo launcherInfo,
             IStorageService storageService,
+            INotificationProcedures notifications,
             GmlManager gmlManager)
         {
             _launcherInfo = launcherInfo;
             _storageService = storageService;
             _gmlManager = gmlManager;
+            _notifications = notifications;
         }
 
         public async Task AddProfile(IGameProfile? profile)
@@ -76,7 +80,7 @@ namespace Gml.Core.Helpers.Profiles
 
             profile.ProfileProcedures = this;
             profile.ServerProcedures = this;
-            profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile);
+            profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications);
 
             _gameProfiles.Add(profile);
 
@@ -128,7 +132,7 @@ namespace Gml.Core.Helpers.Profiles
                 case GameLoader.Forge:
                     return versions.Any(c => c.Equals(loaderVersion));
                 case GameLoader.Fabric:
-                    return versions.Any(c => c.Equals(version));
+                    return versions.Any(c => c.Equals(loaderVersion));
                 case GameLoader.LiteLoader:
                     return versions.Any(c => c.Equals(loaderVersion));
                 case GameLoader.NeoForge:
@@ -552,7 +556,7 @@ namespace Gml.Core.Helpers.Profiles
             profile.IsEnabled = isEnabled;
             profile.JvmArguments = jvmArguments;
 
-            profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile);
+            profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications);
 
             await SaveProfiles();
             await RestoreProfiles();
@@ -661,9 +665,22 @@ namespace Gml.Core.Helpers.Profiles
                     case GameLoader.Fabric:
 
                         var fabricLoader = new FabricInstaller(new HttpClient());
-                        _fabricVersions ??= await fabricLoader.GetSupportedVersionNames();
 
-                        return _fabricVersions;
+                        var loaders = await fabricLoader.GetLoaders(minecraftVersion);
+
+                        var versions = loaders
+                            .Where(c => !string.IsNullOrEmpty(c.Version))
+                            .OrderBy(c => c.Stable)
+                            .Select(c => c.Version!)
+                            .ToList()
+                            .AsReadOnly();
+
+                        if (!_fabricVersions.Any(c => c.Key == minecraftVersion))
+                        {
+                            _fabricVersions[minecraftVersion] = versions;
+                        }
+
+                        return _fabricVersions[minecraftVersion];
 
                     case GameLoader.LiteLoader:
                         var liteLoaderVersionLoader = new LiteLoaderInstaller(new HttpClient());
@@ -719,7 +736,7 @@ namespace Gml.Core.Helpers.Profiles
             gameProfile.State = ProfileState.Ready;
             gameProfile.ProfileProcedures = this;
             gameProfile.ServerProcedures = this;
-            gameProfile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, gameProfile);
+            gameProfile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, gameProfile, _notifications);
             // gameProfile.LaunchVersion =
             //     await gameLoader.ValidateMinecraftVersion(gameProfile.GameVersion, gameProfile.Loader);
             // gameProfile.GameVersion = gameLoader.InstallationVersion!.Id;

@@ -26,6 +26,18 @@ public class LauncherProcedures : ILauncherProcedures
     private readonly Subject<string> _logsBuffer;
     public IObservable<string> BuildLogs => _buildLogs;
 
+    private string[] _allowedVersions =
+    [
+        "win-x86",
+        "win-x64",
+        "win-arm",
+        "win-arm64",
+        "linux-musl-x64",
+        "linux-arm",
+        "linux-arm64",
+        "linux-x64"
+    ];
+
     public LauncherProcedures(ILauncherInfo launcherInfo, IStorageService storage, IFileStorageProcedures files)
     {
         _logsBuffer = new Subject<string>();
@@ -95,7 +107,7 @@ public class LauncherProcedures : ILauncherProcedures
 
     }
 
-    public async Task Build(string version)
+    public async Task Build(string version, string[] versions)
     {
         var projectPath = new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "Launcher", version)).GetDirectories().First().FullName;
         var launcherDirectory = new DirectoryInfo(Path.Combine(projectPath, "src", "Gml.Launcher"));
@@ -105,28 +117,64 @@ public class LauncherProcedures : ILauncherProcedures
             throw new DirectoryNotFoundException("Нет исходников для формирования бинарных файлов!");
         }
 
-        var allowedVersions = new List<string>
-        {
-            "win-x86",
-            "win-x64",
-            "win-arm",
-            "win-arm64",
-            "linux-musl-x64",
-            "linux-arm",
-            "linux-arm64",
-            "linux-x64"
-        };
-
-        var buildFolder = await CreateBuilds(allowedVersions, projectPath, launcherDirectory);
+        var buildFolder = await CreateBuilds(versions, projectPath, launcherDirectory);
 
     }
 
-    private async Task<object> CreateBuilds(List<string> allowedVersions, string projectPath, DirectoryInfo launcherDirectory)
+    public bool CanCompile(string version, out string message)
+    {
+        var versionDirectory = Path.Combine(_launcherInfo.InstallationDirectory, "Launcher", version);
+
+        if (!Directory.Exists(versionDirectory))
+        {
+            message = $"Не загружена сборка профиля для версии \"{version}\", загрузите ее на сервер в папку: \"{Path.Combine(_launcherInfo.InstallationDirectory, "Launcher", version)}\"";
+            return false;
+        }
+
+        var projectPath = new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "Launcher", version))?.GetDirectories().FirstOrDefault()?.FullName;
+
+        if (string.IsNullOrEmpty(projectPath))
+        {
+            message = $"Не удалось найти проект по пути: {projectPath}";
+            return false;
+        }
+
+        var projectDirectory = new DirectoryInfo(projectPath);
+
+        var projects = projectDirectory.GetFiles("*.csproj", SearchOption.AllDirectories);
+
+        if (!projects.Any(c => c.Name.StartsWith("Gml.Client")))
+        {
+            message = $"Не удалось найти проект по пути: Gml.Client. Убедитесь, что проект загружен на сервер полностью";
+            return false;
+        }
+
+        if (!projects.Any(c => c.Name.StartsWith("GamerVII.Notification.Avalonia")))
+        {
+            message = $"Не удалось найти проект по пути: Gml.Client. Убедитесь, что проект загружен на сервер полностью";
+            return false;
+        }
+
+        message = "Success";
+        return true;
+    }
+
+    public Task<IEnumerable<string>> GetPlatforms()
+    {
+        return Task.FromResult<IEnumerable<string>>(_allowedVersions);
+    }
+
+    private Task<object> CreateBuilds(string[] versions, string projectPath, DirectoryInfo launcherDirectory)
     {
         var dotnetPath = _launcherInfo.Settings.SystemProcedures.BuildDotnetPath;
 
-        foreach (var version in allowedVersions)
+        foreach (var version in versions)
         {
+            if (!_allowedVersions.Contains(version))
+            {
+                continue;
+            }
+
             ProcessStartInfo? processStartInfo = default;
             var command = string.Empty;
 
@@ -192,7 +240,7 @@ public class LauncherProcedures : ILauncherProcedures
             CopyDirectory(dir, newFolder);
         }
 
-        return buildsFolder.FullName;
+        return Task.FromResult<object>(buildsFolder.FullName);
     }
 
     private static void CopyDirectory(DirectoryInfo source, DirectoryInfo destination)

@@ -31,12 +31,13 @@ namespace Gml.Core.Helpers.Game
         public GameDownloaderProcedures(
             ILauncherInfo launcherInfo,
             IStorageService storageService,
-            IGameProfile profile)
+            IGameProfile profile,
+            INotificationProcedures notifications)
         {
             _launcherInfo = launcherInfo;
             _storageService = storageService;
             _profile = profile;
-            _gameLoader = new GameDownloader(profile, launcherInfo);
+            _gameLoader = new GameDownloader(profile, launcherInfo, notifications);
         }
 
         public IObservable<double> FullPercentages => _gameLoader.FullPercentages;

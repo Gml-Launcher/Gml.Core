@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Reactive.Linq;
@@ -19,7 +18,6 @@ using CmlLib.Core.ModLoaders.FabricMC;
 using CmlLib.Core.ModLoaders.LiteLoader;
 using CmlLib.Core.ProcessBuilder;
 using CmlLib.Core.Rules;
-using CmlLib.Core.Version;
 using Gml.Core.Helpers.Mirrors;
 using Gml.Core.Services.System;
 using Gml.Models.CmlLib;
@@ -32,32 +30,27 @@ namespace Gml.Core.Helpers.Game;
 
 public class GameDownloader
 {
-    private readonly IGameProfile _profile;
+    private readonly string[] _architectures = { "32", "64", "arm", "arm64" };
     private readonly ILauncherInfo _launcherInfo;
-    private readonly ISystemProcedures _systemProcedures;
-
-    public IObservable<double> FullPercentages => _fullPercentages;
-    public IObservable<double> LoadPercentages => _loadPercentages;
-    public IObservable<string> LoadLog => _loadLog;
-    public IObservable<Exception> LoadException => _exception;
-    public MinecraftLauncher AnyLauncher => _launchers.Values.First();
 
     private readonly ConcurrentDictionary<string, MinecraftLauncher> _launchers = new();
+    private readonly INotificationProcedures _notifications;
     private readonly string[] _platforms = { "windows", "osx", "linux" };
-    private readonly string[] _architectures = { "32", "64", "arm", "arm64" };
-    private Subject<double> _loadPercentages = new();
-    private Subject<double> _fullPercentages = new();
-    private Subject<string> _loadLog = new();
-    private Subject<Exception> _exception = new();
-    private SyncProgress<ByteProgress> _byteProgress;
-    private SyncProgress<InstallerProgressChangedEventArgs> _fileProgress;
-    private Dictionary<GameLoader, Func<string, string?, CancellationToken, Task<string>>> _downloadMethods;
-    private CancellationTokenSource _cancellationTokenSource;
+    private readonly IGameProfile _profile;
+    private readonly ISystemProcedures _systemProcedures;
     private string? _buildJavaPath;
-    private int _steps;
+    private readonly SyncProgress<ByteProgress> _byteProgress;
+    private CancellationTokenSource _cancellationTokenSource;
     private int _currentStep;
+    private readonly Dictionary<GameLoader, Func<string, string?, CancellationToken, Task<string>>> _downloadMethods;
+    private readonly Subject<Exception> _exception = new();
+    private readonly SyncProgress<InstallerProgressChangedEventArgs> _fileProgress;
+    private readonly Subject<double> _fullPercentages = new();
+    private readonly Subject<string> _loadLog = new();
+    private readonly Subject<double> _loadPercentages = new();
+    private int _steps;
 
-    public GameDownloader(IGameProfile profile, ILauncherInfo launcherInfo)
+    public GameDownloader(IGameProfile profile, ILauncherInfo launcherInfo, INotificationProcedures notifications)
     {
         _downloadMethods = new Dictionary<GameLoader, Func<string, string?, CancellationToken, Task<string>>>
         {
@@ -70,12 +63,10 @@ public class GameDownloader
 
         _profile = profile;
         _launcherInfo = launcherInfo;
+        _notifications = notifications;
         _systemProcedures = launcherInfo.Settings.SystemProcedures;
 
-        _byteProgress = new SyncProgress<ByteProgress>(e =>
-        {
-            _loadPercentages.OnNext(e.ToRatio() * 100);
-        });
+        _byteProgress = new SyncProgress<ByteProgress>(e => { _loadPercentages.OnNext(e.ToRatio() * 100); });
 
         var progressSubject = new Subject<string>();
 
@@ -84,10 +75,7 @@ public class GameDownloader
             .Select(items => string.Join(Environment.NewLine, items))
             .Subscribe(combinedText =>
             {
-                if (!string.IsNullOrEmpty(combinedText))
-                {
-                    _loadLog.OnNext(combinedText);
-                }
+                if (!string.IsNullOrEmpty(combinedText)) _loadLog.OnNext(combinedText);
             });
 
         _fileProgress = new SyncProgress<InstallerProgressChangedEventArgs>(e =>
@@ -97,21 +85,25 @@ public class GameDownloader
         });
 
         foreach (var platform in _platforms)
+        foreach (var architecture in _architectures)
         {
-            foreach (var architecture in _architectures)
-            {
-                profile.ClientPath = Path.Combine(launcherInfo.InstallationDirectory, "clients", profile.Name);
-                var minecraftPath = new CustomMinecraftPath(launcherInfo.InstallationDirectory, profile.ClientPath,
-                    platform, architecture);
-                var launcherParameters = MinecraftLauncherParameters.CreateDefault(minecraftPath);
-                var platformName = $"{platform}/{architecture}";
-                var platformLauncher = new MinecraftLauncher(launcherParameters);
-                platformLauncher.RulesContext =
-                    new RulesEvaluatorContext(new LauncherOSRule(platform, architecture, string.Empty));
-                _launchers.TryAdd(platformName, platformLauncher);
-            }
+            profile.ClientPath = Path.Combine(launcherInfo.InstallationDirectory, "clients", profile.Name);
+            var minecraftPath = new CustomMinecraftPath(launcherInfo.InstallationDirectory, profile.ClientPath,
+                platform, architecture);
+            var launcherParameters = MinecraftLauncherParameters.CreateDefault(minecraftPath);
+            var platformName = $"{platform}/{architecture}";
+            var platformLauncher = new MinecraftLauncher(launcherParameters);
+            platformLauncher.RulesContext =
+                new RulesEvaluatorContext(new LauncherOSRule(platform, architecture, string.Empty));
+            _launchers.TryAdd(platformName, platformLauncher);
         }
     }
+
+    public IObservable<double> FullPercentages => _fullPercentages;
+    public IObservable<double> LoadPercentages => _loadPercentages;
+    public IObservable<string> LoadLog => _loadLog;
+    public IObservable<Exception> LoadException => _exception;
+    public MinecraftLauncher AnyLauncher => _launchers.Values.First();
 
     public async Task<string> DownloadGame(GameLoader loader, string version, string? launchVersion)
     {
@@ -119,7 +111,10 @@ public class GameDownloader
         _profile.State = ProfileState.Loading;
 
         if (!_downloadMethods.ContainsKey(loader))
+        {
+            await _notifications.SendMessage("Ошибка", "Попытка создать профиль с неверным", NotificationType.Error);
             throw new ArgumentOutOfRangeException(nameof(loader), loader, null);
+        }
 
         _loadPercentages.OnNext(0);
         _fullPercentages.OnNext(0);
@@ -134,17 +129,17 @@ public class GameDownloader
 
     private void OnStep()
     {
-        double percentage = (double)_currentStep / _steps * 100;
+        var percentage = (double)_currentStep / _steps * 100;
 
         _fullPercentages.OnNext(percentage);
 
         _currentStep++;
     }
 
-    private async Task<string> DownloadVanilla(string version, string? launchVersion, CancellationToken cancellationToken)
+    private async Task<string> DownloadVanilla(string version, string? launchVersion,
+        CancellationToken cancellationToken)
     {
         foreach (var launcher in _launchers.Values)
-        {
             try
             {
                 _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
@@ -153,13 +148,13 @@ public class GameDownloader
             }
             catch (Exception exception)
             {
+                await _notifications.SendMessage("Ошибка", exception);
                 _exception.OnNext(exception);
             }
             finally
             {
                 OnStep();
             }
-        }
 
         return await Task.FromResult(version);
     }
@@ -167,12 +162,11 @@ public class GameDownloader
     private async Task<string> DownloadForge(string version, string? launchVersion, CancellationToken cancellationToken)
     {
         _loadLog.OnNext("Load starting...");
-        string loadVersion = string.Empty;
+        var loadVersion = string.Empty;
         ForgeVersion? bestVersion = default;
         ForgeVersion[]? forgeVersions = default;
 
         foreach (var launcher in _launchers.Values)
-        {
             try
             {
                 _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
@@ -188,6 +182,8 @@ public class GameDownloader
 
                 if (bestVersion is null)
                 {
+                    await _notifications.SendMessage("Ошибка", "Не удалось определить версию для загрузки",
+                        NotificationType.Error);
                     throw new InvalidOperationException("Cannot find any version");
                 }
 
@@ -199,33 +195,33 @@ public class GameDownloader
                     JavaPath = _buildJavaPath,
                     CancellationToken = cancellationToken
                 });
-
                 // var process = await launcher.CreateProcessAsync(loadVersion, new MLaunchOption()).AsTask();
             }
             catch (Exception exception)
             {
+                var message =
+                    $"Клиент для {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} не был установлен!";
+                await _notifications.SendMessage(message, exception);
                 _exception.OnNext(exception);
-                _loadLog.OnNext(
-                    $"Launcher for {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} not installed!");
+                _loadLog.OnNext(message);
             }
             finally
             {
                 OnStep();
             }
-        }
 
         return await Task.FromResult(loadVersion);
     }
 
-    private async Task<string> DownloadNeoForge(string version, string? launchVersion, CancellationToken cancellationToken)
+    private async Task<string> DownloadNeoForge(string version, string? launchVersion,
+        CancellationToken cancellationToken)
     {
         _loadLog.OnNext("Load starting...");
-        string loadVersion = string.Empty;
+        var loadVersion = string.Empty;
         NeoForgeVersion? bestVersion = default;
         NeoForgeVersion[]? forgeVersions = default;
 
         foreach (var launcher in _launchers.Values)
-        {
             try
             {
                 _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
@@ -241,6 +237,8 @@ public class GameDownloader
 
                 if (bestVersion is null)
                 {
+                    await _notifications.SendMessage("Ошибка", "Не удалось определить версию для загрузки",
+                        NotificationType.Error);
                     throw new InvalidOperationException("Cannot find any version");
                 }
 
@@ -257,58 +255,66 @@ public class GameDownloader
             }
             catch (Exception exception)
             {
+                var message =
+                    $"Клиент для {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} не был установлен!";
+                await _notifications.SendMessage(message, exception);
                 _exception.OnNext(exception);
-                _loadLog.OnNext(
-                    $"Launcher for {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} not installed!");
+                _loadLog.OnNext(message);
             }
             finally
             {
                 OnStep();
             }
-        }
 
         return await Task.FromResult(loadVersion);
     }
 
-    private async Task<string> DownloadFabric(string version, string? launchVersion, CancellationToken cancellationToken)
+    private async Task<string> DownloadFabric(string version, string? launchVersion,
+        CancellationToken cancellationToken)
     {
         var versionInfo = string.Empty;
         var fabricLoader = new FabricInstaller(new HttpClient());
+        FabricLoader? fabricVersion = default;
 
         foreach (var launcher in _launchers.Values)
-        {
             try
             {
                 _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
-                versionInfo = await fabricLoader.Install(version, launcher.MinecraftPath);
+                if (fabricVersion is null)
+                {
+                    var versionLoaders = await fabricLoader.GetLoaders(version);
+                    fabricVersion = versionLoaders.First(c => c.Version == launchVersion);
+                }
+
+                versionInfo = await fabricLoader.Install(version, fabricVersion.Version!, launcher.MinecraftPath);
 
                 await launcher.InstallAndBuildProcessAsync(
                     versionInfo, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
             }
             catch (Exception exception)
             {
+                var message =
+                    $"Клиент для {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} не был установлен!";
+                await _notifications.SendMessage(message, exception);
                 _exception.OnNext(exception);
-                _loadLog.OnNext(
-                    $"Launcher for {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} not installed!");
+                _loadLog.OnNext(message);
             }
             finally
             {
                 OnStep();
             }
-        }
 
         return versionInfo;
     }
 
-    private async Task<string> DownloadLiteLoader(string version, string? launchVersion, CancellationToken cancellationToken)
+    private async Task<string> DownloadLiteLoader(string version, string? launchVersion,
+        CancellationToken cancellationToken)
     {
         var versionInfo = string.Empty;
         var liteLoader = new LiteLoaderInstaller(new HttpClient());
         var liteLoaderVersions = await liteLoader.GetAllLiteLoaders();
 
         foreach (var launcher in _launchers.Values)
-        {
-
             try
             {
                 _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
@@ -319,37 +325,33 @@ public class GameDownloader
                                             ?? throw new InvalidOperationException(
                                                 "Выбранная версия не поддерживается");
 
-                if (launcher.RulesContext.OS.Name == "osx")
-                {
-                    continue;
-                }
+                if (launcher.RulesContext.OS.Name == "osx") continue;
 
-                var versionMetaData = await launcher.GetVersionAsync(bestLiteLoaderVersion.BaseVersion!, cancellationToken);
+                var versionMetaData =
+                    await launcher.GetVersionAsync(bestLiteLoaderVersion.BaseVersion!, cancellationToken);
                 versionInfo = await liteLoader.Install(bestLiteLoaderVersion, versionMetaData, launcher.MinecraftPath);
                 await launcher.InstallAndBuildProcessAsync(
                     versionInfo, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
             }
             catch (Exception exception)
             {
+                var message =
+                    $"Клиент для {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} не был установлен!";
+                await _notifications.SendMessage(message, exception);
                 _exception.OnNext(exception);
-                _loadLog.OnNext(
-                    $"Launcher for {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} not installed!");
+                _loadLog.OnNext(message);
             }
             finally
             {
                 OnStep();
             }
-        }
 
         return versionInfo;
     }
 
     private async Task CheckBuildJava()
     {
-        if (_buildJavaPath is not null && File.Exists(_buildJavaPath))
-        {
-            return;
-        }
+        if (_buildJavaPath is not null && File.Exists(_buildJavaPath)) return;
 
         var system = SystemService.GetPlatform();
         var javaName = system == "windows" ? "java.exe" : "java";
@@ -370,28 +372,26 @@ public class GameDownloader
             _loadLog.OnNext("Download complete. Extracting...");
             _systemProcedures.ExtractZipFile(tempZipFilePath, jdkPath);
             _loadLog.OnNext($"Extraction complete. Java executable path: {javaPath}");
-            if (system == "linux")
-            {
-                _systemProcedures.SetFileExecutable(javaPath);
-            }
+            if (system == "linux") _systemProcedures.SetFileExecutable(javaPath);
         }
 
         _buildJavaPath = javaPath;
     }
 
-    public async Task<Process> GetProcessAsync(IStartupOptions startupOptions, IUser user, bool needDownload, string[] jvmArguments)
+    public async Task<Process> GetProcessAsync(IStartupOptions startupOptions, IUser user, bool needDownload,
+        string[] jvmArguments)
     {
         if (!_launchers.TryGetValue($"{startupOptions.OsName}/{startupOptions.OsArch}", out var launcher))
         {
+            await _notifications.SendMessage("Ошибка", "Выбранная операционная система не поддерживается",
+                NotificationType.Error);
             throw new NotSupportedException("Operation system not supported");
         }
 
         var session = new MSession(user.Name, user.AccessToken, user.Uuid);
 
         if (needDownload)
-        {
             foreach (var anyLauncher in _launchers.Values)
-            {
                 try
                 {
                     await anyLauncher.InstallAndBuildProcessAsync(_profile.LaunchVersion, new MLaunchOption
@@ -409,12 +409,12 @@ public class GameDownloader
                 }
                 catch (Exception exception)
                 {
+                    var message =
+                        $"Не удалось восстановить профиль {_profile.Name}, {anyLauncher.RulesContext.OS.Name}, {anyLauncher.RulesContext.OS.Arch}";
+                    await _notifications.SendMessage(message, exception);
                     _exception.OnNext(exception);
-                    _loadLog.OnNext(
-                        $"Не удалось восстановить профиль {_profile.Name}, {anyLauncher.RulesContext.OS.Name}, {anyLauncher.RulesContext.OS.Arch}");
+                    _loadLog.OnNext(message);
                 }
-            }
-        }
 
         return await launcher.BuildProcessAsync(_profile.LaunchVersion, new MLaunchOption
         {
