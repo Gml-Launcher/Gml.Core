@@ -680,6 +680,11 @@ namespace Gml.Core.Helpers.Profiles
                             _fabricVersions[minecraftVersion] = versions;
                         }
 
+                        if (_fabricVersions[minecraftVersion] is null || !_fabricVersions[minecraftVersion].Any())
+                        {
+                            throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
+                        }
+
                         return _fabricVersions[minecraftVersion];
 
                     case GameLoader.LiteLoader:
