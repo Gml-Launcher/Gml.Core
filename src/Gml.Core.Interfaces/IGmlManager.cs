@@ -14,5 +14,6 @@ namespace GmlCore.Interfaces
         public ILauncherProcedures Launcher { get; }
         IProfileServersProcedures Servers { get; }
         INotificationProcedures Notifications { get; }
+        ISystemProcedures System { get; }
     }
 }

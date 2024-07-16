@@ -7,9 +7,13 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using CmlLib.Core.Files;
+using CmlLib.Core.Java;
 using Gml.Core.Helpers.Mirrors;
 using Gml.Core.Launcher;
 using Gml.Core.Services.System;
+using Gml.Models.Bootstrap;
+using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 
@@ -20,6 +24,9 @@ namespace Gml.Core.Helpers.System
         private string _installationDirectory;
         private string? _buildDotnetPath;
         public string? BuildDotnetPath => _buildDotnetPath;
+        private readonly MinecraftJavaManifestResolver _javaManifestResolver = new(gmlSettings.HttpClient);
+        private IEnumerable<MinecraftJavaManifestMetadata>? _javaManifestMetadata;
+
 
         public string DefaultInstallation
         {
@@ -117,6 +124,22 @@ namespace Gml.Core.Helpers.System
                 var error = process.StandardError.ReadToEnd();
                 Console.WriteLine($"Error setting executable permissions: {error}");
             }
+        }
+
+        public async Task<IEnumerable<IBootstrapProgram>> GetJavaVersions()
+        {
+            _javaManifestMetadata ??= await _javaManifestResolver.GetAllManifests();
+
+            var javaVersions = _javaManifestMetadata
+                .OrderBy(c => c.VersionName)
+                .GroupBy(c => new
+                {
+                    Name = c.Component,
+                    MajorVersion = int.Parse(c.GetMajorVersion() ?? "0"),
+                    Version = c.VersionName
+                });
+
+            return javaVersions.Select(c => new JavaBootstrapProgram(c.Key.Name, c.Key.Version!, c.Key.MajorVersion!));
         }
 
         public async Task DownloadFileAsync(string url, string destinationFilePath)
