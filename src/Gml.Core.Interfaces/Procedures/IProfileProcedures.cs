@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using Gml.Web.Api.Domains.System;
+using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.System;
@@ -31,7 +32,7 @@ namespace GmlCore.Interfaces.Procedures
         Task<bool> ValidateProfileAsync(IGameProfile baseProfile);
         bool ValidateProfile();
         Task SaveProfiles();
-        Task DownloadProfileAsync(IGameProfile baseProfile);
+        Task DownloadProfileAsync(IGameProfile baseProfile, IBootstrapProgram? version = default);
         Task<IEnumerable<IFileInfo>> GetProfileFiles(IGameProfile baseProfile);
         Task<IGameProfile?> GetProfile(string profileName);
         Task<IEnumerable<IGameProfile>> GetProfiles();
@@ -50,5 +51,6 @@ namespace GmlCore.Interfaces.Procedures
         Task<IEnumerable<IFileInfo>> GetProfileFiles(IGameProfile profile, string osName, string osArchitecture);
         Task<IFileInfo[]> GetAllProfileFiles(IGameProfile baseProfile);
         Task<IEnumerable<string>> GetAllowVersions(GameLoader result, string? minecraftVersion);
+        Task ChangeBootstrapProgram(IGameProfile testGameProfile, IBootstrapProgram version);
     }
 }

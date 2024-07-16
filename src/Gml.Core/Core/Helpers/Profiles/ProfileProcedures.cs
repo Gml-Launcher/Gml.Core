@@ -26,6 +26,7 @@ using Gml.Core.Services.Storage;
 using Gml.Models;
 using Gml.Models.System;
 using Gml.Web.Api.Domains.System;
+using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
@@ -219,11 +220,11 @@ namespace Gml.Core.Helpers.Profiles
             await _storageService.SetAsync(StorageConstants.GameProfiles, _gameProfiles);
         }
 
-        public async Task DownloadProfileAsync(IGameProfile baseProfile)
+        public async Task DownloadProfileAsync(IGameProfile baseProfile, IBootstrapProgram? version = default)
         {
             if (baseProfile is GameProfile gameProfile && await gameProfile.ValidateProfile())
                 gameProfile.LaunchVersion =
-                    await gameProfile.GameLoader.DownloadGame(baseProfile.GameVersion, baseProfile.LaunchVersion, gameProfile.Loader);
+                    await gameProfile.GameLoader.DownloadGame(baseProfile.GameVersion, baseProfile.LaunchVersion, gameProfile.Loader, version);
         }
 
         public async Task<IGameProfile?> GetProfile(string profileName)
@@ -720,6 +721,11 @@ namespace Gml.Core.Helpers.Profiles
 
                 throw new VersionNotLoadedException("Не удалось получить список версий для данного загрузчика, причина: " + e.Message);
             }
+        }
+
+        public Task ChangeBootstrapProgram(IGameProfile testGameProfile, IBootstrapProgram version)
+        {
+            return DownloadProfileAsync(testGameProfile, version);
         }
 
         private string ValidatePath(string path, OsType osType)

@@ -16,13 +16,12 @@ public class Tests
     private IGameProfile _testGameProfile = null!;
 
     private GmlManager GmlManager { get; } =
-        new(new GmlSettings("GamerVIILauncher", "gfweagertghuysergfbsuyerbgiuyserg"));
+        new(new GmlSettings("GamerVIILauncher", "gfweagertghuysergfbsuyerbgiuyserg", httpClient: new HttpClient()));
 
     [SetUp]
     public async Task Setup()
     {
         await GmlManager.Profiles.RestoreProfiles();
-
 
         _options = new StartupOptions
         {
@@ -53,7 +52,7 @@ public class Tests
     public async Task CreateProfile()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
-                           ?? await GmlManager.Profiles.AddProfile("HiTech", "1.20.1", string.Empty, GameLoader.Vanilla,
+                           ?? await GmlManager.Profiles.AddProfile("HiTech", "1.7.10", "1.7.10_04", GameLoader.LiteLoader,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
@@ -423,6 +422,32 @@ public class Tests
         // processUtil.OutputReceived += (s, message) => Console.WriteLine(message);
         // processUtil.StartWithEvents();
         // await processUtil.WaitForExitTaskAsync();
+    }
+
+    [Test]
+    [Order(91)]
+    public async Task GetJavaVersions()
+    {
+        var versions = await GmlManager.System.GetJavaVersions();
+
+        Assert.That(versions, Is.Not.Empty);
+    }
+
+    [Test]
+    [Order(92)]
+    public async Task ChangeProfileVersion()
+    {
+        var versions = await GmlManager.System.GetJavaVersions();
+
+        var version = versions.First(c => c.Version == "21.0.3");
+
+        _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
+                           ?? await GmlManager.Profiles.AddProfile("HiTech", "1.20.1", string.Empty, GameLoader.Vanilla,
+                               string.Empty,
+                               string.Empty)
+                           ?? throw new Exception("Failed to create profile instance");
+
+        await GmlManager.Profiles.ChangeBootstrapProgram(_testGameProfile, version);
     }
 
     [Test]

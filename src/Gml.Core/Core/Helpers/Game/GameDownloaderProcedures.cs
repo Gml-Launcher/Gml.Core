@@ -10,6 +10,7 @@ using CmlLib.Core;
 using Gml.Common;
 using Gml.Core.Services.Storage;
 using Gml.Models.System;
+using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
@@ -45,9 +46,9 @@ namespace Gml.Core.Helpers.Game
         public IObservable<string> LoadLog => _gameLoader.LoadLog;
         public IObservable<Exception> LoadException => _gameLoader.LoadException;
 
-        public Task<string> DownloadGame(string version, string? launchVersion, GameLoader loader)
+        public Task<string> DownloadGame(string version, string? launchVersion, GameLoader loader, IBootstrapProgram? bootstrapProgram)
         {
-            return _gameLoader.DownloadGame(loader, version, launchVersion);
+            return _gameLoader.DownloadGame(loader, version, launchVersion, bootstrapProgram);
         }
 
         public async Task<Process> CreateProcess(IStartupOptions startupOptions, IUser user, bool needDownload,
