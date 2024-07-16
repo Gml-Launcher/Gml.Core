@@ -245,6 +245,7 @@ public class GameDownloader
         var loadVersion = string.Empty;
         NeoForgeVersion? bestVersion = default;
         NeoForgeVersion[]? forgeVersions = default;
+        JavaVersion? javaVersion = default;
 
         foreach (var launcher in _launchers.Values)
             try
@@ -267,13 +268,20 @@ public class GameDownloader
                     throw new InvalidOperationException("Cannot find any version");
                 }
 
+
+                if (javaVersion is null && _bootstrapProgram is not null)
+                {
+                    javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion);
+                }
+
                 loadVersion = await forge.Install(bestVersion, new NeoForgeInstallOptions
                 {
                     SkipIfAlreadyInstalled = false,
                     ByteProgress = _byteProgress,
                     FileProgress = _fileProgress,
                     JavaPath = _buildJavaPath,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
+                    JavaVersion = javaVersion
                 });
 
                 var process = await launcher.CreateProcessAsync(loadVersion, new MLaunchOption()).AsTask();
