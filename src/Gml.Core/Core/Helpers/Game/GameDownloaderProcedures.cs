@@ -202,7 +202,7 @@ namespace Gml.Core.Helpers.Game
                     Name = Path.GetFileName(c),
                     Directory = path,
                     FullPath = c,
-                    Size = c.Length,
+                    Size = new FileInfo(c).Length,
                     Hash = hash
                 });
             }));
