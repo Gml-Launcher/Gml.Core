@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CmlLib.Core.Files;
@@ -144,17 +145,38 @@ namespace Gml.Core.Helpers.System
 
         public async Task DownloadFileAsync(string url, string destinationFilePath)
         {
-            using HttpClient client = new();
-            using HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
-            response.EnsureSuccessStatusCode();
-            await using Stream contentStream = await response.Content.ReadAsStreamAsync(),
-                fileStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None,
-                    8192, true);
-            var buffer = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            try
             {
-                await fileStream.WriteAsync(buffer, 0, bytesRead);
+                using HttpClient client = new();
+                using HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+
+                response.EnsureSuccessStatusCode();
+
+                await using Stream contentStream = await response.Content.ReadAsStreamAsync(),
+                    fileStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+
+                var buffer = new byte[8192];
+                int bytesRead;
+
+                while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                {
+                    await fileStream.WriteAsync(buffer, 0, bytesRead);
+                }
+            }
+            catch (HttpRequestException httpRequestException)
+            {
+                Console.WriteLine($"Ошибка в HTTP запросе: {httpRequestException.Message}");
+                throw;
+            }
+            catch (IOException ioException)
+            {
+                Console.WriteLine($"Ошибка ввода-вывода: {ioException.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Произошла ошибка: {ex.Message}");
+                throw;
             }
         }
 
@@ -172,12 +194,41 @@ namespace Gml.Core.Helpers.System
         {
             if (mirrorUrls.TryGetValue(SystemService.GetPlatform(), out string[] mirrors))
             {
-                using HttpClient client = new();
+                Dictionary<string, long> pingResults = new();
+                using Ping pingSender = new();
+
                 foreach (string url in mirrors)
                 {
                     try
                     {
-                        HttpResponseMessage response = await client.GetAsync(url);
+                        var uri = new Uri(url);
+                        string host = uri.Host;
+
+                        PingReply reply = await pingSender.SendPingAsync(host);
+                        if (reply.Status == IPStatus.Success)
+                        {
+                            pingResults[url] = reply.RoundtripTime;
+                        }
+                    }
+                    catch (PingException)
+                    {
+                        // Игнорируем исключение и пробуем следующий URL
+                    }
+                    catch (Exception)
+                    {
+                        // Игнорируем другие исключения и пробуем следующий URL
+                    }
+                }
+
+                using HttpClient client = new();
+
+                foreach (var kvp in pingResults)
+                {
+                    string url = kvp.Key;
+
+                    try
+                    {
+                        HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                         if (response.IsSuccessStatusCode)
                         {
                             return url;
@@ -185,11 +236,11 @@ namespace Gml.Core.Helpers.System
                     }
                     catch (HttpRequestException)
                     {
-                        // Ignore the exception and try the next URL
+                        // ignore
                     }
                     catch (Exception)
                     {
-                        // Ignore the exception and try the next URL
+                        // ignore
                     }
                 }
             }

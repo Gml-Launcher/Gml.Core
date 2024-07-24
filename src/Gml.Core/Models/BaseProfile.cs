@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Gml.Models.Converters;
 using Gml.Models.Enums;
 using Gml.Web.Api.Domains.System;
+using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
@@ -71,11 +72,11 @@ namespace Gml.Models
             return IsValidProfile == NullableBool.True;
         }
 
-        public async Task DownloadAsync()
+        public async Task DownloadAsync(IBootstrapProgram? bootstrapProgram = default)
         {
             CheckDispose();
 
-            await ProfileProcedures.DownloadProfileAsync(this);
+            await ProfileProcedures.DownloadProfileAsync(this, bootstrapProgram);
         }
 
         public Task<Process> CreateProcess(IStartupOptions startupOptions, IUser user)

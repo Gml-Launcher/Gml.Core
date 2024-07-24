@@ -14,13 +14,18 @@ using CmlLib.Core.Auth;
 using CmlLib.Core.Installer.Forge;
 using CmlLib.Core.Installer.Forge.Versions;
 using CmlLib.Core.Installers;
+using CmlLib.Core.Java;
 using CmlLib.Core.ModLoaders.FabricMC;
 using CmlLib.Core.ModLoaders.LiteLoader;
 using CmlLib.Core.ProcessBuilder;
 using CmlLib.Core.Rules;
+using CmlLib.Core.Version;
+using CmlLib.Core.VersionLoader;
+using CmlLib.Core.VersionMetadata;
 using Gml.Core.Helpers.Mirrors;
 using Gml.Core.Services.System;
 using Gml.Models.CmlLib;
+using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
@@ -41,6 +46,7 @@ public class GameDownloader
     private string? _buildJavaPath;
     private readonly SyncProgress<ByteProgress> _byteProgress;
     private CancellationTokenSource _cancellationTokenSource;
+    private IBootstrapProgram? _bootstrapProgram;
     private int _currentStep;
     private readonly Dictionary<GameLoader, Func<string, string?, CancellationToken, Task<string>>> _downloadMethods;
     private readonly Subject<Exception> _exception = new();
@@ -92,9 +98,11 @@ public class GameDownloader
                 platform, architecture);
             var launcherParameters = MinecraftLauncherParameters.CreateDefault(minecraftPath);
             var platformName = $"{platform}/{architecture}";
-            var platformLauncher = new MinecraftLauncher(launcherParameters);
-            platformLauncher.RulesContext =
-                new RulesEvaluatorContext(new LauncherOSRule(platform, architecture, string.Empty));
+            var platformLauncher = new MinecraftLauncher(launcherParameters)
+            {
+                RulesContext = new RulesEvaluatorContext(new LauncherOSRule(platform, architecture, string.Empty))
+            };
+
             _launchers.TryAdd(platformName, platformLauncher);
         }
     }
@@ -105,17 +113,19 @@ public class GameDownloader
     public IObservable<Exception> LoadException => _exception;
     public MinecraftLauncher AnyLauncher => _launchers.Values.First();
 
-    public async Task<string> DownloadGame(GameLoader loader, string version, string? launchVersion)
+    public async Task<string> DownloadGame(GameLoader loader, string version, string? launchVersion,
+        IBootstrapProgram? bootstrapProgram)
     {
         _cancellationTokenSource = new CancellationTokenSource();
         _profile.State = ProfileState.Loading;
 
         if (!_downloadMethods.ContainsKey(loader))
         {
-            await _notifications.SendMessage("Ошибка", "Попытка создать профиль с неверным", NotificationType.Error);
+            await _notifications.SendMessage("Ошибка", "Попытка создать профиль с неверным загрузчиком", NotificationType.Error);
             throw new ArgumentOutOfRangeException(nameof(loader), loader, null);
         }
 
+        _bootstrapProgram = bootstrapProgram;
         _loadPercentages.OnNext(0);
         _fullPercentages.OnNext(0);
         _steps = _launchers.Count + 1;
@@ -139,11 +149,21 @@ public class GameDownloader
     private async Task<string> DownloadVanilla(string version, string? launchVersion,
         CancellationToken cancellationToken)
     {
+        IVersion? installVersion = default;
+
         foreach (var launcher in _launchers.Values)
             try
             {
+                if (_bootstrapProgram is not null && installVersion is null)
+                {
+                    installVersion = await launcher.GetVersionAsync(version, cancellationToken).AsTask();
+                    installVersion.ChangeJavaVersion(new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion));
+                }
+
+                installVersion ??= new MinecraftVersion(version);
+
                 _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
-                await launcher.InstallAsync(version, _fileProgress, _byteProgress, cancellationToken)
+                await launcher.InstallAsync(installVersion, _fileProgress, _byteProgress, cancellationToken)
                     .AsTask();
             }
             catch (Exception exception)
@@ -165,6 +185,7 @@ public class GameDownloader
         var loadVersion = string.Empty;
         ForgeVersion? bestVersion = default;
         ForgeVersion[]? forgeVersions = default;
+        JavaVersion? javaVersion = default;
 
         foreach (var launcher in _launchers.Values)
             try
@@ -187,13 +208,19 @@ public class GameDownloader
                     throw new InvalidOperationException("Cannot find any version");
                 }
 
+                if (javaVersion is null && _bootstrapProgram is not null)
+                {
+                    javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion);
+                }
+
                 loadVersion = await forge.Install(bestVersion, new ForgeInstallOptions
                 {
                     SkipIfAlreadyInstalled = false,
                     ByteProgress = _byteProgress,
                     FileProgress = _fileProgress,
                     JavaPath = _buildJavaPath,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
+                    JavaVersion = javaVersion
                 });
                 // var process = await launcher.CreateProcessAsync(loadVersion, new MLaunchOption()).AsTask();
             }
@@ -220,6 +247,7 @@ public class GameDownloader
         var loadVersion = string.Empty;
         NeoForgeVersion? bestVersion = default;
         NeoForgeVersion[]? forgeVersions = default;
+        JavaVersion? javaVersion = default;
 
         foreach (var launcher in _launchers.Values)
             try
@@ -242,13 +270,20 @@ public class GameDownloader
                     throw new InvalidOperationException("Cannot find any version");
                 }
 
+
+                if (javaVersion is null && _bootstrapProgram is not null)
+                {
+                    javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion);
+                }
+
                 loadVersion = await forge.Install(bestVersion, new NeoForgeInstallOptions
                 {
                     SkipIfAlreadyInstalled = false,
                     ByteProgress = _byteProgress,
                     FileProgress = _fileProgress,
                     JavaPath = _buildJavaPath,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
+                    JavaVersion = javaVersion
                 });
 
                 var process = await launcher.CreateProcessAsync(loadVersion, new MLaunchOption()).AsTask();
@@ -272,9 +307,11 @@ public class GameDownloader
     private async Task<string> DownloadFabric(string version, string? launchVersion,
         CancellationToken cancellationToken)
     {
-        var versionInfo = string.Empty;
+        var versionName = string.Empty;
         var fabricLoader = new FabricInstaller(new HttpClient());
         FabricLoader? fabricVersion = default;
+        JavaVersion? javaVersion = default;
+        IVersion? downloadVersion = default;
 
         foreach (var launcher in _launchers.Values)
             try
@@ -286,10 +323,17 @@ public class GameDownloader
                     fabricVersion = versionLoaders.First(c => c.Version == launchVersion);
                 }
 
-                versionInfo = await fabricLoader.Install(version, fabricVersion.Version!, launcher.MinecraftPath);
+                versionName = await fabricLoader.Install(version, fabricVersion.Version!, launcher.MinecraftPath);
+                downloadVersion ??= await launcher.GetVersionAsync(versionName,  cancellationToken);
 
-                await launcher.InstallAndBuildProcessAsync(
-                    versionInfo, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
+                if (javaVersion is null && _bootstrapProgram is not null)
+                {
+                    javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion);
+                    downloadVersion.ChangeJavaVersion(javaVersion);
+                    downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
+                }
+
+                await launcher.InstallAndBuildProcessAsync(downloadVersion, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
             }
             catch (Exception exception)
             {
@@ -304,13 +348,15 @@ public class GameDownloader
                 OnStep();
             }
 
-        return versionInfo;
+        return versionName;
     }
 
     private async Task<string> DownloadLiteLoader(string version, string? launchVersion,
         CancellationToken cancellationToken)
     {
-        var versionInfo = string.Empty;
+        var versionName = string.Empty;
+        JavaVersion? javaVersion = default;
+        IVersion? downloadVersion = default;
         var liteLoader = new LiteLoaderInstaller(new HttpClient());
         var liteLoaderVersions = await liteLoader.GetAllLiteLoaders();
 
@@ -329,9 +375,18 @@ public class GameDownloader
 
                 var versionMetaData =
                     await launcher.GetVersionAsync(bestLiteLoaderVersion.BaseVersion!, cancellationToken);
-                versionInfo = await liteLoader.Install(bestLiteLoaderVersion, versionMetaData, launcher.MinecraftPath);
-                await launcher.InstallAndBuildProcessAsync(
-                    versionInfo, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
+                versionName = await liteLoader.Install(bestLiteLoaderVersion, versionMetaData, launcher.MinecraftPath);
+
+                downloadVersion ??= await launcher.GetVersionAsync(versionName,  cancellationToken);
+
+                if (javaVersion is null && _bootstrapProgram is not null)
+                {
+                    javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion);
+                    downloadVersion.ChangeJavaVersion(javaVersion);
+                    downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
+                }
+
+                await launcher.InstallAndBuildProcessAsync(downloadVersion, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
             }
             catch (Exception exception)
             {
@@ -346,7 +401,7 @@ public class GameDownloader
                 OnStep();
             }
 
-        return versionInfo;
+        return versionName;
     }
 
     private async Task CheckBuildJava()
@@ -390,33 +445,19 @@ public class GameDownloader
 
         var session = new MSession(user.Name, user.AccessToken, user.Uuid);
 
-        if (needDownload)
-            foreach (var anyLauncher in _launchers.Values)
-                try
-                {
-                    await anyLauncher.InstallAndBuildProcessAsync(_profile.LaunchVersion, new MLaunchOption
-                    {
-                        MinimumRamMb = startupOptions.MinimumRamMb,
-                        MaximumRamMb = startupOptions.MaximumRamMb,
-                        FullScreen = startupOptions.FullScreen,
-                        ScreenHeight = startupOptions.ScreenHeight,
-                        ScreenWidth = startupOptions.ScreenWidth,
-                        ServerIp = startupOptions.ServerIp,
-                        ServerPort = startupOptions.ServerPort,
-                        Session = session,
-                        ExtraJvmArguments = jvmArguments.Select(c => new MArgument(c))
-                    }).AsTask();
-                }
-                catch (Exception exception)
-                {
-                    var message =
-                        $"Не удалось восстановить профиль {_profile.Name}, {anyLauncher.RulesContext.OS.Name}, {anyLauncher.RulesContext.OS.Arch}";
-                    await _notifications.SendMessage(message, exception);
-                    _exception.OnNext(exception);
-                    _loadLog.OnNext(message);
-                }
+        IVersion version = default;
 
-        return await launcher.BuildProcessAsync(_profile.LaunchVersion, new MLaunchOption
+        if (launcher.Versions is null || !launcher.Versions!.TryGetVersionMetadata(_profile.LaunchVersion!, out IVersionMetadata versionMetadata))
+        {
+            var loader = new LocalJsonVersionLoader(launcher.MinecraftPath);
+            var versions = await loader.GetVersionMetadatasAsync();
+
+            version = await versions.GetVersionAsync(_profile.LaunchVersion!);
+        }
+
+        version ??= await launcher.GetVersionAsync(_profile.LaunchVersion!);
+
+        return launcher.BuildProcess(version, new MLaunchOption
         {
             MinimumRamMb = startupOptions.MinimumRamMb,
             MaximumRamMb = startupOptions.MaximumRamMb,
@@ -428,7 +469,7 @@ public class GameDownloader
             Session = session,
             PathSeparator = startupOptions.OsName == "windows" ? ";" : ":",
             ExtraJvmArguments = jvmArguments.Select(c => new MArgument(c))
-        }).AsTask();
+        });
     }
 
     public bool GetLauncher(string launcherKey, out object launcher)

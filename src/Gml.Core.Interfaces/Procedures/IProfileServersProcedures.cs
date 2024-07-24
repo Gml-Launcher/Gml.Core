@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Servers;
 
@@ -9,4 +10,5 @@ public interface IProfileServersProcedures
     Task<IProfileServer> AddMinecraftServer(IGameProfile profileprofile, string serverName, string address, int port);
     Task UpdateServerState(IProfileServer minecraftServer);
     Task RemoveServer(IGameProfile profile, string serverName);
+    Task ChangeBootstrapProgram(IGameProfile testGameProfile, IBootstrapProgram version);
 }

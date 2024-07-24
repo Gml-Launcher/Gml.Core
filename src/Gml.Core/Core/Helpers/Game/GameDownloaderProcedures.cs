@@ -7,9 +7,13 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using CmlLib.Core;
+using CmlLib.Core.Version;
+using CmlLib.Core.VersionLoader;
+using CmlLib.Core.VersionMetadata;
 using Gml.Common;
 using Gml.Core.Services.Storage;
 using Gml.Models.System;
+using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
@@ -45,9 +49,9 @@ namespace Gml.Core.Helpers.Game
         public IObservable<string> LoadLog => _gameLoader.LoadLog;
         public IObservable<Exception> LoadException => _gameLoader.LoadException;
 
-        public Task<string> DownloadGame(string version, string? launchVersion, GameLoader loader)
+        public Task<string> DownloadGame(string version, string? launchVersion, GameLoader loader, IBootstrapProgram? bootstrapProgram)
         {
-            return _gameLoader.DownloadGame(loader, version, launchVersion);
+            return _gameLoader.DownloadGame(loader, version, launchVersion, bootstrapProgram);
         }
 
         public async Task<Process> CreateProcess(IStartupOptions startupOptions, IUser user, bool needDownload,
@@ -109,19 +113,52 @@ namespace Gml.Core.Helpers.Game
                 throw new NotSupportedException("Operation system not supported");
             }
 
-            var downloadFiles = new List<IFileInfo>();
             var systemFiles = new List<string>();
+
+            IVersion? version = null;
+
+            if (launcher.Versions is null || !launcher.Versions!.TryGetVersionMetadata(_profile.LaunchVersion!, out IVersionMetadata versionMetadata))
+            {
+                var loader = new LocalJsonVersionLoader(launcher.MinecraftPath);
+                var versions = await loader.GetVersionMetadatasAsync();
+
+                if (!versions.Contains(_profile.LaunchVersion!))
+                    return [];
+
+                version = await versions.GetVersionAsync(_profile.LaunchVersion!);
+            }
+
+            if (version is null)
+            {
+                version = await launcher.GetVersionAsync(_profile.LaunchVersion!);
+            }
+
+            if (version is null)
+            {
+                throw new Exception("Профиль не загружен ил загружен не полностью!");
+            }
+
+            var javaVersion = version.JavaVersion ?? version.ParentVersion?.JavaVersion;
+
+            if (javaVersion is null)
+            {
+                throw new Exception("В профиле не указана версия Java по умолчанию");
+            }
 
             var runtimeFolder = Directory
                 .GetDirectories(
                     launcher.MinecraftPath.Runtime, $"{osName}??{osArchitecture}", SearchOption.AllDirectories)
-                .FirstOrDefault();
+                .Select(c => new DirectoryInfo(c))
+                .FirstOrDefault()?
+                .GetDirectories()
+                .FirstOrDefault(c => c.Name.Contains(javaVersion.Component));
 
-            if (string.IsNullOrEmpty(runtimeFolder) && osName == "linux")
+            if (runtimeFolder is null && osName == "linux")
             {
                 runtimeFolder = Directory
                     .GetDirectories(
                         launcher.MinecraftPath.Runtime, $"{osName}", SearchOption.AllDirectories)
+                    .Select(c => new DirectoryInfo(c))
                     .FirstOrDefault();
             }
 
@@ -135,8 +172,7 @@ namespace Gml.Core.Helpers.Game
                 SearchOption.AllDirectories));
 
             // add runtime (Java)
-            systemFiles.AddRange(Directory.GetFiles(runtimeFolder, "*.*",
-                SearchOption.AllDirectories));
+            systemFiles.AddRange(runtimeFolder.GetFiles("*.*", SearchOption.AllDirectories).Select(c => c.FullName));
 
             // add client
             systemFiles.AddRange(

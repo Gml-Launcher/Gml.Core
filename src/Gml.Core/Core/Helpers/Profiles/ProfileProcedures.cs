@@ -26,6 +26,7 @@ using Gml.Core.Services.Storage;
 using Gml.Models;
 using Gml.Models.System;
 using Gml.Web.Api.Domains.System;
+using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
@@ -219,11 +220,16 @@ namespace Gml.Core.Helpers.Profiles
             await _storageService.SetAsync(StorageConstants.GameProfiles, _gameProfiles);
         }
 
-        public async Task DownloadProfileAsync(IGameProfile baseProfile)
+        public async Task DownloadProfileAsync(IGameProfile baseProfile, IBootstrapProgram? bootstrapProgram)
         {
             if (baseProfile is GameProfile gameProfile && await gameProfile.ValidateProfile())
                 gameProfile.LaunchVersion =
-                    await gameProfile.GameLoader.DownloadGame(baseProfile.GameVersion, baseProfile.LaunchVersion, gameProfile.Loader);
+                    await gameProfile.GameLoader.DownloadGame(baseProfile.GameVersion, baseProfile.LaunchVersion, gameProfile.Loader, bootstrapProgram);
+        }
+
+        public Task ChangeBootstrapProgram(IGameProfile testGameProfile, IBootstrapProgram version)
+        {
+            return DownloadProfileAsync(testGameProfile, version);
         }
 
         public async Task<IGameProfile?> GetProfile(string profileName)
@@ -368,8 +374,7 @@ namespace Gml.Core.Helpers.Profiles
             };
         }
 
-        public async Task<IGameProfileInfo?> RestoreProfileInfo(
-            string profileName)
+        public async Task<IGameProfileInfo?> RestoreProfileInfo(string profileName, IBootstrapProgram? bootstrapProgram = default)
         {
             await RestoreProfiles();
 
@@ -380,7 +385,7 @@ namespace Gml.Core.Helpers.Profiles
 
             try
             {
-                await profile.DownloadAsync();
+                await profile.DownloadAsync(bootstrapProgram);
                 var authLibArguments = await profile.InstallAuthLib();
                 await profile.CreateModsFolder();
                 var process =
