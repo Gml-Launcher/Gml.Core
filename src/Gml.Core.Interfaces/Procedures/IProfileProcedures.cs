@@ -16,6 +16,7 @@ namespace GmlCore.Interfaces.Procedures
         public delegate void ProgressPackChanged(ProgressChangedEventArgs e);
 
         IObservable<double> PackChanged { get; }
+        IObservable<int> ProfilesChanged { get; }
         Task AddProfile(IGameProfile? profile);
 
         Task<IGameProfile?> AddProfile(string name, string version, string loaderVersion, GameLoader loader,

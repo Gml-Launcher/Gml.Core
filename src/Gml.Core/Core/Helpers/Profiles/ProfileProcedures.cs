@@ -39,7 +39,9 @@ namespace Gml.Core.Helpers.Profiles
         public delegate void ProgressPackChanged(ProgressChangedEventArgs e);
 
         private ISubject<double> _packChanged = new Subject<double>();
+        private ISubject<int> _profilesChanged = new Subject<int>();
         public IObservable<double> PackChanged => _packChanged;
+        public IObservable<int> ProfilesChanged => _profilesChanged;
 
         private const string AuthLibUrl =
             "https://github.com/Gml-Launcher/Gml.Authlib.Injector/releases/download/authlib-injector-1.2.5-alpha-1/authlib-injector-1.2.5-alpha-1.jar";
@@ -217,6 +219,8 @@ namespace Gml.Core.Helpers.Profiles
         public async Task SaveProfiles()
         {
             await _storageService.SetAsync(StorageConstants.GameProfiles, _gameProfiles);
+
+            _profilesChanged.OnNext(0);
         }
 
         public async Task DownloadProfileAsync(IGameProfile baseProfile)
