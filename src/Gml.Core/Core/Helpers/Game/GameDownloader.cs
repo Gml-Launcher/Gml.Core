@@ -155,7 +155,7 @@ public class GameDownloader
                 if (_bootstrapProgram is not null && installVersion is null)
                 {
                     installVersion = await launcher.GetVersionAsync(version, cancellationToken).AsTask();
-                    installVersion.ChangeJavaVersion(new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion));
+                    // installVersion.ChangeJavaVersion(new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion));
                 }
 
                 installVersion ??= new MinecraftVersion(version);
@@ -218,7 +218,7 @@ public class GameDownloader
                     FileProgress = _fileProgress,
                     JavaPath = _buildJavaPath,
                     CancellationToken = cancellationToken,
-                    JavaVersion = javaVersion
+                    // JavaVersion = javaVersion
                 });
                 // var process = await launcher.CreateProcessAsync(loadVersion, new MLaunchOption()).AsTask();
             }
@@ -281,7 +281,7 @@ public class GameDownloader
                     FileProgress = _fileProgress,
                     JavaPath = _buildJavaPath,
                     CancellationToken = cancellationToken,
-                    JavaVersion = javaVersion
+                    // JavaVersion = javaVersion
                 });
 
                 var process = await launcher.CreateProcessAsync(loadVersion, new MLaunchOption()).AsTask();
@@ -327,11 +327,11 @@ public class GameDownloader
                 if (javaVersion is null && _bootstrapProgram is not null)
                 {
                     javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion);
-                    downloadVersion.ChangeJavaVersion(javaVersion);
-                    downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
+                    // downloadVersion.ChangeJavaVersion(javaVersion);
+                    // downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
                 }
 
-                await launcher.InstallAndBuildProcessAsync(downloadVersion, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
+                await launcher.InstallAndBuildProcessAsync(versionName, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
             }
             catch (Exception exception)
             {
@@ -380,11 +380,11 @@ public class GameDownloader
                 if (javaVersion is null && _bootstrapProgram is not null)
                 {
                     javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion);
-                    downloadVersion.ChangeJavaVersion(javaVersion);
-                    downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
+                    // downloadVersion.ChangeJavaVersion(javaVersion);
+                    // downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
                 }
 
-                await launcher.InstallAndBuildProcessAsync(downloadVersion, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
+                await launcher.InstallAndBuildProcessAsync(versionName, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
             }
             catch (Exception exception)
             {

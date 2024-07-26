@@ -4,15 +4,13 @@ using System.Threading.Tasks;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Mods;
 using GmlCore.Interfaces.Procedures;
-using Modrinth.Api;
-using Modrinth.Api.Core.Projects;
 // using Modrinth.Api.Domains.Models.Dto;
 
 namespace Gml.Core.Helpers.Mods;
 
 public class ModsProcedures : IModsProcedures
 {
-    private readonly ModrinthApi _modrinthApi = new();
+    // private readonly ModrinthApi _modrinthApi = new();
 
     public async Task<IEnumerable<IMod>> GetModsAsync(IGameProfile profile)
     {
