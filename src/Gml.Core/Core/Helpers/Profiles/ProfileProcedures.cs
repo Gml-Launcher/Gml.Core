@@ -26,6 +26,7 @@ using Gml.Core.Services.Storage;
 using Gml.Models;
 using Gml.Models.System;
 using Gml.Web.Api.Domains.System;
+using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
@@ -39,7 +40,9 @@ namespace Gml.Core.Helpers.Profiles
         public delegate void ProgressPackChanged(ProgressChangedEventArgs e);
 
         private ISubject<double> _packChanged = new Subject<double>();
+        private ISubject<int> _profilesChanged = new Subject<int>();
         public IObservable<double> PackChanged => _packChanged;
+        public IObservable<int> ProfilesChanged => _profilesChanged;
 
         private const string AuthLibUrl =
             "https://github.com/Gml-Launcher/Gml.Authlib.Injector/releases/download/authlib-injector-1.2.5-alpha-1/authlib-injector-1.2.5-alpha-1.jar";
@@ -217,13 +220,15 @@ namespace Gml.Core.Helpers.Profiles
         public async Task SaveProfiles()
         {
             await _storageService.SetAsync(StorageConstants.GameProfiles, _gameProfiles);
+
+            _profilesChanged.OnNext(0);
         }
 
-        public async Task DownloadProfileAsync(IGameProfile baseProfile)
+        public async Task DownloadProfileAsync(IGameProfile baseProfile, IBootstrapProgram? version = default)
         {
             if (baseProfile is GameProfile gameProfile && await gameProfile.ValidateProfile())
                 gameProfile.LaunchVersion =
-                    await gameProfile.GameLoader.DownloadGame(baseProfile.GameVersion, baseProfile.LaunchVersion, gameProfile.Loader);
+                    await gameProfile.GameLoader.DownloadGame(baseProfile.GameVersion, baseProfile.LaunchVersion, gameProfile.Loader, version);
         }
 
         public async Task<IGameProfile?> GetProfile(string profileName)
@@ -680,6 +685,11 @@ namespace Gml.Core.Helpers.Profiles
                             _fabricVersions[minecraftVersion] = versions;
                         }
 
+                        if (_fabricVersions[minecraftVersion] is null || !_fabricVersions[minecraftVersion].Any())
+                        {
+                            throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
+                        }
+
                         return _fabricVersions[minecraftVersion];
 
                     case GameLoader.LiteLoader:
@@ -715,6 +725,11 @@ namespace Gml.Core.Helpers.Profiles
 
                 throw new VersionNotLoadedException("Не удалось получить список версий для данного загрузчика, причина: " + e.Message);
             }
+        }
+
+        public Task ChangeBootstrapProgram(IGameProfile testGameProfile, IBootstrapProgram version)
+        {
+            return DownloadProfileAsync(testGameProfile, version);
         }
 
         private string ValidatePath(string path, OsType osType)

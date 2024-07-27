@@ -4,6 +4,7 @@ using Gml.Core.Constants;
 using Gml.Core.Helpers.Files;
 using Gml.Core.Helpers.Game;
 using Gml.Core.Helpers.Launcher;
+using Gml.Core.Helpers.Mods;
 using Gml.Core.Helpers.Notifications;
 using Gml.Core.Helpers.Profiles;
 using Gml.Core.Helpers.System;
@@ -33,6 +34,7 @@ namespace Gml
             Notifications = new NotificationProcedures(Storage);
             Profiles = new ProfileProcedures(LauncherInfo, Storage, Notifications, this);
             Files = new FileStorageProcedures(LauncherInfo, Storage);
+            Mods = new ModsProcedures();
             Integrations = new ServicesIntegrationProcedures(Storage);
             Users = new UserProcedures(settings, Storage);
             Launcher = new LauncherProcedures(LauncherInfo, Storage, Files);
@@ -45,6 +47,7 @@ namespace Gml
         public IFileStorageProcedures Files { get; }
         public IServicesIntegrationProcedures Integrations { get; }
         public IUserProcedures Users { get; }
+        public IModsProcedures Mods { get; }
         public ILauncherProcedures Launcher { get; }
         public ISystemProcedures System => _settings.SystemProcedures;
         public INotificationProcedures Notifications { get; }

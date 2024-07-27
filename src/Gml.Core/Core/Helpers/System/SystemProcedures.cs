@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -7,9 +8,13 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using CmlLib.Core.Files;
+using CmlLib.Core.Java;
 using Gml.Core.Helpers.Mirrors;
 using Gml.Core.Launcher;
 using Gml.Core.Services.System;
+using Gml.Models.Bootstrap;
+using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 
@@ -19,6 +24,8 @@ namespace Gml.Core.Helpers.System
     {
         private string _installationDirectory;
         private string? _buildDotnetPath;
+        private readonly MinecraftJavaManifestResolver _javaManifestResolver = new(gmlSettings.HttpClient);
+        private IEnumerable<MinecraftJavaManifestMetadata>? _javaManifestMetadata;
         public string? BuildDotnetPath => _buildDotnetPath;
 
         public string DefaultInstallation
@@ -119,10 +126,25 @@ namespace Gml.Core.Helpers.System
             }
         }
 
+        public async Task<IEnumerable<IBootstrapProgram>> GetJavaVersions()
+        {
+            _javaManifestMetadata ??= await _javaManifestResolver.GetAllManifests();
+
+            var javaVersions = _javaManifestMetadata
+                .OrderBy(c => c.VersionName)
+                .GroupBy(c => new
+                {
+                    Name = c.Component,
+                    MajorVersion = int.Parse(c.GetMajorVersion() ?? "0"),
+                    Version = c.VersionName
+                });
+
+            return javaVersions.Select(c => new JavaBootstrapProgram(c.Key.Name, c.Key.Version!, c.Key.MajorVersion!));
+        }
+
         public async Task DownloadFileAsync(string url, string destinationFilePath)
         {
-            using HttpClient client = new();
-            using HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+            using HttpResponseMessage response = await gmlSettings.HttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
             await using Stream contentStream = await response.Content.ReadAsStreamAsync(),
                 fileStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None,
@@ -149,12 +171,11 @@ namespace Gml.Core.Helpers.System
         {
             if (mirrorUrls.TryGetValue(SystemService.GetPlatform(), out string[] mirrors))
             {
-                using HttpClient client = new();
                 foreach (string url in mirrors)
                 {
                     try
                     {
-                        HttpResponseMessage response = await client.GetAsync(url);
+                        HttpResponseMessage response = await gmlSettings.HttpClient.GetAsync(url);
                         if (response.IsSuccessStatusCode)
                         {
                             return url;
