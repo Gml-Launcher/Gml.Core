@@ -235,7 +235,7 @@ namespace Gml.Core.Helpers.Profiles
         {
             await RestoreProfiles();
 
-            var profile = _gameProfiles.FirstOrDefault(c => c.Name == profileName);
+            var profile = _gameProfiles.FirstOrDefault(c => c.Name.Equals(profileName, StringComparison.OrdinalIgnoreCase));
 
             return profile;
         }
