@@ -12,6 +12,7 @@ namespace Gml.Core.Launcher
         public string Description { get; set; }
         public ProfileState State { get; set; }
         public IEnumerable<LocalFileInfo> Files { get; set; }
+        public IEnumerable<LocalFolderInfo> WhiteListFolders { get; set; }
         public IEnumerable<LocalFileInfo> WhiteListFiles { get; set; }
         public bool HasUpdate { get; set; }
         public string ProfileName { get; set; }

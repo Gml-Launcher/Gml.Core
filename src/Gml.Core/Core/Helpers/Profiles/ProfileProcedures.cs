@@ -353,8 +353,8 @@ namespace Gml.Core.Helpers.Profiles
                     MinecraftVersion = profile.GameVersion,
                     LaunchVersion = profile.LaunchVersion,
                     Files = files!.OfType<LocalFileInfo>(),
-                    WhiteListFiles = profile.FileWhiteList?.OfType<LocalFileInfo>().ToList() ??
-                                     new List<LocalFileInfo>()
+                    WhiteListFolders = profile.FolderWhiteList?.OfType<LocalFolderInfo>().ToList() ?? [],
+                    WhiteListFiles = profile.FileWhiteList?.OfType<LocalFileInfo>().ToList() ?? []
                 };
             }
 
@@ -732,24 +732,24 @@ namespace Gml.Core.Helpers.Profiles
             return DownloadProfileAsync(testGameProfile, version);
         }
 
-        public async Task AddFolderToWhiteList(IGameProfile profile, string path)
+        public async Task AddFolderToWhiteList(IGameProfile profile, IFolderInfo folder)
         {
-            profile.FolderWhiteList ??= new List<string>();
+            profile.FolderWhiteList ??= new List<IFolderInfo>();
 
-            if (!profile.FolderWhiteList.Any(c => c == path))
+            if (!profile.FolderWhiteList.Any(c => c == folder))
             {
-                profile.FolderWhiteList.Add(path);
+                profile.FolderWhiteList.Add(folder);
                 await SaveProfiles();
             }
         }
 
-        public async Task RemoveFolderFromWhiteList(IGameProfile profile, string path)
+        public async Task RemoveFolderFromWhiteList(IGameProfile profile, IFolderInfo folder)
         {
-            profile.FolderWhiteList ??= new List<string>();
+            profile.FolderWhiteList ??= new List<IFolderInfo>();
 
-            if (profile.FolderWhiteList.FirstOrDefault(c => c == path) is not null)
+            if (profile.FolderWhiteList.FirstOrDefault(c => c.Path == folder.Path) is not null)
             {
-                profile.FolderWhiteList.Remove(path);
+                profile.FolderWhiteList.Remove(folder);
                 await SaveProfiles();
             }
         }

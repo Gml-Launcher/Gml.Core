@@ -72,6 +72,13 @@ namespace Gml.Models
             set => base.FileWhiteList = value?.Cast<IFileInfo>().ToList();
         }
 
+        [JsonConverter(typeof(LocalFolderInfoConverter))]
+        public List<LocalFolderInfo>? FolderWhiteList
+        {
+            get => base.FolderWhiteList?.Cast<LocalFolderInfo>().ToList();
+            set => base.FolderWhiteList = value?.Cast<IFolderInfo>().ToList();
+        }
+
         public override void AddServer(IProfileServer server)
         {
             if (Servers.Any(c => c.Name == server.Name))

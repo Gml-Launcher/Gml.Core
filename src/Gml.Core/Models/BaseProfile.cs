@@ -56,7 +56,7 @@ namespace Gml.Models
         [JsonConverter(typeof(LocalFileInfoConverter))]
         public List<IFileInfo>? FileWhiteList { get; set; }
 
-        public List<string>? FolderWhiteList { get; set; }
+        public List<IFolderInfo>? FolderWhiteList { get; set; }
 
         public List<IProfileServer> Servers { get; set; } = new();
 
