@@ -732,6 +732,28 @@ namespace Gml.Core.Helpers.Profiles
             return DownloadProfileAsync(testGameProfile, version);
         }
 
+        public async Task AddFolderToWhiteList(IGameProfile profile, string path)
+        {
+            profile.FolderWhiteList ??= new List<string>();
+
+            if (!profile.FolderWhiteList.Any(c => c == path))
+            {
+                profile.FolderWhiteList.Add(path);
+                await SaveProfiles();
+            }
+        }
+
+        public async Task RemoveFolderFromWhiteList(IGameProfile profile, string path)
+        {
+            profile.FolderWhiteList ??= new List<string>();
+
+            if (profile.FolderWhiteList.FirstOrDefault(c => c == path) is not null)
+            {
+                profile.FolderWhiteList.Remove(path);
+                await SaveProfiles();
+            }
+        }
+
         private string ValidatePath(string path, OsType osType)
         {
             return osType == OsType.Windows

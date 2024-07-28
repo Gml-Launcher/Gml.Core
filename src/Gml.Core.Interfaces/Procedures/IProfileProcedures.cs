@@ -53,5 +53,7 @@ namespace GmlCore.Interfaces.Procedures
         Task<IFileInfo[]> GetAllProfileFiles(IGameProfile baseProfile);
         Task<IEnumerable<string>> GetAllowVersions(GameLoader result, string? minecraftVersion);
         Task ChangeBootstrapProgram(IGameProfile testGameProfile, IBootstrapProgram version);
+        Task AddFolderToWhiteList(IGameProfile profile, string path);
+        Task RemoveFolderFromWhiteList(IGameProfile profile, string path);
     }
 }
