@@ -94,9 +94,4 @@ public class NotificationProcedures(IStorageService storage) : INotificationProc
         _notificationsHistory.Clear();
         await storage.SetAsync(StorageConstants.Notifications, Enumerable.Empty<Notification>());
     }
-
-    public async Task Clear()
-    {
-        await storage.SetAsync(StorageConstants.Settings, Enumerable.Empty<Notification>());
-    }
 }
