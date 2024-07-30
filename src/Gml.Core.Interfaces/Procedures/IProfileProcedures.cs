@@ -55,5 +55,7 @@ namespace GmlCore.Interfaces.Procedures
         Task ChangeBootstrapProgram(IGameProfile testGameProfile, IBootstrapProgram version);
         Task AddFolderToWhiteList(IGameProfile profile, IFolderInfo folder);
         Task RemoveFolderFromWhiteList(IGameProfile profile, IFolderInfo folder);
+        Task RemoveFolderFromWhiteList(IGameProfile profile, IEnumerable<IFolderInfo> folders);
+        Task AddFolderToWhiteList(IGameProfile profile, IEnumerable<IFolderInfo> folders);
     }
 }

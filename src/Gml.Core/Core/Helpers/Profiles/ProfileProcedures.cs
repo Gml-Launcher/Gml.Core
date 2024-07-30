@@ -487,26 +487,34 @@ namespace Gml.Core.Helpers.Profiles
             return Path.Combine(directory, fileDirectory);
         }
 
-        public async Task AddFileToWhiteList(IGameProfile profile, IFileInfo file)
+        public Task AddFileToWhiteList(IGameProfile profile, IFileInfo file)
         {
-            profile.FileWhiteList ??= new List<IFileInfo>();
+            AddWhiteListFileIfNotExists(profile, file);
+
+            return SaveProfiles();
+        }
+
+        private static void AddWhiteListFileIfNotExists(IGameProfile profile, IFileInfo file)
+        {
+            profile.FileWhiteList ??= [];
 
             if (!profile.FileWhiteList.Any(c => c.Hash == file.Hash))
             {
                 profile.FileWhiteList.Add(file);
-                await SaveProfiles();
             }
         }
 
-        public async Task RemoveFileFromWhiteList(IGameProfile profile, IFileInfo file)
+        public Task RemoveFileFromWhiteList(IGameProfile profile, IFileInfo file)
         {
-            profile.FileWhiteList ??= new List<IFileInfo>();
+            profile.FileWhiteList ??= [];
 
-            if (profile.FileWhiteList.FirstOrDefault(c => c.Hash == file.Hash) is { } fileInfo)
-            {
-                profile.FileWhiteList.Remove(fileInfo);
-                await SaveProfiles();
-            }
+            if (profile.FileWhiteList.FirstOrDefault(c => c.Hash == file.Hash) is not { } fileInfo)
+                return Task.CompletedTask;
+
+            profile.FileWhiteList.Remove(fileInfo);
+
+            return SaveProfiles();
+
         }
 
         public async Task UpdateProfile(IGameProfile profile,
@@ -732,37 +740,66 @@ namespace Gml.Core.Helpers.Profiles
             return DownloadProfileAsync(testGameProfile, version);
         }
 
-        public async Task AddFolderToWhiteList(IGameProfile profile, IFolderInfo folder)
+        public Task AddFolderToWhiteList(IGameProfile profile, IFolderInfo folder)
         {
-            profile.FolderWhiteList ??= new List<IFolderInfo>();
+            AddWhiteListFolderIfNotExists(profile, folder);
+
+            return SaveProfiles();
+        }
+
+        private void AddWhiteListFolderIfNotExists(IGameProfile profile, IFolderInfo folder)
+        {
+            profile.FolderWhiteList ??= [];
 
             if (!profile.FolderWhiteList.Any(c => c == folder))
             {
                 profile.FolderWhiteList.Add(folder);
-                await SaveProfiles();
             }
         }
 
-        public async Task RemoveFolderFromWhiteList(IGameProfile profile, IFolderInfo folder)
+        public Task RemoveFolderFromWhiteList(IGameProfile profile, IFolderInfo folder)
         {
-            profile.FolderWhiteList ??= new List<IFolderInfo>();
+            profile.FolderWhiteList ??= [];
 
-            if (profile.FolderWhiteList.FirstOrDefault(c => c.Path == folder.Path) is not null)
+            if (profile.FolderWhiteList.Any(c => c.Path == folder.Path))
+                return Task.CompletedTask;
+
+            profile.FolderWhiteList.Remove(folder);
+
+            return SaveProfiles();
+        }
+
+        public Task RemoveFolderFromWhiteList(IGameProfile profile, IEnumerable<IFolderInfo> folders)
+        {
+            foreach (var folder in folders)
+            {
+                RemoveWhiteListFolderIfNotExists(profile, folder);
+            }
+
+            return SaveProfiles();
+        }
+
+        public Task AddFolderToWhiteList(IGameProfile profile, IEnumerable<IFolderInfo> folders)
+        {
+            foreach (var folder in folders)
+            {
+                AddWhiteListFolderIfNotExists(profile, folder);
+            }
+
+            return SaveProfiles();
+        }
+
+        private static void RemoveWhiteListFolderIfNotExists(IGameProfile profile, IFolderInfo folder)
+        {
+            profile.FolderWhiteList ??= [];
+
+            if (!profile.FolderWhiteList.Any(c => c.Path == folder.Path))
             {
                 profile.FolderWhiteList.Remove(folder);
-                await SaveProfiles();
             }
         }
 
-        private string ValidatePath(string path, OsType osType)
-        {
-            return osType == OsType.Windows
-                ? path.Replace("/", "\\")
-                : path.Replace("\\", "/");
-        }
-
-
-        private async Task UpdateProfilesService(GameProfile gameProfile)
+        private Task UpdateProfilesService(GameProfile gameProfile)
         {
             foreach (var server in gameProfile.Servers)
             {
@@ -774,9 +811,8 @@ namespace Gml.Core.Helpers.Profiles
             gameProfile.ProfileProcedures = this;
             gameProfile.ServerProcedures = this;
             gameProfile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, gameProfile, _notifications);
-            // gameProfile.LaunchVersion =
-            //     await gameLoader.ValidateMinecraftVersion(gameProfile.GameVersion, gameProfile.Loader);
-            // gameProfile.GameVersion = gameLoader.InstallationVersion!.Id;
+
+            return Task.CompletedTask;
         }
 
         public IEnumerable<IFileInfo> GetWhiteListFilesProfileFiles(IEnumerable<IFileInfo> files)
