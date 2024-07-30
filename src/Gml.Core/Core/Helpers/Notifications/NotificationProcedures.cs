@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Gml.Core.Constants;
@@ -28,7 +29,7 @@ public class NotificationProcedures(IStorageService storage) : INotificationProc
 
         _notificationsHistory.Add(notification);
 
-        await storage.SetAsync(StorageConstants.Settings, _notificationsHistory);
+        await storage.SetAsync(StorageConstants.Notifications, _notificationsHistory);
 
         _notifications.OnNext(notification);
     }
@@ -45,7 +46,7 @@ public class NotificationProcedures(IStorageService storage) : INotificationProc
 
         _notificationsHistory.Add(notification);
 
-        await storage.SetAsync(StorageConstants.Settings, _notificationsHistory);
+        await storage.SetAsync(StorageConstants.Notifications, _notificationsHistory);
 
         _notifications.OnNext(notification);
     }
@@ -61,7 +62,7 @@ public class NotificationProcedures(IStorageService storage) : INotificationProc
 
         _notificationsHistory.Add(notification);
 
-        await storage.SetAsync(StorageConstants.Settings, _notificationsHistory);
+        await storage.SetAsync(StorageConstants.Notifications, _notificationsHistory);
 
         _notifications.OnNext(notification);
     }
@@ -78,13 +79,19 @@ public class NotificationProcedures(IStorageService storage) : INotificationProc
 
         _notificationsHistory.Add(notification);
 
-        await storage.SetAsync(StorageConstants.Settings, _notificationsHistory);
+        await storage.SetAsync(StorageConstants.Notifications, _notificationsHistory);
 
         _notifications.OnNext(notification);
     }
 
     public async Task Retore()
     {
-        _notificationsHistory = await storage.GetAsync<List<Notification>>(StorageConstants.Settings) ?? [];
+        _notificationsHistory = await storage.GetAsync<List<Notification>>(StorageConstants.Notifications) ?? [];
+    }
+
+    public async Task Clear()
+    {
+        _notificationsHistory.Clear();
+        await storage.SetAsync(StorageConstants.Notifications, Enumerable.Empty<Notification>());
     }
 }
