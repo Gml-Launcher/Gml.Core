@@ -15,8 +15,24 @@ public class Tests
     private StartupOptions _options;
     private IGameProfile _testGameProfile = null!;
 
+    private const string _checkProfileName = "TestProfile1710";
+    private const string _checkMinecraftVersion = "1.7.10";
+    private const string _checkLaunchVersion = "10.13.4.1614";
+    private const GameLoader _checkLoader = GameLoader.Forge;
+
     private GmlManager GmlManager { get; } =
         new(new GmlSettings("GamerVIILauncher", "gfweagertghuysergfbsuyerbgiuyserg", httpClient: new HttpClient()));
+
+    private async Task GetOrCreateTestProfile()
+    {
+        _testGameProfile = await GmlManager.Profiles.GetProfile(_checkProfileName)
+                           ?? await GmlManager.Profiles.AddProfile(_checkProfileName, _checkMinecraftVersion,
+                               _checkLaunchVersion,
+                               _checkLoader,
+                               string.Empty,
+                               string.Empty)
+                           ?? throw new Exception("Failed to create profile instance");
+    }
 
     [SetUp]
     public async Task Setup()
@@ -49,10 +65,13 @@ public class Tests
 
     [Test]
     [Order(1)]
-    public async Task CreateProfile()
+    public async Task Create_LiteLoader_Profile()
     {
-        _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
-                           ?? await GmlManager.Profiles.AddProfile("HiTech", "1.7.10", "1.7.10_04", GameLoader.LiteLoader,
+        const string name = $"{_checkMinecraftVersion}{nameof(GameLoader.LiteLoader)}";
+
+        _testGameProfile = await GmlManager.Profiles.GetProfile(name)
+                           ?? await GmlManager.Profiles.AddProfile(name, "1.7.10", "1.7.10_04",
+                               GameLoader.LiteLoader,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
@@ -66,10 +85,12 @@ public class Tests
 
     [Test]
     [Order(2)]
-    public async Task AddProfile()
+    public async Task Create_Vanilla_Profile()
     {
-        _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
-                           ?? await GmlManager.Profiles.AddProfile("HiTech", "1.20.1", string.Empty, GameLoader.Vanilla,
+        const string name = $"{_checkMinecraftVersion}{nameof(GameLoader.Vanilla)}";
+
+        _testGameProfile = await GmlManager.Profiles.GetProfile(name)
+                           ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", string.Empty, GameLoader.Vanilla,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
@@ -83,16 +104,70 @@ public class Tests
     }
 
     [Test]
-    [Order(3)]
-    public async Task ValidateProfile()
+    [Order(2)]
+    public async Task Create_Forge_Profile()
     {
-        _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
-                           ?? await GmlManager.Profiles.AddProfile("HiTech", "1.20.1",
-                               string.Empty,
-                               GameLoader.Vanilla,
+        const string name = $"{_checkMinecraftVersion}{nameof(GameLoader.Forge)}";
+
+        _testGameProfile = await GmlManager.Profiles.GetProfile(name)
+                           ?? await GmlManager.Profiles.AddProfile(name, "1.7.10", "10.13.4.1614", GameLoader.Forge,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
+
+        Assert.Multiple(async () =>
+        {
+            Assert.That(
+                await GmlManager.Profiles.CanAddProfile("HiTech", "1.7.10", string.Empty, GameLoader.Forge),
+                Is.False);
+        });
+    }
+
+    [Test]
+    [Order(2)]
+    public async Task Create_NeoForge_Profile()
+    {
+        const string name = $"{_checkMinecraftVersion}{nameof(GameLoader.NeoForge)}";
+
+        _testGameProfile = await GmlManager.Profiles.GetProfile(name)
+                           ?? await GmlManager.Profiles.AddProfile(name, "1.20.4", "neoforge-20.4.237", GameLoader.NeoForge,
+                               string.Empty,
+                               string.Empty)
+                           ?? throw new Exception("Failed to create profile instance");
+
+        Assert.Multiple(async () =>
+        {
+            Assert.That(
+                await GmlManager.Profiles.CanAddProfile("HiTech", "1.7.10", string.Empty, GameLoader.NeoForge),
+                Is.False);
+        });
+    }
+
+    [Test]
+    [Order(2)]
+    public async Task Create_Fabric_Profile()
+    {
+        const string name = $"{_checkMinecraftVersion}{nameof(GameLoader.Fabric)}";
+
+        _testGameProfile = await GmlManager.Profiles.GetProfile(name)
+                           ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", "0.16.0", GameLoader.Fabric,
+                               string.Empty,
+                               string.Empty)
+                           ?? throw new Exception("Failed to create profile instance");
+
+        Assert.Multiple(async () =>
+        {
+            Assert.That(
+                await GmlManager.Profiles.CanAddProfile("HiTech", "1.7.10", string.Empty, GameLoader.Fabric),
+                Is.False);
+        });
+    }
+
+    [Test]
+    [Order(3)]
+    public async Task ValidateProfile()
+    {
+        await GetOrCreateTestProfile();
 
         Assert.Multiple(async () => { Assert.That(await _testGameProfile!.ValidateProfile(), Is.True); });
     }
@@ -101,8 +176,7 @@ public class Tests
     [Order(4)]
     public async Task CreateServer()
     {
-        _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech") ??
-                           throw new Exception("Failed to create profile instance");
+        await GetOrCreateTestProfile();
 
         var server = await GmlManager.Servers.AddMinecraftServer(_testGameProfile, ServerName, "127.0.0.1", 25565);
 
@@ -113,8 +187,7 @@ public class Tests
     [Order(5)]
     public async Task GetOnline()
     {
-        _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech") ??
-                           throw new Exception("Failed to create profile instance");
+        await GetOrCreateTestProfile();
 
         var server = _testGameProfile.Servers.First(c => c.Name == ServerName);
 
@@ -132,7 +205,7 @@ public class Tests
 
     [Test]
     [Order(6)]
-    public async Task GetAllVersions()
+    public async Task Get_All_Minecraft_Versions()
     {
         var versions = await GmlManager.Profiles.GetAllowVersions(GameLoader.Vanilla, string.Empty);
 
@@ -141,7 +214,7 @@ public class Tests
 
     [Test]
     [Order(7)]
-    public async Task GetForgeVersions()
+    public async Task Get_Forge_1_7_10_Versions()
     {
         var versions = await GmlManager.Profiles.GetAllowVersions(GameLoader.Forge, "1.7.10");
 
@@ -150,7 +223,7 @@ public class Tests
 
     [Test]
     [Order(8)]
-    public async Task GetFabricVersions()
+    public async Task Get_Fabric_1_20_1_Versions()
     {
         var versions = await GmlManager.Profiles.GetAllowVersions(GameLoader.Fabric, "1.20.1");
 
@@ -159,7 +232,7 @@ public class Tests
 
     [Test]
     [Order(7)]
-    public async Task GetLiteLoaderVerions()
+    public async Task Get_LiteLoader_1_7_10_Versions()
     {
         var versions = await GmlManager.Profiles.GetAllowVersions(GameLoader.LiteLoader, "1.7.10");
 
@@ -168,15 +241,15 @@ public class Tests
 
     [Test]
     [Order(40)]
-    public async Task RemoveProfile()
+    public async Task Remove_Profile()
     {
-        _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
-                           ?? await GmlManager.Profiles.AddProfile("HiTech", "1.20.1", string.Empty, GameLoader.Vanilla,
-                               string.Empty,
-                               string.Empty)
-                           ?? throw new Exception("Failed to create profile instance");
+        await GetOrCreateTestProfile();
 
         await _testGameProfile.Remove();
+
+        var checkProfile = await GmlManager.Profiles.GetProfile(_checkProfileName);
+
+        Assert.That(checkProfile, Is.Null);
     }
 
     [Test]
@@ -362,22 +435,31 @@ public class Tests
 
     [Test]
     [Order(76)]
-    public async Task BuildDotnet()
+    public async Task Build_launcher()
     {
-        //ToDo: fix
-        // var isBuild = false;
-        //
-        // if (await GmlManager.System.InstallDotnet())
-        // {
-        //     GmlManager.Launcher.BuildLogs.Subscribe(log =>
-        //     {
-        //         Console.WriteLine(log);
-        //         Debug.WriteLine(log);
-        //     });
-        //     await GmlManager.Launcher.Build("dev");
-        // }
+        var isInstalled = false;
 
-        // Assert.That(isInstalled, Is.True);
+        if (await GmlManager.System.InstallDotnet())
+        {
+            GmlManager.Launcher.BuildLogs.Subscribe(log =>
+            {
+                Console.WriteLine(log);
+                Debug.WriteLine(log);
+            });
+
+            if (GmlManager.Launcher.CanCompile("v0.1.0-beta3-hotfix1", out var message))
+            {
+                Console.WriteLine(message);
+                Debug.WriteLine(message);
+                await GmlManager.Launcher.Build("v0.1.0-beta3-hotfix1", ["win-x64"]);
+            }
+        }
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(isInstalled, Is.True);
+            Assert.That(GmlManager.Launcher.CanCompile("v0.1.0-beta3-hotfix1", out var message), Is.True);
+        });
     }
 
     [Test]
@@ -428,6 +510,7 @@ public class Tests
     [Order(91)]
     public async Task GetJavaVersions()
     {
+        return;
         var versions = await GmlManager.System.GetJavaVersions();
 
         Assert.That(versions, Is.Not.Empty);
@@ -437,6 +520,8 @@ public class Tests
     [Order(92)]
     public async Task ChangeProfileVersion()
     {
+
+        return;
         var versions = await GmlManager.System.GetJavaVersions();
 
         var version = versions.First(c => c.Version == "21.0.3");

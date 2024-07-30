@@ -107,7 +107,7 @@ public class LauncherProcedures : ILauncherProcedures
 
     }
 
-    public async Task Build(string version, string[] versions)
+    public async Task Build(string version, string[] osNameVersions)
     {
         var projectPath = new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "Launcher", version)).GetDirectories().First().FullName;
         var launcherDirectory = new DirectoryInfo(Path.Combine(projectPath, "src", "Gml.Launcher"));
@@ -117,7 +117,7 @@ public class LauncherProcedures : ILauncherProcedures
             throw new DirectoryNotFoundException("Нет исходников для формирования бинарных файлов!");
         }
 
-        var buildFolder = await CreateBuilds(versions, projectPath, launcherDirectory);
+        var buildFolder = await CreateBuilds(osNameVersions, projectPath, launcherDirectory);
 
     }
 

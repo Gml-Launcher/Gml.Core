@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Gml.Core.Constants;
@@ -86,5 +87,10 @@ public class NotificationProcedures(IStorageService storage) : INotificationProc
     public async Task Retore()
     {
         _notificationsHistory = await storage.GetAsync<List<Notification>>(StorageConstants.Settings) ?? [];
+    }
+
+    public async Task Clear()
+    {
+        await storage.SetAsync(StorageConstants.Settings, Enumerable.Empty<Notification>());
     }
 }
