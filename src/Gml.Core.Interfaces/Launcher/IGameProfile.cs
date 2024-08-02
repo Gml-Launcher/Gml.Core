@@ -28,6 +28,7 @@ namespace GmlCore.Interfaces.Launcher
         string BackgroundImageKey { get; set; }
         string Description { get; set; }
         List<IFileInfo>? FileWhiteList { get; set; }
+        List<IFolderInfo>? FolderWhiteList { get; set; }
         List<IProfileServer> Servers { get; set; }
         DateTimeOffset CreateDate { get; set; }
         string? JvmArguments { get; set; }
