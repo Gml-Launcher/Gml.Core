@@ -301,27 +301,29 @@ namespace Gml.Core.Helpers.Profiles
             var relativePath = Path.Combine("clients", profileName);
 
             var jvmArgs = new List<string>();
+            var gameArguments = new List<string>();
 
             if (profile.JvmArguments is not null)
-            {
                 jvmArgs.Add(profile.JvmArguments);
-            }
 
             var files =
                 await profile.GetProfileFiles(startupOptions.OsName, startupOptions.OsArch);
 
-            if (files!.Any(c => c.Name == Path.GetFileName(AuthLibUrl)))
+            if (files.Any(c => c.Name == Path.GetFileName(AuthLibUrl)))
             {
                 var authLibRelativePath = Path.Combine(profile.ClientPath, "libraries", "custom", Path.GetFileName(AuthLibUrl));
                 jvmArgs.Add($"-javaagent:{authLibRelativePath}={{authEndpoint}}");
             }
+
+            if (profile.GameArguments is not null)
+                gameArguments.Add(profile.GameArguments);
 
             Process? process = default;
 
             try
             {
                 process = await profile.GameLoader.CreateProcess(startupOptions, user, false,
-                    jvmArgs.ToArray());
+                    jvmArgs.ToArray(), gameArguments.ToArray());
             }
             catch (Exception exception)
             {
@@ -389,7 +391,7 @@ namespace Gml.Core.Helpers.Profiles
                 var authLibArguments = await profile.InstallAuthLib();
                 await profile.CreateModsFolder();
                 var process =
-                    await profile.GameLoader.CreateProcess(StartupOptions.Empty, Core.User.User.Empty, true, authLibArguments);
+                    await profile.GameLoader.CreateProcess(StartupOptions.Empty, Core.User.User.Empty, true, authLibArguments, []);
 
                 var files = (await GetProfileFiles(profile)).ToList();
                 var files2 = GetWhiteListFilesProfileFiles(files);

@@ -432,7 +432,7 @@ public class GameDownloader
     }
 
     public async Task<Process> GetProcessAsync(IStartupOptions startupOptions, IUser user, bool needDownload,
-        string[] jvmArguments)
+        string[] jvmArguments, string[] gameArguments)
     {
         if (!_launchers.TryGetValue($"{startupOptions.OsName}/{startupOptions.OsArch}", out var launcher))
         {
@@ -457,6 +457,7 @@ public class GameDownloader
                         ServerIp = startupOptions.ServerIp,
                         ServerPort = startupOptions.ServerPort,
                         Session = session,
+                        ExtraGameArguments = gameArguments.Select(c => new MArgument(c)),
                         ExtraJvmArguments = jvmArguments.Select(c => new MArgument(c))
                     }).AsTask();
                 }
@@ -488,6 +489,7 @@ public class GameDownloader
             ServerPort = startupOptions.ServerPort,
             Session = session,
             PathSeparator = startupOptions.OsName == "windows" ? ";" : ":",
+            ExtraGameArguments = gameArguments.Select(c => new MArgument(c)),
             ExtraJvmArguments = jvmArguments.Select(c => new MArgument(c))
         }).AsTask();
     }

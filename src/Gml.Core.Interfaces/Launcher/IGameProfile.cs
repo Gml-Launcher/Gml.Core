@@ -32,6 +32,7 @@ namespace GmlCore.Interfaces.Launcher
         List<IProfileServer> Servers { get; set; }
         DateTimeOffset CreateDate { get; set; }
         string? JvmArguments { get; set; }
+        string? GameArguments { get; set; }
         ProfileState State { get; set; }
 
         Task<bool> ValidateProfile();

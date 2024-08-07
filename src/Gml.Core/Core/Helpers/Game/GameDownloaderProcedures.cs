@@ -52,9 +52,9 @@ namespace Gml.Core.Helpers.Game
         }
 
         public async Task<Process> CreateProcess(IStartupOptions startupOptions, IUser user, bool needDownload,
-            string[] jvmArguments)
+            string[] jvmArguments, string[] gameArguments)
         {
-            Process process = await _gameLoader.GetProcessAsync(startupOptions, user, needDownload, jvmArguments);
+            var process = await _gameLoader.GetProcessAsync(startupOptions, user, needDownload, jvmArguments, gameArguments);
 
             return process;
         }
