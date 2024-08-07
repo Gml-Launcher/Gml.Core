@@ -316,7 +316,7 @@ namespace Gml.Core.Helpers.Profiles
             }
 
             if (profile.GameArguments is not null)
-                gameArguments.Add(profile.GameArguments);
+                gameArguments.AddRange(profile.GameArguments.Split(' '));
 
             Process? process = default;
 
