@@ -460,6 +460,14 @@ public class GameDownloader
                         ExtraJvmArguments = jvmArguments.Select(c => new MArgument(c))
                     }).AsTask();
                 }
+                catch (DirectoryNotFoundException exception)
+                {
+                    var message =
+                        $"Пропущено создание профиля {_profile.Name}, для OS: {anyLauncher.RulesContext.OS.Name}, {anyLauncher.RulesContext.OS.Arch}. Данная система не поддерживается.";
+                    await _notifications.SendMessage(message, NotificationType.Warn);
+                    _exception.OnNext(exception);
+                    _loadLog.OnNext(message);
+                }
                 catch (Exception exception)
                 {
                     var message =
