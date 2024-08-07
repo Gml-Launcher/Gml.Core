@@ -121,7 +121,7 @@ namespace Gml.Core.Helpers.Profiles
 
         public async Task<bool> CanAddProfile(string name, string version, string loaderVersion, GameLoader dtoGameLoader)
         {
-            if (_gameProfiles.Any(c => c.Name == name))
+            if (_gameProfiles.Any(c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase)))
                 return false;
 
             var versions = await GetAllowVersions(dtoGameLoader, version);
