@@ -89,6 +89,7 @@ namespace Gml.Core.Helpers.Game
             directoryFiles.AddRange(allFiles);
 
             var localFilesInfo = await GetHashFiles(directoryFiles, []);
+
             localFilesInfo = localFilesInfo
                 .GroupBy(c => c.Hash)
                 .Select(c => c.First())
