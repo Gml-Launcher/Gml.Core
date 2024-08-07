@@ -347,6 +347,7 @@ namespace Gml.Core.Helpers.Profiles
                     Description = profile.Description,
                     IconBase64 = profile.IconBase64,
                     JvmArguments = profile.JvmArguments,
+                    GameArguments = profile.GameArguments,
                     HasUpdate = profile.State != ProfileState.Loading,
                     Arguments = arguments,
                     JavaPath = javaPath,

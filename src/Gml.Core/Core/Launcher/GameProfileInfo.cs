@@ -21,5 +21,6 @@ namespace Gml.Core.Launcher
         public string LaunchVersion { get; set; }
         public string Arguments { get; set; }
         public string JvmArguments { get; set; }
+        public string GameArguments { get; set; }
     }
 }
