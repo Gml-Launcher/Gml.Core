@@ -50,7 +50,7 @@ namespace GmlCore.Interfaces.Procedures
         Task SetCacheProfile(IGameProfileInfo profile);
         Task CreateModsFolder(IGameProfile profile);
         Task<IEnumerable<IFileInfo>> GetProfileFiles(IGameProfile profile, string osName, string osArchitecture);
-        Task<IFileInfo[]> GetAllProfileFiles(IGameProfile baseProfile);
+        Task<IFileInfo[]> GetAllProfileFiles(IGameProfile baseProfile, bool needRestoreCache);
         Task<IEnumerable<string>> GetAllowVersions(GameLoader result, string? minecraftVersion);
         Task ChangeBootstrapProgram(IGameProfile testGameProfile, IBootstrapProgram version);
         Task AddFolderToWhiteList(IGameProfile profile, IFolderInfo folder);

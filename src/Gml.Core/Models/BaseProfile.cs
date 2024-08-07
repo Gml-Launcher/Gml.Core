@@ -200,9 +200,9 @@ namespace Gml.Models
             return ProfileProcedures.GetProfileFiles(this, osName, osArchitecture);
         }
 
-        public Task<IFileInfo[]> GetAllProfileFiles()
+        public Task<IFileInfo[]> GetAllProfileFiles(bool needRestoreCache = false)
         {
-            return ProfileProcedures.GetAllProfileFiles(this);
+            return ProfileProcedures.GetAllProfileFiles(this, needRestoreCache);
         }
     }
 }

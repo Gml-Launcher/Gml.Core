@@ -22,7 +22,7 @@ namespace GmlCore.Interfaces.Procedures
             IBootstrapProgram? bootstrapProgram);
         Task<Process> CreateProcess(IStartupOptions startupOptions, IUser user, bool needDownload,
             string[] jvmArguments, string[] gameArguments);
-        Task<IFileInfo[]> GetAllFiles();
+        Task<IFileInfo[]> GetAllFiles(bool needRestoreCache);
         bool GetLauncher(string launcherKey, out object launcher);
         Task<IEnumerable<IFileInfo>> GetLauncherFiles(string osName, string osArchitecture);
     }

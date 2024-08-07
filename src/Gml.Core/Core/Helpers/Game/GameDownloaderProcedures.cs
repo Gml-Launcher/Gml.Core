@@ -59,7 +59,7 @@ namespace Gml.Core.Helpers.Game
             return process;
         }
 
-        public async Task<IFileInfo[]> GetAllFiles()
+        public async Task<IFileInfo[]> GetAllFiles(bool needRestoreCache = false)
         {
             List<string> directoryFiles = new List<string>();
             var anyLauncher = _gameLoader.AnyLauncher;
@@ -88,7 +88,7 @@ namespace Gml.Core.Helpers.Game
 
             directoryFiles.AddRange(allFiles);
 
-            var localFilesInfo = await GetHashFiles(directoryFiles, []);
+            var localFilesInfo = await GetHashFiles(directoryFiles, [], needRestoreCache);
 
             localFilesInfo = localFilesInfo
                 .GroupBy(c => c.Hash)
@@ -206,12 +206,13 @@ namespace Gml.Core.Helpers.Game
             return !string.IsNullOrEmpty(runtimeFolder);
         }
 
-        private async Task<LocalFileInfo[]> GetHashFiles(IEnumerable<string> files, string[] additionalPath)
+        private async Task<LocalFileInfo[]> GetHashFiles(IEnumerable<string> files, string[] additionalPath,
+            bool needRestoreCache = false)
         {
             var localFilesInfo = await Task.WhenAll(files.AsParallel().Select(c =>
             {
                 string hash;
-                if (_fileHashCache.TryGetValue(c, out var value))
+                if (!needRestoreCache && _fileHashCache.TryGetValue(c, out var value))
                 {
                     hash = value;
                 }

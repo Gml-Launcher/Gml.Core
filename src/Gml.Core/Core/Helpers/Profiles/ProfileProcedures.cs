@@ -422,7 +422,7 @@ namespace Gml.Core.Helpers.Profiles
 
         public async Task PackProfile(IGameProfile profile)
         {
-            var fileInfos = await profile.GetAllProfileFiles();
+            var fileInfos = await profile.GetAllProfileFiles(true);
             var totalFiles = fileInfos.Length;
             var processed = 0;
 
@@ -647,9 +647,9 @@ namespace Gml.Core.Helpers.Profiles
             return profile.GameLoader.GetLauncherFiles(osName, osArchitecture);
         }
 
-        public Task<IFileInfo[]> GetAllProfileFiles(IGameProfile baseProfile)
+        public Task<IFileInfo[]> GetAllProfileFiles(IGameProfile baseProfile, bool needRestoreCache = false)
         {
-            return baseProfile.GameLoader.GetAllFiles();
+            return baseProfile.GameLoader.GetAllFiles(needRestoreCache);
         }
 
         public async Task<IEnumerable<string>> GetAllowVersions(GameLoader gameLoader, string? minecraftVersion)
