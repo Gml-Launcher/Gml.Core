@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Gml.Core.Constants;
+using Gml.Core.Helpers.BugTracker;
 using Gml.Core.Helpers.Files;
 using Gml.Core.Helpers.Game;
 using Gml.Core.Helpers.Launcher;
@@ -38,10 +39,12 @@ namespace Gml
             Integrations = new ServicesIntegrationProcedures(Storage);
             Users = new UserProcedures(settings, Storage);
             Launcher = new LauncherProcedures(LauncherInfo, Storage, Files);
+            BugTracker = new BugTrackerProcedures(Storage);
             Servers = (IProfileServersProcedures)Profiles;
         }
         public IStorageService Storage { get; }
         public ILauncherInfo LauncherInfo { get; }
+        public IBugTrackerProcedures BugTracker { get; }
         public IProfileProcedures Profiles { get; }
         public IProfileServersProcedures Servers { get; }
         public IFileStorageProcedures Files { get; }
