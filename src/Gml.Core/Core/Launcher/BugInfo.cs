@@ -13,6 +13,6 @@ public class BugInfo : IBugInfo
     public IEnumerable<IExceptionReport?> Exceptions { get; set; }
     public DateTime SendAt { get; set; }
     public string? IpAddress { get; set; }
-    public string? OsType { get; set; }
+    public string? OsVeriosn { get; set; }
     public string? OsIdentifier { get; set; }
 }
