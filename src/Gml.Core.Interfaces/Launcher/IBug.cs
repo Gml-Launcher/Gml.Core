@@ -1,14 +1,6 @@
-using System.Collections.Generic;
-using GmlCore.Interfaces.Launcher;
+namespace GmlCore.Interfaces.Launcher;
 
-namespace Gml.Core.Launcher;
-
-public class BugInfo : IBugInfo
-{
-    public IEnumerable<IBug> Bugs { get; set; }
-}
-
-public class Bug : IBug
+public interface IBug
 {
     public string? PcName { get; set; }
     public string? PcUsername { get; set; }
