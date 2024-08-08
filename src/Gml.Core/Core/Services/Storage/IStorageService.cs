@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.User;
 
 namespace Gml.Core.Services.Storage
@@ -41,5 +42,7 @@ namespace Gml.Core.Services.Storage
         Task<T?> GetUserByUuidAsync<T>(string uuid, JsonSerializerOptions jsonSerializerOptions);
         Task SetUserAsync<T>(string login, string uuid, T value);
         Task<IEnumerable<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions);
+        Task AddBugAsync(IBugInfo bugInfo);
+        Task ClearBugsAsync();
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
 using SQLite;
+using NotImplementedException = System.NotImplementedException;
 
 namespace Gml.Core.Services.Storage
 {
@@ -84,6 +86,25 @@ namespace Gml.Core.Services.Storage
             return users!;
         }
 
+        public Task AddBugAsync(IBugInfo bugInfo)
+        {
+            var serializedValue = JsonSerializer.Serialize(bugInfo, new JsonSerializerOptions { WriteIndented = true });
+
+            var storageItem = new BugItem
+            {
+                Date = DateTime.Now,
+                Attachment = string.Empty,
+                Value = serializedValue
+            };
+
+            return _database.InsertOrReplaceAsync(storageItem);
+        }
+
+        public Task ClearBugsAsync()
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<int> SaveRecord<T>(T record)
         {
             return _database.InsertOrReplaceAsync(record);
@@ -120,6 +141,7 @@ namespace Gml.Core.Services.Storage
 
             _database.CreateTableAsync<StorageItem>().Wait();
             _database.CreateTableAsync<UserStorageItem>().Wait();
+            _database.CreateTableAsync<BugItem>().Wait();
         }
     }
 }

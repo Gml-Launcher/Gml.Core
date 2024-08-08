@@ -1,3 +1,4 @@
+using System;
 using SQLite;
 
 namespace Gml.Models.Storage
@@ -14,6 +15,14 @@ namespace Gml.Models.Storage
         [PrimaryKey] public string Login { get; set; } = null!;
         public string? Uuid { get; set; }
         public string? TypeName { get; set; }
+        public string Value { get; set; } = null!;
+    }
+
+    public class BugItem
+    {
+        [PrimaryKey] public int Id { get; set; }
+        public DateTime Date { get; set; }
+        public string? Attachment { get; set; }
         public string Value { get; set; } = null!;
     }
 }
