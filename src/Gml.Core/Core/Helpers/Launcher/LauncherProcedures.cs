@@ -145,7 +145,9 @@ public class LauncherProcedures : ILauncherProcedures
 
         if (!projects.Any(c => c.Name.StartsWith("Gml.Client")))
         {
-            message = $"Не удалось найти проект по пути: Gml.Client. Убедитесь, что проект загружен на сервер полностью";
+            message = $"Не удалось найти проект по пути: Gml.Client. Убедитесь, что проект загружен на сервер полностью. " +
+                "Подробная инструкция доступна на wiki.recloud.tech: \n" +
+                "Клиентская часть / Сборка лаунчера / Сборка из панели / Загрузка исходных файлов / Пункт 2. Загрузка";
             return false;
         }
 
