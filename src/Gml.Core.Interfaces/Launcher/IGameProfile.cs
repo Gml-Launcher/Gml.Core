@@ -32,6 +32,7 @@ namespace GmlCore.Interfaces.Launcher
         List<IProfileServer> Servers { get; set; }
         DateTimeOffset CreateDate { get; set; }
         string? JvmArguments { get; set; }
+        string? GameArguments { get; set; }
         ProfileState State { get; set; }
 
         Task<bool> ValidateProfile();
@@ -47,6 +48,6 @@ namespace GmlCore.Interfaces.Launcher
         void RemoveServer(IProfileServer server);
         Task CreateModsFolder();
         Task<IEnumerable<IFileInfo>> GetProfileFiles(string osName, string osArchitecture);
-        Task<IFileInfo[]> GetAllProfileFiles();
+        Task<IFileInfo[]> GetAllProfileFiles(bool needRestoreCache);
     }
 }

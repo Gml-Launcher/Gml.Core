@@ -20,8 +20,9 @@ namespace GmlCore.Interfaces.Procedures
 
         Task<string> DownloadGame(string version, string? launchVersion, GameLoader loader,
             IBootstrapProgram? bootstrapProgram);
-        Task<Process> CreateProcess(IStartupOptions startupOptions, IUser user, bool needDownload, string[] jvmArguments);
-        Task<IFileInfo[]> GetAllFiles();
+        Task<Process> CreateProcess(IStartupOptions startupOptions, IUser user, bool needDownload,
+            string[] jvmArguments, string[] gameArguments);
+        Task<IFileInfo[]> GetAllFiles(bool needRestoreCache);
         bool GetLauncher(string launcherKey, out object launcher);
         Task<IEnumerable<IFileInfo>> GetLauncherFiles(string osName, string osArchitecture);
     }

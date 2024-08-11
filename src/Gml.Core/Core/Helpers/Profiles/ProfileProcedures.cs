@@ -121,7 +121,7 @@ namespace Gml.Core.Helpers.Profiles
 
         public async Task<bool> CanAddProfile(string name, string version, string loaderVersion, GameLoader dtoGameLoader)
         {
-            if (_gameProfiles.Any(c => c.Name == name))
+            if (_gameProfiles.Any(c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase)))
                 return false;
 
             var versions = await GetAllowVersions(dtoGameLoader, version);
@@ -301,27 +301,29 @@ namespace Gml.Core.Helpers.Profiles
             var relativePath = Path.Combine("clients", profileName);
 
             var jvmArgs = new List<string>();
+            var gameArguments = new List<string>();
 
             if (profile.JvmArguments is not null)
-            {
                 jvmArgs.Add(profile.JvmArguments);
-            }
 
             var files =
                 await profile.GetProfileFiles(startupOptions.OsName, startupOptions.OsArch);
 
-            if (files!.Any(c => c.Name == Path.GetFileName(AuthLibUrl)))
+            if (files.Any(c => c.Name == Path.GetFileName(AuthLibUrl)))
             {
                 var authLibRelativePath = Path.Combine(profile.ClientPath, "libraries", "custom", Path.GetFileName(AuthLibUrl));
                 jvmArgs.Add($"-javaagent:{authLibRelativePath}={{authEndpoint}}");
             }
+
+            if (profile.GameArguments is not null)
+                gameArguments.AddRange(profile.GameArguments.Split(' '));
 
             Process? process = default;
 
             try
             {
                 process = await profile.GameLoader.CreateProcess(startupOptions, user, false,
-                    jvmArgs.ToArray());
+                    jvmArgs.ToArray(), gameArguments.ToArray());
             }
             catch (Exception exception)
             {
@@ -345,6 +347,7 @@ namespace Gml.Core.Helpers.Profiles
                     Description = profile.Description,
                     IconBase64 = profile.IconBase64,
                     JvmArguments = profile.JvmArguments,
+                    GameArguments = profile.GameArguments,
                     HasUpdate = profile.State != ProfileState.Loading,
                     Arguments = arguments,
                     JavaPath = javaPath,
@@ -389,7 +392,7 @@ namespace Gml.Core.Helpers.Profiles
                 var authLibArguments = await profile.InstallAuthLib();
                 await profile.CreateModsFolder();
                 var process =
-                    await profile.GameLoader.CreateProcess(StartupOptions.Empty, Core.User.User.Empty, true, authLibArguments);
+                    await profile.GameLoader.CreateProcess(StartupOptions.Empty, Core.User.User.Empty, true, authLibArguments, []);
 
                 var files = (await GetProfileFiles(profile)).ToList();
                 var files2 = GetWhiteListFilesProfileFiles(files);
@@ -419,7 +422,7 @@ namespace Gml.Core.Helpers.Profiles
 
         public async Task PackProfile(IGameProfile profile)
         {
-            var fileInfos = await profile.GetAllProfileFiles();
+            var fileInfos = await profile.GetAllProfileFiles(true);
             var totalFiles = fileInfos.Length;
             var processed = 0;
 
@@ -523,7 +526,8 @@ namespace Gml.Core.Helpers.Profiles
             Stream? backgroundImage,
             string updateDtoDescription,
             bool isEnabled,
-            string jvmArguments)
+            string jvmArguments,
+            string gameArguments)
         {
             var directory =
                 new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "clients", profile.Name));
@@ -544,7 +548,7 @@ namespace Gml.Core.Helpers.Profiles
                 : await _gmlManager.Files.LoadFile(backgroundImage, "profile-backgrounds");
 
             await UpdateProfile(profile, newProfileName, iconBase64, backgroundKey, updateDtoDescription,
-                needRenameFolder, directory, newDirectory, isEnabled, jvmArguments);
+                needRenameFolder, directory, newDirectory, isEnabled, jvmArguments, gameArguments);
         }
 
         private async Task<string> ConvertStreamToBase64Async(Stream stream)
@@ -560,7 +564,9 @@ namespace Gml.Core.Helpers.Profiles
         private async Task UpdateProfile(IGameProfile profile, string newProfileName, string newIcon,
             string backgroundImageKey,
             string newDescription, bool needRenameFolder, DirectoryInfo directory, DirectoryInfo newDirectory,
-            bool isEnabled, string jvmArguments)
+            bool isEnabled,
+            string jvmArguments,
+            string gameArguments)
         {
             profile.Name = newProfileName;
             profile.IconBase64 = newIcon;
@@ -568,6 +574,7 @@ namespace Gml.Core.Helpers.Profiles
             profile.Description = newDescription;
             profile.IsEnabled = isEnabled;
             profile.JvmArguments = jvmArguments;
+            profile.GameArguments = gameArguments;
 
             profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications);
 
@@ -640,9 +647,9 @@ namespace Gml.Core.Helpers.Profiles
             return profile.GameLoader.GetLauncherFiles(osName, osArchitecture);
         }
 
-        public Task<IFileInfo[]> GetAllProfileFiles(IGameProfile baseProfile)
+        public Task<IFileInfo[]> GetAllProfileFiles(IGameProfile baseProfile, bool needRestoreCache = false)
         {
-            return baseProfile.GameLoader.GetAllFiles();
+            return baseProfile.GameLoader.GetAllFiles(needRestoreCache);
         }
 
         public async Task<IEnumerable<string>> GetAllowVersions(GameLoader gameLoader, string? minecraftVersion)

@@ -44,13 +44,13 @@ namespace GmlCore.Interfaces.Procedures
         Task RemoveFileFromWhiteList(IGameProfile profile, IFileInfo file);
         Task UpdateProfile(IGameProfile profile, string newProfileName, Stream? icon, Stream? backgroundImage,
             string updateDtoDescription, bool isEnabled,
-            string jvmArguments);
+            string jvmArguments, string gameArguments);
         Task<string[]> InstallAuthLib(IGameProfile profile);
         Task<IGameProfileInfo?> GetCacheProfile(IGameProfile baseProfile);
         Task SetCacheProfile(IGameProfileInfo profile);
         Task CreateModsFolder(IGameProfile profile);
         Task<IEnumerable<IFileInfo>> GetProfileFiles(IGameProfile profile, string osName, string osArchitecture);
-        Task<IFileInfo[]> GetAllProfileFiles(IGameProfile baseProfile);
+        Task<IFileInfo[]> GetAllProfileFiles(IGameProfile baseProfile, bool needRestoreCache);
         Task<IEnumerable<string>> GetAllowVersions(GameLoader result, string? minecraftVersion);
         Task ChangeBootstrapProgram(IGameProfile testGameProfile, IBootstrapProgram version);
         Task AddFolderToWhiteList(IGameProfile profile, IFolderInfo folder);

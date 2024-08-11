@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Gml.Models.Converters;
 using Gml.Models.Enums;
-using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
@@ -50,7 +49,8 @@ namespace Gml.Models
         public string BackgroundImageKey { get; set; }
         public string Description { get; set; }
 
-        public string JvmArguments { get; set; }
+        public string? JvmArguments { get; set; }
+        public string? GameArguments { get; set; }
         public ProfileState State { get; set; }
 
         [JsonConverter(typeof(LocalFileInfoConverter))]
@@ -84,25 +84,25 @@ namespace Gml.Models
         {
             CheckDispose();
 
-            return GameLoader.CreateProcess(startupOptions, user, false, []);
+            return GameLoader.CreateProcess(startupOptions, user, false, [], []);
         }
 
-        public async Task<bool> CheckClientExists()
+        public Task<bool> CheckClientExists()
         {
             CheckDispose();
 
             //ToDo: Доделать
             // return GameLoader.CheckClientExists(this);
-            return true;
+            return Task.FromResult(true);
         }
 
-        public async Task<bool> CheckOsTypeLoaded(IStartupOptions startupOptions)
+        public Task<bool> CheckOsTypeLoaded(IStartupOptions startupOptions)
         {
             CheckDispose();
 
             //ToDo: Доделать
             // return GameLoader.CheckOsTypeLoaded(this, startupOptions);
-            return true;
+            return Task.FromResult(true);
         }
 
         public Task<string[]> InstallAuthLib()
@@ -124,14 +124,14 @@ namespace Gml.Models
             return ServerProcedures.AddMinecraftServer(this, serverName, address, port);
         }
 
-        public async Task<bool> CheckIsFullLoaded(IStartupOptions startupOptions)
+        public Task<bool> CheckIsFullLoaded(IStartupOptions startupOptions)
         {
             CheckDispose();
 
             //ToDo: Доделать
             // return await GameLoader.IsFullLoaded(this, startupOptions);
 
-            return true;
+            return Task.FromResult(true);
         }
 
         public async Task Remove()
@@ -151,7 +151,7 @@ namespace Gml.Models
             IsDisposed = true;
         }
 
-        public async Task<bool> CheckIsLoaded()
+        public Task<bool> CheckIsLoaded()
         {
             CheckDispose();
 
@@ -160,7 +160,7 @@ namespace Gml.Models
             //     ? NullableBool.True
             //     : NullableBool.False;
 
-            return IsValidProfile == NullableBool.True;
+            return Task.FromResult(IsValidProfile == NullableBool.True);
         }
 
         private void CheckDispose()
@@ -200,9 +200,9 @@ namespace Gml.Models
             return ProfileProcedures.GetProfileFiles(this, osName, osArchitecture);
         }
 
-        public Task<IFileInfo[]> GetAllProfileFiles()
+        public Task<IFileInfo[]> GetAllProfileFiles(bool needRestoreCache = false)
         {
-            return ProfileProcedures.GetAllProfileFiles(this);
+            return ProfileProcedures.GetAllProfileFiles(this, needRestoreCache);
         }
     }
 }

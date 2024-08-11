@@ -200,7 +200,7 @@ namespace Gml.Core.Helpers.Files
                 case StorageType.LocalStorage:
                     var localFileInfo = await _storage.GetAsync<LocalFileInfo>(fileHash).ConfigureAwait(false);
 
-                    if (localFileInfo is not null)
+                    if (localFileInfo is not null && File.Exists(localFileInfo.FullPath))
                     {
                         // If it's an additional file
                         if (Path.GetFileName(localFileInfo.FullPath) is { } name && Guid.TryParse(name, out _))
