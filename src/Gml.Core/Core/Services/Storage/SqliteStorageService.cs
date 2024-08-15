@@ -124,7 +124,7 @@ namespace Gml.Core.Services.Storage
         public async Task<T?> GetUserByUuidAsync<T>(string uuid, JsonSerializerOptions jsonSerializerOptions)
         {
             var storageItem = await _database.Table<UserStorageItem>()
-                .Where(si => si.Uuid == uuid)
+                .Where(si => si.Uuid.ToLower() == uuid.ToLower())
                 .FirstOrDefaultAsync();
 
             return storageItem != null
