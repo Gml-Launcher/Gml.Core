@@ -12,7 +12,7 @@ namespace Gml.Core.Helpers.BugTracker;
 
 public class FileStorageService(string filePath)
 {
-    private JsonSerializerSettings _converterSettings = new()
+    private readonly JsonSerializerSettings _converterSettings = new()
     {
         Converters =
         [
@@ -31,7 +31,9 @@ public class FileStorageService(string filePath)
         catch (Exception ex)
         {
             Console.WriteLine($"Error saving bug: {ex.Message}");
-        }finally{
+        }
+        finally
+        {
             Debug.WriteLine($"[{bugInfo.SendAt}] Error saving bug ");
         }
     }
@@ -52,10 +54,7 @@ public class FileStorageService(string filePath)
                     continue;
 
                 var bug = JsonConvert.DeserializeObject<BugInfo>(line, _converterSettings);
-                if (bug != null)
-                {
-                    bugs.Add(bug);
-                }
+                if (bug != null) bugs.Add(bug);
             }
         }
         catch (Exception ex)
@@ -106,10 +105,7 @@ public class FileStorageService(string filePath)
         }
         finally
         {
-            if (File.Exists(tempFilePath))
-            {
-                File.Delete(tempFilePath);
-            }
+            if (File.Exists(tempFilePath)) File.Delete(tempFilePath);
         }
     }
 }
