@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -12,7 +13,6 @@ namespace Gml.Core.Helpers.BugTracker;
 public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
 {
     private readonly IStorageService _storage;
-    private readonly ConcurrentBag<IBugInfo> _bugs = new();
     private readonly ISubject<IBugInfo> _bugStream = new Subject<IBugInfo>();
     private readonly BlockingCollection<IBugInfo> _bugQueue = new();
     private readonly IDisposable _subscription;
@@ -40,22 +40,23 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
 
     private async Task LoadUnprocessedBugsFromStorage()
     {
-        var unprocessedBugs = await LoadUnprocessedBugs();
+        await LoadUnprocessedBugsAsync();
 
-        foreach (var bug in unprocessedBugs)
+        foreach (var bug in _bugBuffer.Values)
         {
-            _bugs.Add(bug);
             _bugStream.OnNext(bug);
         }
     }
 
     public void CaptureException(IBugInfo bugInfo)
     {
+        bugInfo.Id = Guid.NewGuid().ToString();
+
         _bugQueue.Add(bugInfo);
 
         Task.Run(async () =>
         {
-            await SaveBugAsync(bugInfo);
+            await SaveBugAsync(bugInfo).ConfigureAwait(false);
             _bugStream.OnNext(bugInfo);
         });
     }
@@ -66,7 +67,7 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
         {
             await Task.Delay(500);
 
-            await MarkBugAsProcessedAsync(bug);
+            await RemoveBugAsync(bug.Id);
         }
         catch (Exception ex)
         {

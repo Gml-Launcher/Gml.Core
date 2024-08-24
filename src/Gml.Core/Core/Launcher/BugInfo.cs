@@ -9,8 +9,10 @@ namespace Gml.Core.Launcher;
 
 public class BugInfo : IBugInfo
 {
+    public string Id { get; set; } = null!;
     public string? PcName { get; set; }
     public string? Username { get; set; }
+    [JsonIgnore]
     public IMemoryInfo MemoryInfo { get; set; }
     public IEnumerable<IExceptionReport?> Exceptions { get; set; }
     public DateTime SendAt { get; set; }

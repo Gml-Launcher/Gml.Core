@@ -1,7 +1,9 @@
-using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Gml.Core.Launcher;
 using Gml.Models.Converters;
@@ -12,6 +14,9 @@ namespace Gml.Core.Helpers.BugTracker;
 
 public class FileStorageService(string filePath)
 {
+    protected readonly ConcurrentDictionary<string, IBugInfo> _bugBuffer = new();
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
+
     private readonly JsonSerializerSettings _converterSettings = new()
     {
         Converters =
@@ -21,91 +26,63 @@ public class FileStorageService(string filePath)
         ]
     };
 
-    public async Task SaveBugAsync(IBugInfo bugInfo)
+    protected async Task SaveBugAsync(IBugInfo bugInfo)
     {
+        _bugBuffer[bugInfo.Id] = bugInfo;
+
+        await SaveBufferedBugsAsync();
+    }
+
+    public async Task RemoveBugAsync(string bugId)
+    {
+        if (_bugBuffer.TryRemove(bugId, out _))
+        {
+            await SaveBufferedBugsAsync();
+        }
+    }
+
+    private async Task SaveBufferedBugsAsync()
+    {
+        await _semaphore.WaitAsync();
+
         try
         {
-            var json = JsonConvert.SerializeObject(bugInfo);
-            await File.AppendAllTextAsync(filePath, json + Environment.NewLine);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error saving bug: {ex.Message}");
+            var bugList = _bugBuffer.Values.ToList();
+            if (bugList.Count > 0)
+            {
+                var json = JsonConvert.SerializeObject(bugList, Formatting.Indented, _converterSettings);
+                await File.WriteAllTextAsync(filePath, json, Encoding.UTF8);
+            }
         }
         finally
         {
-            Debug.WriteLine($"[{bugInfo.SendAt}] Error saving bug ");
+            _semaphore.Release();
         }
     }
 
-    public async Task<IEnumerable<IBugInfo>> LoadUnprocessedBugs()
+    public async Task LoadUnprocessedBugsAsync()
     {
-        var bugs = new List<IBugInfo>();
+        await _semaphore.WaitAsync(); // Гарантия, что только один поток будет работать с файлом
 
         try
         {
-            if (!File.Exists(filePath))
-                return bugs;
-
-            var lines = await File.ReadAllLinesAsync(filePath);
-            foreach (var line in lines)
+            if (File.Exists(filePath))
             {
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
+                var json = await File.ReadAllTextAsync(filePath, Encoding.UTF8);
+                var bugs = JsonConvert.DeserializeObject<List<BugInfo>>(json, _converterSettings);
 
-                var bug = JsonConvert.DeserializeObject<BugInfo>(line, _converterSettings);
-                if (bug != null) bugs.Add(bug);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading unprocessed bugs: {ex.Message}");
-        }
-
-        return bugs;
-    }
-
-    public async Task MarkBugAsProcessedAsync(IBugInfo bugInfo)
-    {
-        try
-        {
-            var bugs = await LoadUnprocessedBugs();
-            var updatedBugs = new List<IBugInfo>(bugs);
-            updatedBugs.RemoveAll(b => b.SendAt.ToBinary() == bugInfo.SendAt.ToBinary());
-
-            await SaveBugsToFileAsync(updatedBugs);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error marking bug as processed: {ex.Message}");
-        }
-    }
-
-    private async Task SaveBugsToFileAsync(List<IBugInfo> bugs)
-    {
-        var tempFilePath = Path.GetTempFileName();
-
-        try
-        {
-            using (var fileStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
-            using (var writer = new StreamWriter(fileStream))
-            {
-                foreach (var bug in bugs)
+                if (bugs != null)
                 {
-                    var json = JsonConvert.SerializeObject(bug);
-                    await writer.WriteLineAsync(json);
+                    foreach (var bug in bugs)
+                    {
+                        _bugBuffer[bug.Id] = bug;
+                    }
                 }
             }
-
-            File.Replace(tempFilePath, filePath, null);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error saving bugs to file: {ex.Message}");
         }
         finally
         {
-            if (File.Exists(tempFilePath)) File.Delete(tempFilePath);
+            _semaphore.Release();
         }
     }
 }
