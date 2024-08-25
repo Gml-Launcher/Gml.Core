@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using GmlCore.Interfaces.Sentry;
+using Newtonsoft.Json;
 
 namespace Gml.Core.Launcher;
 
@@ -12,5 +13,6 @@ public class ExceptionReport : IExceptionReport
     public int Id { get; set; }
     public bool Crashed { get; set; }
     public bool Current { get; set; }
+    [JsonIgnore]
     public IEnumerable<IStackTrace> StackTrace { get; set; }
 }

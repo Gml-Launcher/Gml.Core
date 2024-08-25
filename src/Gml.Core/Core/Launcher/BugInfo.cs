@@ -14,6 +14,7 @@ public class BugInfo : IBugInfo
     public string? Username { get; set; }
     [JsonIgnore]
     public IMemoryInfo MemoryInfo { get; set; }
+    [JsonIgnore]
     public IEnumerable<IExceptionReport?> Exceptions { get; set; }
     public DateTime SendAt { get; set; }
     public string? IpAddress { get; set; }

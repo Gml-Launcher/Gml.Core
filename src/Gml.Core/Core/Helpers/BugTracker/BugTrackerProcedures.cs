@@ -65,7 +65,7 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
     {
         try
         {
-            await Task.Delay(500);
+            await _storage.AddBugAsync(bug);
 
             await RemoveBugAsync(bug.Id);
         }

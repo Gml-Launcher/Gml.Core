@@ -17,6 +17,6 @@ public class ExceptionReportConverter : JsonConverter<IExceptionReport>
 
     public override void WriteJson(JsonWriter writer, IExceptionReport value, JsonSerializer serializer)
     {
-        serializer.Serialize(writer, value);
+        serializer.Serialize(writer, value, typeof(ExceptionReport));
     }
 }
