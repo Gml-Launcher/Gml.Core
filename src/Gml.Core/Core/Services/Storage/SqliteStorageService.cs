@@ -105,6 +105,11 @@ namespace Gml.Core.Services.Storage
             throw new NotImplementedException();
         }
 
+        public Task GetBugsAsync()
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<int> SaveRecord<T>(T record)
         {
             return _database.InsertOrReplaceAsync(record);
