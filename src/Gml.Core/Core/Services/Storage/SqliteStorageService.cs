@@ -105,9 +105,14 @@ namespace Gml.Core.Services.Storage
             throw new NotImplementedException();
         }
 
-        public Task GetBugsAsync()
+        public async Task<IEnumerable<T>> GetBugsAsync<T>(JsonSerializerOptions jsonSerializerOptions)
         {
-            throw new NotImplementedException();
+            var bugs = (await _database
+                    .Table<BugItem>()
+                    .ToListAsync())
+                    .Select(x => JsonSerializer.Deserialize<T>(x.Value, jsonSerializerOptions));
+
+            return bugs!;
         }
 
         public Task<int> SaveRecord<T>(T record)

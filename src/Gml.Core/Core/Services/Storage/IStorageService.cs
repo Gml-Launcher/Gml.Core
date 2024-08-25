@@ -44,6 +44,6 @@ namespace Gml.Core.Services.Storage
         Task<IEnumerable<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions);
         Task AddBugAsync(IBugInfo bugInfo);
         Task ClearBugsAsync();
-        Task GetBugsAsync();
+        Task<IEnumerable<T>> GetBugsAsync<T>(JsonSerializerOptions jsonSerializerOptions);
     }
 }

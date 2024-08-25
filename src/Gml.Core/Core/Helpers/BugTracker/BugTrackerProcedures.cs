@@ -3,8 +3,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
+using Gml.Models.Converters;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 
@@ -78,5 +81,13 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
     public void StopProcessing()
     {
         _subscription.Dispose();
+    }
+
+    public async Task<IEnumerable<IBugInfo>> GetAllBugs()
+    {
+        return await _storage.GetBugsAsync<BugInfo>(new JsonSerializerOptions
+        {
+            Converters = { new SessionConverter() }
+        });;
     }
 }
