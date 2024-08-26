@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using GmlCore.Interfaces.Launcher;
-using GmlCore.Interfaces.User;
 
 namespace Gml.Core.Services.Storage
 {
@@ -45,5 +44,6 @@ namespace Gml.Core.Services.Storage
         Task AddBugAsync(IBugInfo bugInfo);
         Task ClearBugsAsync();
         Task<IEnumerable<T>> GetBugsAsync<T>();
+        Task<IBugInfo> GetBugIdAsync(string id);
     }
 }

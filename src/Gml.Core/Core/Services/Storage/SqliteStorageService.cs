@@ -4,9 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Gml.Core.Launcher;
 using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
+using Newtonsoft.Json;
 using SQLite;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 using NotImplementedException = System.NotImplementedException;
 
 namespace Gml.Core.Services.Storage
@@ -111,7 +114,17 @@ namespace Gml.Core.Services.Storage
                     .Table<BugItem>()
                     .ToListAsync();
 
-            return bugs.Select(x => JsonSerializer.Deserialize<T>(x.Value))!;
+            return bugs.Select(x => JsonConvert.DeserializeObject<T>(x.Value))!;
+        }
+
+        public async Task<IBugInfo> GetBugIdAsync(string id)
+        {
+            var bugs = await _database
+                .Table<BugItem>()
+                .ToListAsync();
+
+            return bugs.Select(x => JsonConvert.DeserializeObject<BugInfo>(x.Value))
+                .FirstOrDefault(x => x.Id == id);
         }
 
         public Task<int> SaveRecord<T>(T record)

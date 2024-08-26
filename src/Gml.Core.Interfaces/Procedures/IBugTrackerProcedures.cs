@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using GmlCore.Interfaces.Launcher;
 
@@ -8,4 +9,5 @@ public interface IBugTrackerProcedures
 {
     void CaptureException(IBugInfo bugInfo);
     Task<IEnumerable<IBugInfo>> GetAllBugs();
+    Task<IBugInfo> GetBugId(string id);
 }
