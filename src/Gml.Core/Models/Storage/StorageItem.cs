@@ -20,7 +20,7 @@ namespace Gml.Models.Storage
 
     public class BugItem
     {
-        [PrimaryKey] public int Id { get; set; }
+        [PrimaryKey, AutoIncrement] public int Id { get; set; }
         public DateTime Date { get; set; }
         public string? Attachment { get; set; }
         public string Value { get; set; } = null!;

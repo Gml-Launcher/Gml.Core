@@ -48,7 +48,7 @@ public class FileStorageService(string filePath)
         try
         {
             var bugList = _bugBuffer.Values.ToList();
-            if (bugList.Count > 0)
+            if (bugList.Count >= 0)
             {
                 var json = JsonConvert.SerializeObject(bugList, Formatting.Indented, _converterSettings);
                 await File.WriteAllTextAsync(filePath, json, Encoding.UTF8);

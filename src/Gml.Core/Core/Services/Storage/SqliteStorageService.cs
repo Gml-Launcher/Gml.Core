@@ -90,7 +90,7 @@ namespace Gml.Core.Services.Storage
             return users!;
         }
 
-        public Task AddBugAsync(IBugInfo bugInfo)
+        public async Task AddBugAsync(IBugInfo bugInfo)
         {
             var serializedValue = JsonSerializer.Serialize(bugInfo, new JsonSerializerOptions { WriteIndented = true });
 
@@ -101,7 +101,7 @@ namespace Gml.Core.Services.Storage
                 Value = serializedValue
             };
 
-            return _database.InsertOrReplaceAsync(storageItem);
+            await _database.InsertAsync(storageItem);
         }
 
         public Task ClearBugsAsync()
