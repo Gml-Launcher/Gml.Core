@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Gml.Core.Launcher;
+using Gml.Models.Converters;
 using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
 using Newtonsoft.Json;
@@ -114,17 +115,26 @@ namespace Gml.Core.Services.Storage
                     .Table<BugItem>()
                     .ToListAsync();
 
-            return bugs.Select(x => JsonConvert.DeserializeObject<T>(x.Value))!;
+            return bugs.Select(x => JsonConvert.DeserializeObject<T>(x.Value, new JsonSerializerSettings { Converters = new List<JsonConverter> { new MemoryInfoConverter(), new ExceptionReportConverter() } }))!;
         }
 
         public async Task<IBugInfo> GetBugIdAsync(string id)
         {
-            var bugs = await _database
+            var bugs = (await _database
                 .Table<BugItem>()
-                .ToListAsync();
+                .ToListAsync())
+                .Select(x =>
+                {
+                    var settings = new JsonSerializerSettings
+                    {
+                        TypeNameHandling = TypeNameHandling.Objects,
 
-            return bugs.Select(x => JsonConvert.DeserializeObject<BugInfo>(x.Value))
-                .FirstOrDefault(x => x.Id == id);
+                        Converters = new List<JsonConverter> { new MemoryInfoConverter(), new ExceptionReportConverter() }
+                    };
+                    return JsonConvert.DeserializeObject<BugInfo>(x.Value, settings);
+                });
+
+            return bugs.FirstOrDefault(x => x.Id == id);
         }
 
         public Task<int> SaveRecord<T>(T record)
