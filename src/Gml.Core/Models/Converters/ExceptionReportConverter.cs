@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Gml.Core.Launcher;
 using GmlCore.Interfaces.Sentry;
 using Newtonsoft.Json;
@@ -17,6 +19,21 @@ public class ExceptionReportConverter : JsonConverter<IExceptionReport>
 
     public override void WriteJson(JsonWriter writer, IExceptionReport value, JsonSerializer serializer)
     {
-        serializer.Serialize(writer, value, typeof(ExceptionReport));
+        // serializer.Serialize(writer, value, typeof(ExceptionReport));
+        var t = JToken.FromObject(value);
+
+        if (t.Type != JTokenType.Object)
+        {
+            t.WriteTo(writer);
+        }
+        else
+        {
+            var o = (JObject)t;
+            IList<string> propertyNames = o.Properties().Select(p => p.Name).ToList();
+
+            o.AddFirst(new JProperty("Keys", new JArray(propertyNames)));
+
+            o.WriteTo(writer);
+        }
     }
 }

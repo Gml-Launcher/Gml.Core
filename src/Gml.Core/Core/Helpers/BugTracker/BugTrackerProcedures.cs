@@ -85,9 +85,6 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
 
     public async Task<IEnumerable<IBugInfo>> GetAllBugs()
     {
-        return await _storage.GetBugsAsync<BugInfo>(new JsonSerializerOptions
-        {
-            Converters = { new SessionConverter() }
-        });;
+        return await _storage.GetBugsAsync<BugInfo>();
     }
 }
