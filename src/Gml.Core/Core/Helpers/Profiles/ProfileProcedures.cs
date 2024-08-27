@@ -299,7 +299,6 @@ namespace Gml.Core.Helpers.Profiles
             var profileDirectory = Path.Combine(profile.ClientPath, "platforms", startupOptions.OsName,
                 startupOptions.OsArch);
             var relativePath = Path.Combine("clients", profileName);
-
             var jvmArgs = new List<string>();
             var gameArguments = new List<string>();
 
@@ -329,7 +328,6 @@ namespace Gml.Core.Helpers.Profiles
             {
                 // ToDo: Sentry
             }
-
             var arguments =
                 process?.StartInfo.Arguments
                     .Replace(profileDirectory, Path.Combine("{localPath}", relativePath))
@@ -355,7 +353,7 @@ namespace Gml.Core.Helpers.Profiles
                     ClientVersion = profile.GameVersion,
                     MinecraftVersion = profile.GameVersion,
                     LaunchVersion = profile.LaunchVersion,
-                    Files = files!.OfType<LocalFileInfo>(),
+                    Files = files.OfType<LocalFileInfo>(),
                     WhiteListFolders = profile.FolderWhiteList?.OfType<LocalFolderInfo>().ToList() ?? [],
                     WhiteListFiles = profile.FileWhiteList?.OfType<LocalFileInfo>().ToList() ?? []
                 };
@@ -796,13 +794,13 @@ namespace Gml.Core.Helpers.Profiles
             return SaveProfiles();
         }
 
-        private static void RemoveWhiteListFolderIfNotExists(IGameProfile profile, IFolderInfo folder)
+        private void RemoveWhiteListFolderIfNotExists(IGameProfile profile, IFolderInfo folder)
         {
             profile.FolderWhiteList ??= [];
 
-            if (!profile.FolderWhiteList.Any(c => c.Path == folder.Path))
+            if (profile.FolderWhiteList.Any(c => c.Path == folder.Path))
             {
-                profile.FolderWhiteList.Remove(folder);
+                profile.FolderWhiteList.FirstOrDefault(f => profile.FolderWhiteList.Remove(f));
             }
         }
 
