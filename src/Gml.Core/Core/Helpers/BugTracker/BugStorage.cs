@@ -22,7 +22,8 @@ public class FileStorageService(string filePath)
         Converters =
         [
             new MemoryInfoConverter(),
-            new ExceptionReportConverter()
+            new ExceptionReportConverter(),
+            new StackTraceConverter()
         ]
     };
 

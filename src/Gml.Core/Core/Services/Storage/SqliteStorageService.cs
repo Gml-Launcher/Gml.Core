@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,6 +9,7 @@ using Gml.Core.Launcher;
 using Gml.Models.Converters;
 using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.Sentry;
 using Newtonsoft.Json;
 using SQLite;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -114,8 +116,14 @@ namespace Gml.Core.Services.Storage
             var bugs = await _database
                     .Table<BugItem>()
                     .ToListAsync();
-
-            return bugs.Select(x => JsonConvert.DeserializeObject<T>(x.Value, new JsonSerializerSettings { Converters = new List<JsonConverter> { new MemoryInfoConverter(), new ExceptionReportConverter() } }))!;
+            var listBugs = bugs.Select(x => JsonConvert.DeserializeObject<T>(x.Value,
+                new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.Objects,
+                    Converters = new List<JsonConverter>
+                        { new MemoryInfoConverter(), new ExceptionReportConverter(), new StackTraceConverter() }
+                }));
+            return listBugs!;
         }
 
         public async Task<IBugInfo> GetBugIdAsync(string id)
@@ -129,7 +137,7 @@ namespace Gml.Core.Services.Storage
                     {
                         TypeNameHandling = TypeNameHandling.Objects,
 
-                        Converters = new List<JsonConverter> { new MemoryInfoConverter(), new ExceptionReportConverter() }
+                        Converters = new List<JsonConverter> { new MemoryInfoConverter(), new ExceptionReportConverter(), new StackTraceConverter() }
                     };
                     return JsonConvert.DeserializeObject<BugInfo>(x.Value, settings);
                 });
