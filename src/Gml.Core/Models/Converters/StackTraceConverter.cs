@@ -15,19 +15,14 @@ public class StackTraceConverter : JsonConverter<IStackTrace>
         switch (reader.TokenType)
         {
             case JsonToken.StartArray:
-            {
-                // Handle array case
                 var jsonArray = JArray.Load(reader);
                 var stackTraceList = jsonArray.ToObject<IEnumerable<StackTrace>>();
                 return stackTraceList.FirstOrDefault() ?? new StackTrace();
-            }
             case JsonToken.StartObject:
-            {
                 // Handle object case
                 var jsonObject = JObject.Load(reader);
                 var stackTraceInfo = jsonObject.ToObject<StackTrace>();
                 return stackTraceInfo ?? new StackTrace();
-            }
             default:
                 throw new JsonReaderException($"Unexpected token when parsing StackTrace: {reader.TokenType}");
         }
@@ -39,7 +34,7 @@ public class StackTraceConverter : JsonConverter<IStackTrace>
 
         var t = JToken.FromObject(value);
 
-        if (t.Type != JTokenType.Object)
+        if (t.Type is not JTokenType.Object)
         {
             t.WriteTo(writer);
         }

@@ -106,9 +106,10 @@ namespace Gml.Core.Services.Storage
             await _database.InsertAsync(storageItem);
         }
 
-        public Task ClearBugsAsync()
+        public async Task ClearBugsAsync()
         {
-            throw new NotImplementedException();
+            await _database.DropTableAsync<BugItem>();
+            await _database.CreateTableAsync<BugItem>();
         }
 
         public async Task<IEnumerable<T>> GetBugsAsync<T>()
@@ -116,6 +117,7 @@ namespace Gml.Core.Services.Storage
             var bugs = await _database
                     .Table<BugItem>()
                     .ToListAsync();
+
             var listBugs = bugs.Select(x => JsonConvert.DeserializeObject<T>(x.Value,
                 new JsonSerializerSettings
                 {
