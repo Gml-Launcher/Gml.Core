@@ -16,6 +16,7 @@ using Gml.Core.Helpers.Mirrors;
 using Gml.Core.Launcher;
 using Gml.Core.Services.System;
 using Gml.Models.Bootstrap;
+using Gml.Models.Mirror;
 using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
@@ -175,7 +176,7 @@ namespace Gml.Core.Helpers.System
         {
             if (mirrorUrls.TryGetValue(SystemService.GetPlatform(), out string[] mirrors))
             {
-                List<MirrorsPingModel?> mirrorsPing = [];
+                List<MirrorPingModel?> mirrorsPing = [];
 
                 foreach (string url in mirrors)
                 {
@@ -190,7 +191,7 @@ namespace Gml.Core.Helpers.System
 
                         mirrorPing.Dispose();
 
-                        mirrorsPing.Add(new MirrorsPingModel { Url = url, RoundtripTime = ping.RoundtripTime });
+                        mirrorsPing.Add(new MirrorPingModel { Url = url, RoundtripTime = ping.RoundtripTime });
                     }
                     catch (Exception)
                     {

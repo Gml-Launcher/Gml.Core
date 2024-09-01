@@ -1,6 +1,6 @@
-﻿namespace Gml.Core.Helpers.Mirrors;
+﻿namespace Gml.Models.Mirror;
 
-public class MirrorsPingModel
+public class MirrorPingModel
 {
     public string Url { get; set; }
     public long RoundtripTime { get; set; }
