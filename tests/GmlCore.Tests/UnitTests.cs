@@ -262,7 +262,7 @@ public class Tests
             var options = new MinecraftPingOptions
             {
                 Address = "45.153.68.20",
-                Port = 25571
+                Port = 25565
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
@@ -285,7 +285,7 @@ public class Tests
             var options = new MinecraftPingOptions
             {
                 Address = "45.153.68.20",
-                Port = 25567
+                Port = 25565
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
@@ -308,7 +308,7 @@ public class Tests
             var options = new MinecraftPingOptions
             {
                 Address = "45.153.68.20",
-                Port = 25566
+                Port = 25565
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
@@ -331,7 +331,7 @@ public class Tests
             var options = new MinecraftPingOptions
             {
                 Address = "45.153.68.20",
-                Port = 25568
+                Port = 25565
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
@@ -354,7 +354,7 @@ public class Tests
             var options = new MinecraftPingOptions
             {
                 Address = "45.153.68.20",
-                Port = 25569
+                Port = 25565
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
@@ -377,7 +377,7 @@ public class Tests
             var options = new MinecraftPingOptions
             {
                 Address = "45.153.68.20",
-                Port = 25570
+                Port = 25565
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
