@@ -5,7 +5,9 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CmlLib.Core.Files;
@@ -14,6 +16,7 @@ using Gml.Core.Helpers.Mirrors;
 using Gml.Core.Launcher;
 using Gml.Core.Services.System;
 using Gml.Models.Bootstrap;
+using Gml.Models.Mirror;
 using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
@@ -144,7 +147,8 @@ namespace Gml.Core.Helpers.System
 
         public async Task DownloadFileAsync(string url, string destinationFilePath)
         {
-            using HttpResponseMessage response = await gmlSettings.HttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+            using HttpResponseMessage response =
+                await gmlSettings.HttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
             await using Stream contentStream = await response.Content.ReadAsStreamAsync(),
                 fileStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None,
@@ -163,6 +167,7 @@ namespace Gml.Core.Helpers.System
             {
                 Directory.Delete(extractPath, true);
             }
+
             ZipFile.ExtractToDirectory(zipFilePath, extractPath);
             File.Delete(zipFilePath);
         }
@@ -171,15 +176,41 @@ namespace Gml.Core.Helpers.System
         {
             if (mirrorUrls.TryGetValue(SystemService.GetPlatform(), out string[] mirrors))
             {
+                List<MirrorPingModel?> mirrorsPing = [];
+
                 foreach (string url in mirrors)
                 {
                     try
                     {
-                        HttpResponseMessage response = await gmlSettings.HttpClient.GetAsync(url);
-                        if (response.IsSuccessStatusCode)
-                        {
-                            return url;
-                        }
+                        Ping mirrorPing = new Ping();
+
+                        Uri uri = new Uri(url);
+                        string domain = uri.Host;
+
+                        var ping = await mirrorPing.SendPingAsync(domain);
+
+                        mirrorPing.Dispose();
+
+                        mirrorsPing.Add(new MirrorPingModel { Url = url, RoundtripTime = ping.RoundtripTime });
+                    }
+                    catch (Exception)
+                    {
+                        // Ignore the exception and try the next URL
+                    }
+                }
+
+                mirrorsPing = mirrorsPing.OrderBy(x => x.RoundtripTime).ToList();
+
+                foreach (var pingModel in mirrorsPing)
+                {
+                    try
+                    {
+                        HttpResponseMessage response =
+                            await gmlSettings.HttpClient.GetAsync(pingModel.Url,
+                                HttpCompletionOption.ResponseHeadersRead);
+
+                        if (response.StatusCode is HttpStatusCode.OK)
+                            return pingModel.Url;
                     }
                     catch (HttpRequestException)
                     {
@@ -192,7 +223,7 @@ namespace Gml.Core.Helpers.System
                 }
             }
 
-            return null;
+            throw new Exception("Нет доступных зеркал для загрузки файлов");
         }
     }
 }
