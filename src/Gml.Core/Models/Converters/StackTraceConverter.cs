@@ -12,20 +12,23 @@ public class StackTraceConverter : JsonConverter<IStackTrace>
 {
     public override IStackTrace ReadJson(JsonReader reader, Type objectType, IStackTrace? existingValue, bool hasExistingValue, JsonSerializer serializer)
     {
-        switch (reader.TokenType)
-        {
-            case JsonToken.StartArray:
-                var jsonArray = JArray.Load(reader);
-                var stackTraceList = jsonArray.ToObject<IEnumerable<StackTrace>>();
-                return stackTraceList.FirstOrDefault() ?? new StackTrace();
-            case JsonToken.StartObject:
-                // Handle object case
-                var jsonObject = JObject.Load(reader);
-                var stackTraceInfo = jsonObject.ToObject<StackTrace>();
-                return stackTraceInfo ?? new StackTrace();
-            default:
-                throw new JsonReaderException($"Unexpected token when parsing StackTrace: {reader.TokenType}");
-        }
+        var jsonObject = JObject.Load(reader);
+        var stackTrace = jsonObject.ToObject<StackTrace>();
+        return stackTrace ?? new StackTrace();
+        // switch (reader.TokenType)
+        // {
+        //     case JsonToken.StartArray:
+        //         var jsonArray = JArray.Load(reader);
+        //         var stackTraceList = jsonArray.ToObject<IEnumerable<StackTrace>>();
+        //         return stackTraceList.FirstOrDefault() ?? new StackTrace();
+        //     case JsonToken.StartObject:
+        //         // Handle object case
+        //         var jsonObject = JObject.Load(reader);
+        //         var stackTraceInfo = jsonObject.ToObject<StackTrace>();
+        //         return stackTraceInfo ?? new StackTrace();
+        //     default:
+        //         throw new JsonReaderException($"Unexpected token when parsing StackTrace: {reader.TokenType}");
+        // }
     }
 
     public override void WriteJson(JsonWriter writer, IStackTrace? value, JsonSerializer serializer)

@@ -125,6 +125,7 @@ namespace Gml.Core.Services.Storage
                     Converters = new List<JsonConverter>
                         { new MemoryInfoConverter(), new ExceptionReportConverter(), new StackTraceConverter() }
                 }));
+
             return listBugs!;
         }
 

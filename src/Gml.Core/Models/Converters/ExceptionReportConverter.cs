@@ -13,7 +13,11 @@ public class ExceptionReportConverter : JsonConverter<IExceptionReport>
     public override IExceptionReport ReadJson(JsonReader reader, Type objectType, IExceptionReport existingValue, bool hasExistingValue, JsonSerializer serializer)
     {
         var jsonObject = JObject.Load(reader);
-        var expcentionInfo = jsonObject.ToObject<ExceptionReport>();
+        var expcentionInfo = jsonObject.ToObject<ExceptionReport>(new JsonSerializer
+        {
+            TypeNameHandling = TypeNameHandling.All,
+            Converters = { new StackTraceConverter() }
+        });
         return expcentionInfo ?? new ExceptionReport();
     }
 
