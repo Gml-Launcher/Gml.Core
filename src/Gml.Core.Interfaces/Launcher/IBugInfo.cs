@@ -15,4 +15,5 @@ public interface IBugInfo
     public string? IpAddress { get; set; }
     public string? OsVeriosn { get; set; }
     public string? OsIdentifier { get; set; }
+    ProjectType ProjectType { get; set; }
 }

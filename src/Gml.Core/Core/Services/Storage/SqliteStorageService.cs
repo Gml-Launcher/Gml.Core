@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Gml.Core.Launcher;
@@ -13,7 +14,6 @@ using GmlCore.Interfaces.Sentry;
 using Newtonsoft.Json;
 using SQLite;
 using JsonSerializer = System.Text.Json.JsonSerializer;
-using NotImplementedException = System.NotImplementedException;
 
 namespace Gml.Core.Services.Storage
 {
@@ -23,12 +23,20 @@ namespace Gml.Core.Services.Storage
         private readonly SQLiteAsyncConnection _database;
         private readonly string _databasePath;
         private readonly IGmlSettings _settings;
+        private JsonSerializerSettings _bugsConverter;
 
         public SqliteStorageService(IGmlSettings settings)
         {
             _settings = settings;
             _databasePath = Path.Combine(settings.InstallationDirectory, DatabaseFileName);
             _database = new SQLiteAsyncConnection(_databasePath);
+
+            _bugsConverter = new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Objects,
+
+                Converters = new List<JsonConverter> { new MemoryInfoConverter(), new ExceptionReportConverter(), new StackTraceConverter() }
+            };
 
             InitializeTables();
         }
@@ -99,6 +107,8 @@ namespace Gml.Core.Services.Storage
             var storageItem = new BugItem
             {
                 Date = DateTime.Now,
+                ProjectType = bugInfo.ProjectType,
+                Guid = Guid.Parse(bugInfo.Id),
                 Attachment = string.Empty,
                 Value = serializedValue
             };
@@ -129,23 +139,39 @@ namespace Gml.Core.Services.Storage
             return listBugs!;
         }
 
-        public async Task<IBugInfo> GetBugIdAsync(string id)
+        public async Task<IBugInfo?> GetBugIdAsync(Guid id)
         {
-            var bugs = (await _database
+            var bug = await _database
                 .Table<BugItem>()
-                .ToListAsync())
-                .Select(x =>
-                {
-                    var settings = new JsonSerializerSettings
-                    {
-                        TypeNameHandling = TypeNameHandling.Objects,
+                .FirstOrDefaultAsync(c => c.Guid == id);
 
-                        Converters = new List<JsonConverter> { new MemoryInfoConverter(), new ExceptionReportConverter(), new StackTraceConverter() }
-                    };
-                    return JsonConvert.DeserializeObject<BugInfo>(x.Value, settings);
-                });
+            return JsonConvert.DeserializeObject<BugInfo>(bug.Value, _bugsConverter);
+        }
 
-            return bugs.FirstOrDefault(x => x.Id == id);
+        public async Task<IEnumerable<IBugInfo>> GetFilteredBugsAsync(Expression<Func<IStorageBug, bool>> filter)
+        {
+            var parameter = Expression.Parameter(typeof(BugItem), "bug");
+
+            var body = RebindParameter(filter.Body, filter.Parameters[0], parameter);
+            var newFilter = Expression.Lambda<Func<BugItem, bool>>(body, parameter);
+
+            var storageItems = await _database.Table<BugItem>()
+                .Where(newFilter)
+                .ToListAsync();
+
+            if (storageItems is null || !storageItems.Any())
+            {
+                return [];
+            }
+
+            var json = string.Concat("[",string.Join(',', storageItems.Select(c => c.Value)), "]");
+
+            return JsonConvert.DeserializeObject<List<BugInfo>>(json, _bugsConverter) ?? [];
+        }
+
+        private static Expression RebindParameter(Expression body, ParameterExpression oldParameter, ParameterExpression newParameter)
+        {
+            return new ReplaceParameterVisitor(oldParameter, newParameter).Visit(body);
         }
 
         public Task<int> SaveRecord<T>(T record)

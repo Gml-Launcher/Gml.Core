@@ -1,7 +1,11 @@
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.Sentry;
 
 namespace Gml.Core.Services.Storage
 {
@@ -44,6 +48,7 @@ namespace Gml.Core.Services.Storage
         Task AddBugAsync(IBugInfo bugInfo);
         Task ClearBugsAsync();
         Task<IEnumerable<T>> GetBugsAsync<T>();
-        Task<IBugInfo> GetBugIdAsync(string id);
+        Task<IBugInfo?> GetBugIdAsync(Guid id);
+        Task<IEnumerable<IBugInfo>> GetFilteredBugsAsync(Expression<Func<IStorageBug, bool>> filter);
     }
 }

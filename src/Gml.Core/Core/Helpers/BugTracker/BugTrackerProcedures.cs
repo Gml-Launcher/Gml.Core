@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text.Json;
@@ -8,8 +9,10 @@ using System.Threading.Tasks;
 using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
 using Gml.Models.Converters;
+using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
+using GmlCore.Interfaces.Sentry;
 
 namespace Gml.Core.Helpers.BugTracker;
 
@@ -88,8 +91,13 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
         return await _storage.GetBugsAsync<BugInfo>();
     }
 
-    public async Task<IBugInfo?> GetBugId(string id)
+    public async Task<IBugInfo?> GetBugId(Guid id)
     {
         return await _storage.GetBugIdAsync(id);
+    }
+
+    public Task<IEnumerable<IBugInfo>> GetFilteredBugs(Expression<Func<IStorageBug, bool>> filter)
+    {
+        return _storage.GetFilteredBugsAsync(filter);
     }
 }

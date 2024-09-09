@@ -17,4 +17,5 @@ public class BugInfo : IBugInfo
     public string? IpAddress { get; set; }
     public string? OsVeriosn { get; set; }
     public string? OsIdentifier { get; set; }
+    public ProjectType ProjectType { get; set; }
 }

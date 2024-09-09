@@ -1,4 +1,5 @@
 using System;
+using GmlCore.Interfaces.Sentry;
 using SQLite;
 
 namespace Gml.Models.Storage
@@ -18,9 +19,11 @@ namespace Gml.Models.Storage
         public string Value { get; set; } = null!;
     }
 
-    public class BugItem
+    public class BugItem : IStorageBug
     {
         [PrimaryKey, AutoIncrement] public int Id { get; set; }
+        public Guid Guid { get; set; }
+        public ProjectType ProjectType { get; set; }
         public DateTime Date { get; set; }
         public string? Attachment { get; set; }
         public string Value { get; set; } = null!;
