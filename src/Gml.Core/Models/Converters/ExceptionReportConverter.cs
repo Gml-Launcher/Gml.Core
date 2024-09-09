@@ -10,20 +10,21 @@ namespace Gml.Models.Converters;
 
 public class ExceptionReportConverter : JsonConverter<IExceptionReport>
 {
-    public override IExceptionReport ReadJson(JsonReader reader, Type objectType, IExceptionReport existingValue, bool hasExistingValue, JsonSerializer serializer)
+    public override IExceptionReport ReadJson(JsonReader reader, Type objectType, IExceptionReport? existingValue, bool hasExistingValue, JsonSerializer serializer)
     {
         var jsonObject = JObject.Load(reader);
-        var expcentionInfo = jsonObject.ToObject<ExceptionReport>(new JsonSerializer
+        var exceptionReport = jsonObject.ToObject<ExceptionReport>(new JsonSerializer
         {
             TypeNameHandling = TypeNameHandling.All,
             Converters = { new StackTraceConverter() }
         });
-        return expcentionInfo ?? new ExceptionReport();
+        return exceptionReport ?? new ExceptionReport();
     }
 
-    public override void WriteJson(JsonWriter writer, IExceptionReport value, JsonSerializer serializer)
+    public override void WriteJson(JsonWriter writer, IExceptionReport? value, JsonSerializer serializer)
     {
-        // serializer.Serialize(writer, value, typeof(ExceptionReport));
+        if (value == null) return;
+
         var t = JToken.FromObject(value);
 
         if (t.Type != JTokenType.Object)
@@ -33,7 +34,7 @@ public class ExceptionReportConverter : JsonConverter<IExceptionReport>
         else
         {
             var o = (JObject)t;
-            IList<string> propertyNames = o.Properties().Select(p => p.Name).ToList();
+            var propertyNames = o.Properties().Select(p => p.Name).ToList();
 
             o.AddFirst(new JProperty("Keys", new JArray(propertyNames)));
 
