@@ -11,6 +11,7 @@ using Gml.Models.Converters;
 using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Sentry;
+using GmlCore.Interfaces.User;
 using Newtonsoft.Json;
 using SQLite;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -76,13 +77,14 @@ namespace Gml.Core.Services.Storage
                 : default;
         }
 
-        public async Task SetUserAsync<T>(string login, string uuid, T value)
+        public async Task SetUserAsync<T>(string login, string uuid, T value) where T : IUser
         {
             var serializedValue = JsonSerializer.Serialize(value, new JsonSerializerOptions { WriteIndented = true });
             var storageItem = new UserStorageItem
             {
                 Login = login,
                 Uuid = uuid,
+                AccessToken = value.AccessToken,
                 TypeName = typeof(T).FullName,
                 Value = serializedValue
             };
@@ -183,6 +185,17 @@ namespace Gml.Core.Services.Storage
         {
             var storageItem = await _database.Table<UserStorageItem>()
                 .Where(si => si.Login == userName)
+                .FirstOrDefaultAsync();
+
+            return storageItem != null
+                ? JsonSerializer.Deserialize<T>(storageItem.Value, jsonSerializerOptions)
+                : default;
+        }
+
+        public async Task<T?> GetUserByAccessToken<T>(string accessToken, JsonSerializerOptions jsonSerializerOptions)
+        {
+            var storageItem = await _database.Table<UserStorageItem>()
+                .Where(si => si.AccessToken == accessToken)
                 .FirstOrDefaultAsync();
 
             return storageItem != null

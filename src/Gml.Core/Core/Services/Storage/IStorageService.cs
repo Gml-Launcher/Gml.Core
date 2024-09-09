@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Sentry;
+using GmlCore.Interfaces.User;
 
 namespace Gml.Core.Services.Storage
 {
@@ -42,8 +43,9 @@ namespace Gml.Core.Services.Storage
         Task<int> SaveRecord<T>(T record);
 
         Task<T?> GetUserByNameAsync<T>(string userName, JsonSerializerOptions jsonSerializerOptions);
+        Task<T?> GetUserByAccessToken<T>(string accessToken, JsonSerializerOptions jsonSerializerOptions);
         Task<T?> GetUserByUuidAsync<T>(string uuid, JsonSerializerOptions jsonSerializerOptions);
-        Task SetUserAsync<T>(string login, string uuid, T value);
+        Task SetUserAsync<T>(string login, string uuid, T value)  where T : IUser;
         Task<IEnumerable<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions);
         Task AddBugAsync(IBugInfo bugInfo);
         Task ClearBugsAsync();

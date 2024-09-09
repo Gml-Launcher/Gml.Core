@@ -23,5 +23,6 @@ namespace GmlCore.Interfaces.Procedures
         Task UpdateUser(IUser user);
         Task StartSession(IUser user);
         Task EndSession(IUser user);
+        Task<IUser?> GetUserByAccessToken(string accessToken);
     }
 }

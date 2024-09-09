@@ -73,6 +73,14 @@ namespace Gml.Core.Helpers.User
             });
         }
 
+        public async Task<IUser?> GetUserByAccessToken(string accessToken)
+        {
+            return await _storage.GetUserByAccessToken<AuthUser>(accessToken, new JsonSerializerOptions
+            {
+                Converters = { new SessionConverter() }
+            });
+        }
+
         public async Task<bool> ValidateUser(string userUuid, string serverUuid, string accessToken)
         {
             if (await GetUserByUuid(Guid.Parse(userUuid).ToString().ToUpper()) is not AuthUser user)
