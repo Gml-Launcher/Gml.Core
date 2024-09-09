@@ -19,13 +19,15 @@ namespace Gml.Core.Helpers.BugTracker;
 public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
 {
     private readonly IStorageService _storage;
+    private readonly IGmlSettings _settings;
     private readonly ISubject<IBugInfo> _bugStream = new Subject<IBugInfo>();
     private readonly BlockingCollection<IBugInfo> _bugQueue = new();
     private readonly IDisposable _subscription;
 
-    public BugTrackerProcedures(IStorageService storage) : base("BugStorage.json")
+    public BugTrackerProcedures(IStorageService storage, IGmlSettings settings) : base("BugStorage.json")
     {
         _storage = storage;
+        _settings = settings;
 
         _subscription = _bugStream
             .SelectMany(bugInfo => Observable.FromAsync(() => ProcessBugAsync(bugInfo)))
@@ -65,6 +67,39 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
             await SaveBugAsync(bugInfo).ConfigureAwait(false);
             _bugStream.OnNext(bugInfo);
         });
+    }
+
+    public IBugInfo CaptureException(Exception exception)
+    {
+
+        return new BugInfo
+        {
+            SendAt = DateTime.Now,
+            Username = _settings.Name,
+            PcName = _settings.Name,
+            IpAddress = "localhost",
+            MemoryInfo = new MemoryInfo(),
+            OsIdentifier = "GmlBackendRuntime",
+            OsVeriosn = "GmlServer",
+            Exceptions = new List<ExceptionReport>
+            {
+                new ExceptionReport
+                {
+                    Type = exception.GetType().FullName,
+                    Module = exception.GetType().Assembly.FullName,
+                    ValueData = exception.Message,
+                    ThreadId = Environment.CurrentManagedThreadId,
+                    StackTrace = new List<IStackTrace>
+                    {
+                        new StackTrace
+                        {
+                            Function = exception.StackTrace,
+                        }
+                    }
+                }
+            },
+            ProjectType = ProjectType.Backend,
+        };
     }
 
     private async Task ProcessBugAsync(IBugInfo bug)

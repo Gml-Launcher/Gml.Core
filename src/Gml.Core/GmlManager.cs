@@ -32,6 +32,7 @@ namespace Gml
             _settings = settings;
             LauncherInfo = new LauncherInfo(settings);
             Storage = new SqliteStorageService(settings);
+            BugTracker = new BugTrackerProcedures(Storage, settings);
             Notifications = new NotificationProcedures(Storage);
             Profiles = new ProfileProcedures(LauncherInfo, Storage, Notifications, this);
             Files = new FileStorageProcedures(LauncherInfo, Storage);
@@ -39,7 +40,6 @@ namespace Gml
             Integrations = new ServicesIntegrationProcedures(Storage);
             Users = new UserProcedures(settings, Storage);
             Launcher = new LauncherProcedures(LauncherInfo, Storage, Files);
-            BugTracker = new BugTrackerProcedures(Storage);
             Servers = (IProfileServersProcedures)Profiles;
         }
         public IStorageService Storage { get; }
