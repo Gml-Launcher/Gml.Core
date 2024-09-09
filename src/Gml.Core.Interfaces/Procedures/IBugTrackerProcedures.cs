@@ -9,5 +9,5 @@ public interface IBugTrackerProcedures
 {
     void CaptureException(IBugInfo bugInfo);
     Task<IEnumerable<IBugInfo>> GetAllBugs();
-    Task<IBugInfo> GetBugId(string id);
+    Task<IBugInfo?> GetBugId(string id);
 }

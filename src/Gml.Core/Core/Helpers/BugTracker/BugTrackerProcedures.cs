@@ -88,7 +88,7 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
         return await _storage.GetBugsAsync<BugInfo>();
     }
 
-    public async Task<IBugInfo> GetBugId(string id)
+    public async Task<IBugInfo?> GetBugId(string id)
     {
         return await _storage.GetBugIdAsync(id);
     }
