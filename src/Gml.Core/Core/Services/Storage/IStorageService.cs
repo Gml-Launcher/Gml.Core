@@ -39,6 +39,8 @@ namespace Gml.Core.Services.Storage
 
         Task<T?> GetUserByNameAsync<T>(string userName, JsonSerializerOptions jsonSerializerOptions);
         Task<T?> GetUserByUuidAsync<T>(string uuid, JsonSerializerOptions jsonSerializerOptions);
+        Task<T?> GetUserByCloakAsync<T>(string guid, JsonSerializerOptions jsonSerializerOptions);
+        Task<T?> GetUserBySkinAsync<T>(string guid, JsonSerializerOptions jsonSerializerOptions);
         Task SetUserAsync<T>(string login, string uuid, T value);
         Task<IEnumerable<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions);
     }

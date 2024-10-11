@@ -14,13 +14,16 @@ namespace Gml.Core.Integrations
 {
     public class ServicesIntegrationProcedures : IServicesIntegrationProcedures
     {
+        public ITextureProvider TextureProvider { get; set; }
         private readonly IStorageService _storage;
         private IEnumerable<IAuthServiceInfo>? _authServices;
 
         public ServicesIntegrationProcedures(IStorageService storage)
         {
             _storage = storage;
+            TextureProvider = new TextureProvider();
         }
+
 
         public Task<AuthType> GetAuthType()
         {

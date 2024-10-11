@@ -204,5 +204,10 @@ namespace Gml.Models
         {
             return ProfileProcedures.GetAllProfileFiles(this, needRestoreCache);
         }
+
+        public Task CreateUserSessionAsync(IUser user)
+        {
+            return ProfileProcedures.CreateUserSessionAsync(this, user);
+        }
     }
 }
