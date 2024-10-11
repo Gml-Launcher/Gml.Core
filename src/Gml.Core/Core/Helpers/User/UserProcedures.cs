@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
@@ -24,11 +25,13 @@ namespace Gml.Core.Helpers.User
     {
         private readonly IGmlSettings _settings;
         private readonly IStorageService _storage;
+        private readonly GmlManager _gmlManager;
 
-        public UserProcedures(IGmlSettings settings, IStorageService storage)
+        public UserProcedures(IGmlSettings settings, IStorageService storage, GmlManager gmlManager)
         {
             _settings = settings;
             _storage = storage;
+            _gmlManager = gmlManager;
         }
 
         public async Task<IUser> GetAuthData(string login,
@@ -68,6 +71,22 @@ namespace Gml.Core.Helpers.User
         public async Task<IUser?> GetUserByName(string userName)
         {
             return await _storage.GetUserByNameAsync<AuthUser>(userName, new JsonSerializerOptions
+            {
+                Converters = { new SessionConverter() }
+            });
+        }
+
+        public async Task<IUser?> GetUserBySkinGuid(string guid)
+        {
+            return await _storage.GetUserBySkinAsync<AuthUser>(guid, new JsonSerializerOptions
+            {
+                Converters = { new SessionConverter() }
+            });
+        }
+
+        public async Task<IUser?> GetUserByCloakGuid(string guid)
+        {
+            return await _storage.GetUserByCloakAsync<AuthUser>(guid, new JsonSerializerOptions
             {
                 Converters = { new SessionConverter() }
             });
@@ -128,6 +147,16 @@ namespace Gml.Core.Helpers.User
             user.Sessions.Last().EndDate = DateTimeOffset.Now;
 
             return UpdateUser(user);
+        }
+
+        public Task<Stream> GetSkin(IUser user)
+        {
+            return _gmlManager.Integrations.TextureProvider.GetSkinStream(user.TextureSkinUrl);
+        }
+
+        public Task<Stream> GetCloak(IUser user)
+        {
+            return _gmlManager.Integrations.TextureProvider.GetCloakStream(user.TextureCloakUrl);
         }
 
         private string GenerateJwtToken(string login)

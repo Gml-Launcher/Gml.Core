@@ -49,5 +49,6 @@ namespace GmlCore.Interfaces.Launcher
         Task CreateModsFolder();
         Task<IEnumerable<IFileInfo>> GetProfileFiles(string osName, string osArchitecture);
         Task<IFileInfo[]> GetAllProfileFiles(bool needRestoreCache);
+        Task CreateUserSessionAsync(IUser user);
     }
 }

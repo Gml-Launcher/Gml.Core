@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.User;
 using SQLite;
 
 namespace Gml.Core.Services.Storage
@@ -60,6 +61,17 @@ namespace Gml.Core.Services.Storage
                 : default;
         }
 
+        public async Task<T?> GetUserBySkinAsync<T>(string guid, JsonSerializerOptions jsonSerializerOptions)
+        {
+            var storageItem = await _database.Table<UserStorageItem>()
+                .Where(si => si.SkinGuid == guid)
+                .FirstOrDefaultAsync();
+
+            return storageItem != null
+                ? JsonSerializer.Deserialize<T>(storageItem.Value, jsonSerializerOptions)
+                : default;
+        }
+
         public async Task SetUserAsync<T>(string login, string uuid, T value)
         {
             var serializedValue = JsonSerializer.Serialize(value, new JsonSerializerOptions { WriteIndented = true });
@@ -67,6 +79,8 @@ namespace Gml.Core.Services.Storage
             {
                 Login = login,
                 Uuid = uuid,
+                SkinGuid = (value as IUser)?.TextureSkinGuid,
+                CloakGuid = (value as IUser)?.TextureCloakGuid,
                 TypeName = typeof(T).FullName,
                 Value = serializedValue
             };
@@ -104,6 +118,17 @@ namespace Gml.Core.Services.Storage
         {
             var storageItem = await _database.Table<UserStorageItem>()
                 .Where(si => si.Uuid.ToLower() == uuid.ToLower())
+                .FirstOrDefaultAsync();
+
+            return storageItem != null
+                ? JsonSerializer.Deserialize<T>(storageItem.Value, jsonSerializerOptions)
+                : default;
+        }
+
+        public async Task<T?> GetUserByCloakAsync<T>(string guid, JsonSerializerOptions jsonSerializerOptions)
+        {
+            var storageItem = await _database.Table<UserStorageItem>()
+                .Where(si => si.CloakGuid == guid)
                 .FirstOrDefaultAsync();
 
             return storageItem != null
