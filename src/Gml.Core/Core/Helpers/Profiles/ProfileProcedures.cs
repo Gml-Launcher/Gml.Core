@@ -798,23 +798,30 @@ namespace Gml.Core.Helpers.Profiles
 
         public async Task CreateUserSessionAsync(IGameProfile profile, IUser user)
         {
-            var skinsService = await _storageService.GetAsync<string>(StorageConstants.SkinUrl) ?? string.Empty;
-            var cloakService = await _storageService.GetAsync<string>(StorageConstants.CloakUrl) ?? string.Empty;
-
-            var skinUrl = skinsService.Replace("{userName}", user.Name).Replace("{userUuid}", user.Uuid);
-            var cloakUrl = cloakService.Replace("{userName}", user.Name).Replace("{userUuid}", user.Uuid);
-
-            if (user is Core.User.User player)
+            try
             {
-                Task[] tasks =
-                [
-                    player.DownloadAndInstallCloakAsync(cloakUrl),
-                    player.DownloadAndInstallSkinAsync(skinUrl),
-                ];
+                var skinsService = await _storageService.GetAsync<string>(StorageConstants.SkinUrl) ?? string.Empty;
+                var cloakService = await _storageService.GetAsync<string>(StorageConstants.CloakUrl) ?? string.Empty;
 
-                Task.WaitAll(tasks);
+                var skinUrl = skinsService.Replace("{userName}", user.Name).Replace("{userUuid}", user.Uuid);
+                var cloakUrl = cloakService.Replace("{userName}", user.Name).Replace("{userUuid}", user.Uuid);
 
-                await player.SaveUserAsync();
+                if (user is Core.User.User player)
+                {
+                    Task[] tasks =
+                    [
+                        player.DownloadAndInstallCloakAsync(cloakUrl),
+                        player.DownloadAndInstallSkinAsync(skinUrl),
+                    ];
+
+                    Task.WaitAll(tasks);
+
+                    await player.SaveUserAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                //ToDo: Send to sentry
             }
 
         }
