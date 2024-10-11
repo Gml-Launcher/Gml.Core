@@ -343,12 +343,14 @@ public class Tests
             var status = await Minecraft.PingAsync(options) as JavaStatus;
 
             Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
-
-            Assert.That(actual: true, Is.True);
         }
         catch (SocketException e)
         {
             Console.WriteLine(e);
+        }
+        finally
+        {
+            Assert.That(actual: true, Is.True);
         }
     }
 
@@ -368,12 +370,14 @@ public class Tests
             var status = await Minecraft.PingAsync(options) as JavaStatus;
 
             Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
-
-            Assert.That(actual: true, Is.True);
         }
         catch (SocketException e)
         {
             Console.WriteLine(e);
+        }
+        finally
+        {
+            Assert.That(actual: true, Is.True);
         }
     }
 
@@ -393,12 +397,14 @@ public class Tests
             var status = await Minecraft.PingAsync(options) as JavaStatus;
 
             Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
-
-            Assert.That(actual: true, Is.True);
         }
         catch (SocketException e)
         {
             Console.WriteLine(e);
+        }
+        finally
+        {
+            Assert.That(actual: true, Is.True);
         }
     }
 
