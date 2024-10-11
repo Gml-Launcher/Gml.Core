@@ -7,7 +7,6 @@ using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.User;
 using SQLite;
-using NotImplementedException = System.NotImplementedException;
 
 namespace Gml.Core.Services.Storage
 {
