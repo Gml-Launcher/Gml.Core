@@ -9,25 +9,20 @@ using Gml.Models.Discord;
 using GmlCore.Interfaces.Auth;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Integrations;
+using GmlCore.Interfaces.Launcher;
 
 namespace Gml.Core.Integrations
 {
-    public class ServicesIntegrationProcedures : IServicesIntegrationProcedures
+    public class ServicesIntegrationProcedures(IGmlSettings settings, IStorageService storage)
+        : IServicesIntegrationProcedures
     {
-        public ITextureProvider TextureProvider { get; set; }
-        private readonly IStorageService _storage;
+        public ITextureProvider TextureProvider { get; set; } = new TextureProvider(settings.TextureServiceEndpoint);
         private IEnumerable<IAuthServiceInfo>? _authServices;
-
-        public ServicesIntegrationProcedures(IStorageService storage)
-        {
-            _storage = storage;
-            TextureProvider = new TextureProvider();
-        }
 
 
         public Task<AuthType> GetAuthType()
         {
-            return _storage.GetAsync<AuthType>(StorageConstants.AuthType);
+            return storage.GetAsync<AuthType>(StorageConstants.AuthType);
         }
 
         public Task<IEnumerable<IAuthServiceInfo>> GetAuthServices()
@@ -50,7 +45,7 @@ namespace Gml.Core.Integrations
             if (_authServices == null || _authServices.Count() == 0)
                 _authServices = await GetAuthServices();
 
-            return await _storage.GetAsync<AuthServiceInfo>(StorageConstants.ActiveAuthService);
+            return await storage.GetAsync<AuthServiceInfo>(StorageConstants.ActiveAuthService);
         }
 
         public async Task<IAuthServiceInfo?> GetAuthService(AuthType authType)
@@ -65,56 +60,56 @@ namespace Gml.Core.Integrations
         {
             if (service == null)
             {
-                await _storage.SetAsync<object>(StorageConstants.AuthType, null);
-                await _storage.SetAsync<object>(StorageConstants.ActiveAuthService, null);
+                await storage.SetAsync<object>(StorageConstants.AuthType, null);
+                await storage.SetAsync<object>(StorageConstants.ActiveAuthService, null);
 
                 return;
             }
 
-            await _storage.SetAsync(StorageConstants.AuthType, service.AuthType);
-            await _storage.SetAsync(StorageConstants.ActiveAuthService, service);
+            await storage.SetAsync(StorageConstants.AuthType, service.AuthType);
+            await storage.SetAsync(StorageConstants.ActiveAuthService, service);
         }
 
         public async Task<string> GetSkinServiceAsync()
         {
-            return await _storage.GetAsync<string>(StorageConstants.SkinUrl)
+            return await storage.GetAsync<string>(StorageConstants.SkinUrl)
                    ?? throw new Exception("Сервис скинов не настроен");
         }
 
         public async Task<string> GetCloakServiceAsync()
         {
-            return await _storage.GetAsync<string>(StorageConstants.CloakUrl)
+            return await storage.GetAsync<string>(StorageConstants.CloakUrl)
                    ?? throw new Exception("Сервис плащей не настроен");
         }
 
         public Task SetSkinServiceAsync(string url)
         {
-            return _storage.SetAsync(StorageConstants.SkinUrl, url);
+            return storage.SetAsync(StorageConstants.SkinUrl, url);
         }
 
         public Task SetCloakServiceAsync(string url)
         {
-            return _storage.SetAsync(StorageConstants.CloakUrl, url);
+            return storage.SetAsync(StorageConstants.CloakUrl, url);
         }
 
         public Task<string?> GetSentryService()
         {
-            return _storage.GetAsync<string>(StorageConstants.SentrySdnUrl);
+            return storage.GetAsync<string>(StorageConstants.SentrySdnUrl);
         }
 
         public Task SetSentryService(string url)
         {
-            return _storage.SetAsync(StorageConstants.SentrySdnUrl, url);
+            return storage.SetAsync(StorageConstants.SentrySdnUrl, url);
         }
 
         public Task UpdateDiscordRpc(IDiscordRpcClient client)
         {
-            return _storage.SetAsync(StorageConstants.DiscordRpcClient, client);
+            return storage.SetAsync(StorageConstants.DiscordRpcClient, client);
         }
 
         public async Task<IDiscordRpcClient?> GetDiscordRpc()
         {
-            return await _storage
+            return await storage
                 .GetAsync<DiscordRpcClient>(StorageConstants.DiscordRpcClient)
                 .ConfigureAwait(false);
         }

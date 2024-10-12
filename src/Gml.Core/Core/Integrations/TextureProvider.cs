@@ -9,23 +9,16 @@ using Newtonsoft.Json;
 
 namespace Gml.Core.Integrations;
 
-public class TextureProvider : ITextureProvider
+public class TextureProvider(string textureServiceEndpoint) : ITextureProvider
 {
-    private readonly HttpClient _httpClintSkinChecker;
-    private readonly HttpClient _httpClientLoader;
+    private readonly HttpClient _httpClintSkinChecker = new();
+    private readonly HttpClient _httpClientLoader = new()
+    {
+        BaseAddress = new Uri(textureServiceEndpoint)
+    };
 
     private readonly string _skinPrefix = "-s";
     private readonly string _cloakPrefix = "-c";
-
-    public TextureProvider()
-    {
-        _httpClintSkinChecker = new HttpClient();
-
-        _httpClientLoader = new HttpClient
-        {
-            BaseAddress = new Uri("http://localhost:5086")
-        };
-    }
 
     public async Task<string> SetSkin(IUser user, string skinUrl)
     {
