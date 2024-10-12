@@ -296,6 +296,8 @@ namespace Gml.Core.Helpers.Profiles
             if (profile == null)
                 return null;
 
+            await profile.CreateUserSessionAsync(user);
+
             var profileDirectory = Path.Combine(profile.ClientPath, "platforms", startupOptions.OsName,
                 startupOptions.OsArch);
             var relativePath = Path.Combine("clients", profileName);
@@ -792,6 +794,36 @@ namespace Gml.Core.Helpers.Profiles
             }
 
             return SaveProfiles();
+        }
+
+        public async Task CreateUserSessionAsync(IGameProfile profile, IUser user)
+        {
+            try
+            {
+                var skinsService = await _storageService.GetAsync<string>(StorageConstants.SkinUrl) ?? string.Empty;
+                var cloakService = await _storageService.GetAsync<string>(StorageConstants.CloakUrl) ?? string.Empty;
+
+                var skinUrl = skinsService.Replace("{userName}", user.Name).Replace("{userUuid}", user.Uuid);
+                var cloakUrl = cloakService.Replace("{userName}", user.Name).Replace("{userUuid}", user.Uuid);
+
+                if (user is Core.User.User player)
+                {
+                    Task[] tasks =
+                    [
+                        player.DownloadAndInstallCloakAsync(cloakUrl),
+                        player.DownloadAndInstallSkinAsync(skinUrl),
+                    ];
+
+                    Task.WaitAll(tasks);
+
+                    await player.SaveUserAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                //ToDo: Send to sentry
+            }
+
         }
 
         private void RemoveWhiteListFolderIfNotExists(IGameProfile profile, IFolderInfo folder)

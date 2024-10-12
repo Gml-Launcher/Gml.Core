@@ -33,5 +33,6 @@ namespace Gml.Core.Launcher
 
         public IStorageSettings StorageSettings { get; set; }
         public string SecurityKey { get; set; }
+        public string TextureServiceEndpoint { get; set; }
     }
 }

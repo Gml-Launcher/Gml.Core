@@ -57,5 +57,6 @@ namespace GmlCore.Interfaces.Procedures
         Task RemoveFolderFromWhiteList(IGameProfile profile, IFolderInfo folder);
         Task RemoveFolderFromWhiteList(IGameProfile profile, IEnumerable<IFolderInfo> folders);
         Task AddFolderToWhiteList(IGameProfile profile, IEnumerable<IFolderInfo> folders);
+        Task CreateUserSessionAsync(IGameProfile profile, IUser user);
     }
 }

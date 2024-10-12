@@ -9,4 +9,8 @@
     <ProjectReference Include="..\..\Gml.Core.Interfaces\Gml.Core.Interfaces.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
 </Project>
