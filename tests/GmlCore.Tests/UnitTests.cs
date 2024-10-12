@@ -21,7 +21,10 @@ public class Tests
     private const GameLoader _checkLoader = GameLoader.Forge;
 
     private GmlManager GmlManager { get; } =
-        new(new GmlSettings("GamerVIILauncher", "gfweagertghuysergfbsuyerbgiuyserg", httpClient: new HttpClient()));
+        new(new GmlSettings("GamerVIILauncher", "gfweagertghuysergfbsuyerbgiuyserg", httpClient: new HttpClient())
+        {
+            TextureServiceEndpoint = "http://gml-web-skins:8085"
+        });
 
     private async Task GetOrCreateTestProfile()
     {
