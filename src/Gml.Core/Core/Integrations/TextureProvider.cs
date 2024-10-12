@@ -22,20 +22,34 @@ public class TextureProvider(string textureServiceEndpoint) : ITextureProvider
 
     public async Task<string> SetSkin(IUser user, string skinUrl)
     {
-        var requestUri = $"skin/{user.Name}";
+        try
+        {
+            var requestUri = $"skin/{user.Name}";
 
-        var model = await UpdateTexture(user, skinUrl, requestUri, _skinPrefix);
+            var model = await UpdateTexture(user, skinUrl, requestUri, _skinPrefix);
 
-        return model?.SkinUrl ?? string.Empty;
+            return model?.SkinUrl!;
+        }
+        catch (Exception e)
+        {
+            return string.Empty;
+        }
     }
 
     public async Task<string> SetCloak(IUser user, string cloakUrl)
     {
-        var requestUri = $"cloak/{user.Name}";
+        try
+        {
+            var requestUri = $"cloak/{user.Name}";
 
-        var model = await UpdateTexture(user, cloakUrl, requestUri, _cloakPrefix);
+            var model = await UpdateTexture(user, cloakUrl, requestUri, _cloakPrefix);
 
-        return model?.ClockUrl ?? string.Empty;
+            return model?.ClockUrl!;
+        }
+        catch (Exception e)
+        {
+            return string.Empty;
+        }
     }
 
     public Task<Stream> GetSkinStream(string? textureUrl)
