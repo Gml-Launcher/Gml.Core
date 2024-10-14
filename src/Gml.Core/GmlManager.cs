@@ -37,8 +37,8 @@ namespace Gml
             Profiles = new ProfileProcedures(LauncherInfo, Storage, Notifications, this);
             Files = new FileStorageProcedures(LauncherInfo, Storage);
             Mods = new ModsProcedures();
-            Integrations = new ServicesIntegrationProcedures(Storage);
-            Users = new UserProcedures(settings, Storage);
+            Integrations = new ServicesIntegrationProcedures(settings, Storage);
+            Users = new UserProcedures(settings, Storage, this);
             Launcher = new LauncherProcedures(LauncherInfo, Storage, Files);
             Servers = (IProfileServersProcedures)Profiles;
         }

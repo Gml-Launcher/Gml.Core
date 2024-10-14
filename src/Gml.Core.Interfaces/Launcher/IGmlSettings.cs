@@ -14,5 +14,6 @@ namespace GmlCore.Interfaces.Launcher
         IStorageSettings StorageSettings { get; set; }
         string SecurityKey { get; set; }
         ISystemProcedures SystemProcedures { get; }
+        string TextureServiceEndpoint { get; set; }
     }
 }

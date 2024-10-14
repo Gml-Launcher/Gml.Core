@@ -17,7 +17,8 @@ namespace Gml.Models.Storage
         public string? Uuid { get; set; }
         public string? TypeName { get; set; }
         public string Value { get; set; } = null!;
-        public string AccessToken { get; set; }
+        public string? SkinGuid { get; set; }
+        public string? CloakGuid { get; set; }
     }
 
     public class BugItem : IStorageBug
