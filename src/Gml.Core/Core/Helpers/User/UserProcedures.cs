@@ -159,9 +159,12 @@ namespace Gml.Core.Helpers.User
             return _gmlManager.Integrations.TextureProvider.GetCloakStream(user.TextureCloakUrl);
         }
 
-        public Task<IUser?> GetUserByAccessToken(string accessToken)
+        public async Task<IUser?> GetUserByAccessToken(string accessToken)
         {
-            throw new NotImplementedException();
+            return await _storage.GetUserByAccessToken<AuthUser>(accessToken, new JsonSerializerOptions
+                {
+                    Converters = { new SessionConverter() }
+                });
         }
 
         private string GenerateJwtToken(string login)
