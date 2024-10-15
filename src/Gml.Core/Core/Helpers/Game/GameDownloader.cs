@@ -441,7 +441,8 @@ public class GameDownloader
             throw new NotSupportedException("Operation system not supported");
         }
 
-        var session = new MSession(user.Name, user.AccessToken, user.Uuid);
+        // var session = new MSession(user.Name, user.AccessToken, user.Uuid);
+        var session = MSession.CreateOfflineSession(user.Name);
 
         if (needDownload)
             foreach (var anyLauncher in _launchers.Values)

@@ -17,19 +17,14 @@ namespace Gml.Common
 
         public static string GetStringOsType(OsType osType)
         {
-            switch (osType)
+            return osType switch
             {
-                case OsType.Undefined:
-                    throw new PlatformNotSupportedException();
-                case OsType.Linux:
-                    return "linux";
-                case OsType.OsX:
-                    return "osx";
-                case OsType.Windows:
-                    return "windows";
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(osType), osType, null);
-            }
+                OsType.Undefined => throw new PlatformNotSupportedException(),
+                OsType.Linux => "linux",
+                OsType.OsX => "osx",
+                OsType.Windows => "windows",
+                _ => throw new ArgumentOutOfRangeException(nameof(osType), osType, null)
+            };
         }
     }
 }
