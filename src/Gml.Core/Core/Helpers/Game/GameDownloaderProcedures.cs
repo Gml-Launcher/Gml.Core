@@ -103,7 +103,7 @@ namespace Gml.Core.Helpers.Game
             return _gameLoader.GetLauncher(launcherKey, out launcher);
         }
 
-        public async Task<IEnumerable<IFileInfo>> GetLauncherFiles(string osName, string osArchitecture)
+        public async Task<ICollection<IFileInfo>> GetLauncherFiles(string osName, string osArchitecture)
         {
             if (!_gameLoader.GetLauncher($"{osName}/{osArchitecture}", out var dynamicLauncher)
                 || dynamicLauncher is not MinecraftLauncher launcher)

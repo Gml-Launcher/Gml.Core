@@ -75,7 +75,7 @@ public class GameDownloader
         var progressSubject = new Subject<string>();
 
         progressSubject
-            .Buffer(TimeSpan.FromSeconds(2))
+            .Buffer(TimeSpan.FromMilliseconds(300))
             .Select(items => string.Join(Environment.NewLine, items))
             .Subscribe(combinedText =>
             {
@@ -84,7 +84,7 @@ public class GameDownloader
 
         _fileProgress = new SyncProgress<InstallerProgressChangedEventArgs>(e =>
         {
-            if (e.Name != null)
+            if (!string.IsNullOrEmpty(e.Name))
                 progressSubject.OnNext($"[{DateTime.Now:HH:m:ss:fff}] [INFO] {e.Name}");
         });
 

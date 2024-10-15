@@ -296,7 +296,7 @@ namespace Gml.Core.Helpers.Profiles
             if (profile == null)
                 return null;
 
-            await profile.CreateUserSessionAsync(user);
+            _ = profile.CreateUserSessionAsync(user);
 
             var profileDirectory = Path.Combine(profile.ClientPath, "platforms", startupOptions.OsName,
                 startupOptions.OsArch);
@@ -346,15 +346,15 @@ namespace Gml.Core.Helpers.Profiles
                     ProfileName = profile.Name,
                     Description = profile.Description,
                     IconBase64 = profile.IconBase64,
-                    JvmArguments = profile.JvmArguments,
-                    GameArguments = profile.GameArguments,
+                    JvmArguments = profile.JvmArguments ?? string.Empty,
+                    GameArguments = profile.GameArguments ?? string.Empty,
                     HasUpdate = profile.State != ProfileState.Loading,
                     Arguments = arguments,
                     JavaPath = javaPath,
                     State = profile.State,
                     ClientVersion = profile.GameVersion,
                     MinecraftVersion = profile.GameVersion,
-                    LaunchVersion = profile.LaunchVersion,
+                    LaunchVersion = profile.LaunchVersion ?? string.Empty,
                     Files = files.OfType<LocalFileInfo>(),
                     WhiteListFolders = profile.FolderWhiteList?.OfType<LocalFolderInfo>().ToList() ?? [],
                     WhiteListFiles = profile.FileWhiteList?.OfType<LocalFileInfo>().ToList() ?? []
@@ -367,10 +367,15 @@ namespace Gml.Core.Helpers.Profiles
                 Arguments = string.Empty,
                 JavaPath = string.Empty,
                 State = profile.State,
+                Files = files.OfType<LocalFileInfo>(),
                 IconBase64 = profile.IconBase64,
                 Description = profile.Description,
                 ClientVersion = profile.GameVersion,
-                LaunchVersion = profile.LaunchVersion,
+                JvmArguments = profile.JvmArguments ?? string.Empty,
+                GameArguments = profile.GameArguments ?? string.Empty,
+                LaunchVersion = profile.LaunchVersion ?? string.Empty,
+                WhiteListFolders = profile.FolderWhiteList?.OfType<LocalFolderInfo>().ToList() ?? [],
+                WhiteListFiles = profile.FileWhiteList?.OfType<LocalFileInfo>().ToList() ?? [],
                 HasUpdate = profile.State != ProfileState.Loading,
                 MinecraftVersion = profile.GameVersion
             };
@@ -639,7 +644,7 @@ namespace Gml.Core.Helpers.Profiles
             return Task.CompletedTask;
         }
 
-        public Task<IEnumerable<IFileInfo>> GetProfileFiles(
+        public Task<ICollection<IFileInfo>> GetProfileFiles(
             IGameProfile profile,
             string osName,
             string osArchitecture)
