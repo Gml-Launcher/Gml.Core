@@ -38,10 +38,9 @@ namespace Gml.Core.User
         {
             TextureSkinUrl = await Manager.Integrations.TextureProvider.SetSkin(this, skinUrl);
 
-            if (!string.IsNullOrEmpty(TextureSkinUrl))
-                TextureSkinGuid = Guid.NewGuid().ToString();
-            else
-                TextureSkinGuid = string.Empty;
+            TextureSkinGuid = !string.IsNullOrEmpty(TextureSkinUrl)
+                ? Guid.NewGuid().ToString()
+                : string.Empty;
         }
 
 
@@ -49,10 +48,9 @@ namespace Gml.Core.User
         {
             TextureCloakUrl = await Manager.Integrations.TextureProvider.SetCloak(this, cloakUrl);
 
-            if (!string.IsNullOrEmpty(TextureCloakUrl))
-                TextureCloakGuid = Guid.NewGuid().ToString();
-            else
-                TextureSkinGuid = string.Empty;
+            TextureCloakGuid = !string.IsNullOrEmpty(TextureCloakUrl)
+                ? Guid.NewGuid().ToString()
+                : string.Empty;
         }
 
         public Task SaveUserAsync()
