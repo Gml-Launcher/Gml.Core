@@ -296,7 +296,7 @@ namespace Gml.Core.Helpers.Profiles
             if (profile == null)
                 return null;
 
-            _ = profile.CreateUserSessionAsync(user);
+            await profile.CreateUserSessionAsync(user);
 
             var profileDirectory = Path.Combine(profile.ClientPath, "platforms", startupOptions.OsName,
                 startupOptions.OsArch);
