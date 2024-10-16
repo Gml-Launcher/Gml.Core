@@ -37,14 +37,22 @@ namespace Gml.Core.User
         public async Task DownloadAndInstallSkinAsync(string skinUrl)
         {
             TextureSkinUrl = await Manager.Integrations.TextureProvider.SetSkin(this, skinUrl);
-            TextureSkinGuid = Guid.NewGuid().ToString();
+
+            if (!string.IsNullOrEmpty(TextureSkinUrl))
+                TextureSkinGuid = Guid.NewGuid().ToString();
+            else
+                TextureSkinGuid = string.Empty;
         }
 
 
         public async Task DownloadAndInstallCloakAsync(string cloakUrl)
         {
             TextureCloakUrl = await Manager.Integrations.TextureProvider.SetCloak(this, cloakUrl);
-            TextureCloakGuid = Guid.NewGuid().ToString();
+
+            if (!string.IsNullOrEmpty(TextureCloakUrl))
+                TextureCloakGuid = Guid.NewGuid().ToString();
+            else
+                TextureSkinGuid = string.Empty;
         }
 
         public Task SaveUserAsync()
