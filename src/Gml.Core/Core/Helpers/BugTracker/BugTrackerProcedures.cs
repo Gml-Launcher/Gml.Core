@@ -80,7 +80,7 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
             IpAddress = "localhost",
             MemoryInfo = new MemoryInfo(),
             OsIdentifier = "GmlBackendRuntime",
-            OsVeriosn = "GmlServer",
+            OsVersion = "GmlServer",
             Exceptions = new List<ExceptionReport>
             {
                 new ExceptionReport
