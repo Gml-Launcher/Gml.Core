@@ -99,13 +99,25 @@ namespace Gml.Core.Helpers.User
                 return false;
             }
 
+            var handler = new JwtSecurityTokenHandler();
+
+            if (!handler.CanReadToken(user.AccessToken))
+                return false;
+
+            var jwtToken = handler.ReadJwtToken(user.AccessToken);
+
+            var claims = jwtToken.Claims.FirstOrDefault(c => c.Type == "name");
+
+            if (claims?.Value != user.Name)
+                return false;
+
             user.ServerUuid = serverUuid;
             user.ServerExpiredDate = DateTime.Now.AddMinutes(1);
             user.ServerJoinHistory.Add(new ServerJoinHistory(serverUuid, DateTime.Now));
 
             await UpdateUser(user);
 
-            return user.AccessToken?.StartsWith(accessToken) ?? false;
+            return user.AccessToken?.Equals(accessToken) ?? false;
         }
 
         public async Task<bool> CanJoinToServer(IUser user, string serverId)
