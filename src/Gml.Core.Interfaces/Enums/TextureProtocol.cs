@@ -2,6 +2,6 @@
 
 public enum TextureProtocol
 {
-    Http,
-    Https
+    Http = 0,
+    Https = 1
 }

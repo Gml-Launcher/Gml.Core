@@ -9,5 +9,5 @@ public class StorageSettings : IStorageSettings
     public string StorageHost { get; set; }
     public string StorageLogin { get; set; }
     public string StoragePassword { get; set; }
-    public TextureProtocol TextureProtocol { get; set; } = TextureProtocol.Https;
+    public TextureProtocol TextureProtocol { get; set; }
 }
