@@ -27,16 +27,17 @@ namespace Gml.Core.Launcher
             _settings = settings;
         }
 
-        public void UpdateSettings(
-            StorageType storageType,
+        public void UpdateSettings(StorageType storageType,
             string storageHost,
             string storageLogin,
-            string storagePassword)
+            string storagePassword,
+            TextureProtocol textureProtocol)
         {
             StorageSettings.StoragePassword = storagePassword;
             StorageSettings.StorageLogin = storageLogin;
             StorageSettings.StorageType = storageType;
             StorageSettings.StorageHost = storageHost;
+            StorageSettings.TextureProtocol = textureProtocol;
         }
 
         public Task<IEnumerable<ILauncherBuild>> GetBuilds()

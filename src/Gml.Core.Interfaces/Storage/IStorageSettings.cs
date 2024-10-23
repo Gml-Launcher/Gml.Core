@@ -8,5 +8,6 @@ namespace GmlCore.Interfaces.Storage
         string StorageHost { get; set; }
         string StorageLogin { get; set; }
         string StoragePassword { get; set; }
+        TextureProtocol TextureProtocol { get; set; }
     }
 }
