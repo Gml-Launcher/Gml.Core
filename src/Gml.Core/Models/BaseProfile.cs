@@ -195,7 +195,7 @@ namespace Gml.Models
             return ProfileProcedures.CreateModsFolder(this);
         }
 
-        public Task<IEnumerable<IFileInfo>> GetProfileFiles(string osName, string osArchitecture)
+        public Task<ICollection<IFileInfo>> GetProfileFiles(string osName, string osArchitecture)
         {
             return ProfileProcedures.GetProfileFiles(this, osName, osArchitecture);
         }

@@ -47,7 +47,7 @@ namespace GmlCore.Interfaces.Launcher
         void AddServer(IProfileServer server);
         void RemoveServer(IProfileServer server);
         Task CreateModsFolder();
-        Task<IEnumerable<IFileInfo>> GetProfileFiles(string osName, string osArchitecture);
+        Task<ICollection<IFileInfo>> GetProfileFiles(string osName, string osArchitecture);
         Task<IFileInfo[]> GetAllProfileFiles(bool needRestoreCache);
         Task CreateUserSessionAsync(IUser user);
     }
