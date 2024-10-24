@@ -83,7 +83,7 @@ namespace Gml.Core.Helpers.Profiles
 
             profile.ProfileProcedures = this;
             profile.ServerProcedures = this;
-            profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications);
+            profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications, _gmlManager.BugTracker);
 
             _gameProfiles.Add(profile);
 
@@ -581,7 +581,7 @@ namespace Gml.Core.Helpers.Profiles
             profile.JvmArguments = jvmArguments;
             profile.GameArguments = gameArguments;
 
-            profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications);
+            profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications, _gmlManager.BugTracker);
 
             await SaveProfiles();
             await RestoreProfiles();
@@ -763,7 +763,7 @@ namespace Gml.Core.Helpers.Profiles
         {
             profile.FolderWhiteList ??= [];
 
-            if (!profile.FolderWhiteList.Any(c => c == folder))
+            if (profile.FolderWhiteList.Any(c => c == folder))
             {
                 profile.FolderWhiteList.Add(folder);
             }
@@ -852,7 +852,7 @@ namespace Gml.Core.Helpers.Profiles
             gameProfile.State = ProfileState.Ready;
             gameProfile.ProfileProcedures = this;
             gameProfile.ServerProcedures = this;
-            gameProfile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, gameProfile, _notifications);
+            gameProfile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, gameProfile, _notifications, _gmlManager.BugTracker);
 
             return Task.CompletedTask;
         }

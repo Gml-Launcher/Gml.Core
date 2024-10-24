@@ -1,6 +1,11 @@
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Gml.Models.Storage;
+using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.Sentry;
 using GmlCore.Interfaces.User;
 
 namespace Gml.Core.Services.Storage
@@ -38,10 +43,16 @@ namespace Gml.Core.Services.Storage
         Task<int> SaveRecord<T>(T record);
 
         Task<T?> GetUserByNameAsync<T>(string userName, JsonSerializerOptions jsonSerializerOptions);
+        Task<T?> GetUserByAccessToken<T>(string accessToken, JsonSerializerOptions jsonSerializerOptions);
         Task<T?> GetUserByUuidAsync<T>(string uuid, JsonSerializerOptions jsonSerializerOptions);
         Task<T?> GetUserByCloakAsync<T>(string guid, JsonSerializerOptions jsonSerializerOptions);
         Task<T?> GetUserBySkinAsync<T>(string guid, JsonSerializerOptions jsonSerializerOptions);
         Task SetUserAsync<T>(string login, string uuid, T value);
         Task<IEnumerable<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions);
+        Task AddBugAsync(IBugInfo bugInfo);
+        Task ClearBugsAsync();
+        Task<IEnumerable<T>> GetBugsAsync<T>();
+        Task<IBugInfo?> GetBugIdAsync(Guid id);
+        Task<IEnumerable<IBugInfo>> GetFilteredBugsAsync(Expression<Func<IStorageBug, bool>> filter);
     }
 }

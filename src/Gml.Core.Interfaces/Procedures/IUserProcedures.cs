@@ -28,5 +28,6 @@ namespace GmlCore.Interfaces.Procedures
         Task EndSession(IUser user);
         Task<Stream> GetSkin(IUser user);
         Task<Stream> GetCloak(IUser user);
+        Task<IUser?> GetUserByAccessToken(string accessToken);
     }
 }

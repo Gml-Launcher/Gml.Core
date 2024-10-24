@@ -1,3 +1,5 @@
+using System;
+using GmlCore.Interfaces.Sentry;
 using SQLite;
 
 namespace Gml.Models.Storage
@@ -15,7 +17,18 @@ namespace Gml.Models.Storage
         public string? Uuid { get; set; }
         public string? TypeName { get; set; }
         public string Value { get; set; } = null!;
+        public string? AccessToken { get; set; }
         public string? SkinGuid { get; set; }
         public string? CloakGuid { get; set; }
+    }
+
+    public class BugItem : IStorageBug
+    {
+        [PrimaryKey, AutoIncrement] public int Id { get; set; }
+        public Guid Guid { get; set; }
+        public ProjectType ProjectType { get; set; }
+        public DateTime Date { get; set; }
+        public string? Attachment { get; set; }
+        public string Value { get; set; } = null!;
     }
 }

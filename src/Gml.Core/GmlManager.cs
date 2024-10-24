@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Gml.Core.Constants;
+using Gml.Core.Helpers.BugTracker;
 using Gml.Core.Helpers.Files;
 using Gml.Core.Helpers.Game;
 using Gml.Core.Helpers.Launcher;
@@ -31,6 +32,7 @@ namespace Gml
             _settings = settings;
             LauncherInfo = new LauncherInfo(settings);
             Storage = new SqliteStorageService(settings);
+            BugTracker = new BugTrackerProcedures(Storage, settings);
             Notifications = new NotificationProcedures(Storage);
             Profiles = new ProfileProcedures(LauncherInfo, Storage, Notifications, this);
             Files = new FileStorageProcedures(LauncherInfo, Storage);
@@ -42,6 +44,7 @@ namespace Gml
         }
         public IStorageService Storage { get; }
         public ILauncherInfo LauncherInfo { get; }
+        public IBugTrackerProcedures BugTracker { get; }
         public IProfileProcedures Profiles { get; }
         public IProfileServersProcedures Servers { get; }
         public IFileStorageProcedures Files { get; }
