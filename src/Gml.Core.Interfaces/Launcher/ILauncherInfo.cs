@@ -14,7 +14,8 @@ namespace GmlCore.Interfaces.Launcher
         public IStorageSettings StorageSettings { get; set; }
         Dictionary<string, IVersionFile?> ActualLauncherVersion { get; set; }
         IGmlSettings Settings { get; }
-        void UpdateSettings(StorageType storageType, string storageHost, string storageLogin, string storagePassword);
+        void UpdateSettings(StorageType storageType, string storageHost, string storageLogin, string storagePassword,
+            TextureProtocol textureProtocol);
         Task<IEnumerable<ILauncherBuild>> GetBuilds();
         Task<ILauncherBuild?> GetBuild(string name);
     }
