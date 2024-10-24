@@ -54,6 +54,7 @@ namespace Gml.Core.Helpers.User
             authUser.AccessToken = GenerateJwtToken(login);
             authUser.Uuid = customUuid ?? UsernameToUuid(login);
             authUser.ExpiredDate = DateTime.Now + TimeSpan.FromDays(30);
+            authUser.Manager = _gmlManager;
 
             await _storage.SetUserAsync(login, authUser.Uuid, authUser);
 
