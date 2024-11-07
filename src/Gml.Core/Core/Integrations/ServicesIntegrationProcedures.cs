@@ -36,7 +36,7 @@ namespace Gml.Core.Integrations
                 new AuthServiceInfo("EasyCabinet", AuthType.EasyCabinet),
                 new AuthServiceInfo("UnicoreCMS", AuthType.UnicoreCMS),
                 new AuthServiceInfo("CustomEndpoint", AuthType.CustomEndpoint),
-                new AuthServiceInfo("NamelessMC", AuthType.NamelessMC)
+                // new AuthServiceInfo("NamelessMC", AuthType.NamelessMC)
             }.AsEnumerable());
         }
 
