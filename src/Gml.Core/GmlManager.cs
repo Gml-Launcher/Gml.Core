@@ -34,8 +34,8 @@ namespace Gml
             Storage = new SqliteStorageService(settings);
             BugTracker = new BugTrackerProcedures(Storage, settings);
             Notifications = new NotificationProcedures(Storage);
-            Profiles = new ProfileProcedures(LauncherInfo, Storage, Notifications, this);
-            Files = new FileStorageProcedures(LauncherInfo, Storage);
+            Profiles = new ProfileProcedures(LauncherInfo, Storage, Notifications, BugTracker, this);
+            Files = new FileStorageProcedures(LauncherInfo, Storage, BugTracker);
             Mods = new ModsProcedures();
             Integrations = new ServicesIntegrationProcedures(settings, Storage);
             Users = new UserProcedures(settings, Storage, this);
@@ -74,6 +74,7 @@ namespace Gml
             }
             catch (Exception exception)
             {
+                BugTracker.CaptureException(exception);
                 Console.WriteLine(exception);
             }
         }

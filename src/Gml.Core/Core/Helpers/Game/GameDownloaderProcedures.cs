@@ -10,6 +10,7 @@ using CmlLib.Core;
 using Gml.Common;
 using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
+using Gml.Models;
 using Gml.Models.System;
 using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Enums;
@@ -176,6 +177,11 @@ namespace Gml.Core.Helpers.Game
             }
 
             return await GetHashFiles(systemFiles, []);
+        }
+
+        public Task<bool> ValidateProfile(IGameProfile gameProfile)
+        {
+            return _gameLoader.Validate();
         }
 
         private bool GetCustomLibrariesFolder(MinecraftLauncher launcher, out string folder)

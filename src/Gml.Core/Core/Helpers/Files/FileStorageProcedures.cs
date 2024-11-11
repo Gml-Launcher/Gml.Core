@@ -20,6 +20,7 @@ namespace Gml.Core.Helpers.Files
     {
         private readonly ILauncherInfo _launcherInfo;
         private readonly IStorageService _storage;
+        private readonly IBugTrackerProcedures _bugTracker;
         private IMinioClient? _minioClient;
 
         internal IMinioClient MinioClient
@@ -34,10 +35,12 @@ namespace Gml.Core.Helpers.Files
             }
         }
 
-        public FileStorageProcedures(ILauncherInfo launcherInfo, IStorageService storage)
+        public FileStorageProcedures(ILauncherInfo launcherInfo, IStorageService storage,
+            IBugTrackerProcedures bugTracker)
         {
             _launcherInfo = launcherInfo;
             _storage = storage;
+            _bugTracker = bugTracker;
         }
 
         public async Task<IFileInfo?> DownloadFileStream(
@@ -304,6 +307,7 @@ namespace Gml.Core.Helpers.Files
             catch (Exception exception)
             {
                 Console.WriteLine(exception);
+                _bugTracker.CaptureException(exception);
                 return false;
             }
 

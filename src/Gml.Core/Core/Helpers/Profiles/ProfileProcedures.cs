@@ -51,6 +51,7 @@ namespace Gml.Core.Helpers.Profiles
         private readonly IStorageService _storageService;
         private readonly GmlManager _gmlManager;
         private readonly INotificationProcedures _notifications;
+        private readonly IBugTrackerProcedures _bugTracker;
         private List<IGameProfile> _gameProfiles = new();
         private ConcurrentDictionary<string, string> _fileHashCache = new();
         private VersionMetadataCollection? _vanillaVersions;
@@ -59,16 +60,17 @@ namespace Gml.Core.Helpers.Profiles
         private ConcurrentDictionary<string, IEnumerable<NeoForgeVersion>>? _neoForgeVersions = new();
         private IReadOnlyList<LiteLoaderVersion>? _liteLoaderVersions;
 
-        public ProfileProcedures(
-            ILauncherInfo launcherInfo,
+        public ProfileProcedures(ILauncherInfo launcherInfo,
             IStorageService storageService,
             INotificationProcedures notifications,
+            IBugTrackerProcedures bugTracker,
             GmlManager gmlManager)
         {
             _launcherInfo = launcherInfo;
             _storageService = storageService;
             _gmlManager = gmlManager;
             _notifications = notifications;
+            _bugTracker = bugTracker;
         }
 
         public async Task AddProfile(IGameProfile? profile)
@@ -178,6 +180,8 @@ namespace Gml.Core.Helpers.Profiles
 
             if (profiles != null && !_gameProfiles.Any())
             {
+                _gameProfiles = [..profiles];
+
                 profiles = profiles.Where(c => c != null).ToList();
 
                 Parallel.ForEach(profiles, RestoreProfile);
@@ -328,7 +332,7 @@ namespace Gml.Core.Helpers.Profiles
             }
             catch (Exception exception)
             {
-                // ToDo: Sentry
+                _bugTracker.CaptureException(exception);
             }
             var arguments =
                 process?.StartInfo.Arguments
@@ -417,6 +421,7 @@ namespace Gml.Core.Helpers.Profiles
             }
             catch (Exception exception)
             {
+                _bugTracker.CaptureException(exception);
                 throw new Exception($"Не удалось восстановить игровой профиль. {exception}");
             }
             finally
@@ -468,6 +473,7 @@ namespace Gml.Core.Helpers.Profiles
                 }
                 catch (Exception exception)
                 {
+                    _bugTracker.CaptureException(exception);
                     Console.WriteLine(exception);
                     throw;
                 }
@@ -824,9 +830,9 @@ namespace Gml.Core.Helpers.Profiles
                     await player.SaveUserAsync();
                 }
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
-                //ToDo: Send to sentry
+                _bugTracker.CaptureException(exception);
             }
 
         }
@@ -841,7 +847,7 @@ namespace Gml.Core.Helpers.Profiles
             }
         }
 
-        private Task UpdateProfilesService(GameProfile gameProfile)
+        private async Task UpdateProfilesService(GameProfile gameProfile)
         {
             foreach (var server in gameProfile.Servers)
             {
@@ -849,12 +855,15 @@ namespace Gml.Core.Helpers.Profiles
                 gameProfile.ServerAdded.OnNext(server);
             }
 
-            gameProfile.State = ProfileState.Ready;
+            gameProfile.State = ProfileState.Restoring;
             gameProfile.ProfileProcedures = this;
             gameProfile.ServerProcedures = this;
             gameProfile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, gameProfile, _notifications, _gmlManager.BugTracker);
 
-            return Task.CompletedTask;
+            if (await gameProfile.GameLoader.ValidateProfile(gameProfile))
+                gameProfile.State = ProfileState.Ready;
+            else
+                gameProfile.State = ProfileState.Error;
         }
 
         public IEnumerable<IFileInfo> GetWhiteListFilesProfileFiles(IEnumerable<IFileInfo> files)

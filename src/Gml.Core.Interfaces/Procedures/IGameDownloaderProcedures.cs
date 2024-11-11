@@ -25,5 +25,6 @@ namespace GmlCore.Interfaces.Procedures
         Task<IFileInfo[]> GetAllFiles(bool needRestoreCache);
         bool GetLauncher(string launcherKey, out object launcher);
         Task<ICollection<IFileInfo>> GetLauncherFiles(string osName, string osArchitecture);
+        Task<bool> ValidateProfile(IGameProfile gameProfile);
     }
 }

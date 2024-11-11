@@ -9,10 +9,10 @@ namespace Gml.Common
     {
         public static string CalculateFileHash(string filePath, HashAlgorithm algorithm)
         {
-            using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            var hashBytes = algorithm.ComputeHash(fileStream);
+            using var file = File.OpenRead(filePath);
 
-            return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+            var binaryHash = algorithm.ComputeHash(file);
+            return BitConverter.ToString(binaryHash).Replace("-", "").ToLowerInvariant();
         }
 
         public static string GetStringOsType(OsType osType)

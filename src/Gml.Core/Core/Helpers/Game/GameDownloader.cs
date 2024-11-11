@@ -28,6 +28,7 @@ using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.User;
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace Gml.Core.Helpers.Game;
 
@@ -164,6 +165,17 @@ public class GameDownloader
                 await launcher.InstallAsync(installVersion, _fileProgress, _byteProgress, cancellationToken)
                     .AsTask();
             }
+            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException or KeyNotFoundException)
+            {
+                var title = $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
+                var details =
+                    $"Создание профиля {_profile.Name} пропущено для операционной системы {launcher.RulesContext.OS.Name} " +
+                    $"с архитектурой {launcher.RulesContext.OS.Arch}. " +
+                    $"Версия Minecraft {_profile.GameVersion} не поддерживает эту конфигурацию.";
+                await _notifications.SendMessage(title, details, NotificationType.Warn);
+                _exception.OnNext(exception);
+                _loadLog.OnNext(details);
+            }
             catch (Exception exception)
             {
                 await _notifications.SendMessage("Ошибка", exception);
@@ -208,7 +220,7 @@ public class GameDownloader
 
                 if (javaVersion is null && _bootstrapProgram is not null)
                 {
-                    javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion);
+                    javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion.ToString());
                 }
 
                 loadVersion = await forge.Install(bestVersion, new ForgeInstallOptions
@@ -221,6 +233,17 @@ public class GameDownloader
                     // JavaVersion = javaVersion
                 });
                 // var process = await launcher.CreateProcessAsync(loadVersion, new MLaunchOption()).AsTask();
+            }
+            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException or KeyNotFoundException)
+            {
+                var title = $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
+                var details =
+                    $"Создание профиля {_profile.Name} пропущено для операционной системы {launcher.RulesContext.OS.Name} " +
+                    $"с архитектурой {launcher.RulesContext.OS.Arch}. " +
+                    $"Версия Minecraft {_profile.GameVersion} не поддерживает эту конфигурацию.";
+                await _notifications.SendMessage(title, details, NotificationType.Warn);
+                _exception.OnNext(exception);
+                _loadLog.OnNext(details);
             }
             catch (Exception exception)
             {
@@ -271,7 +294,7 @@ public class GameDownloader
 
                 if (javaVersion is null && _bootstrapProgram is not null)
                 {
-                    javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion);
+                    javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion.ToString());
                 }
 
                 loadVersion = await forge.Install(bestVersion, new NeoForgeInstallOptions
@@ -285,6 +308,17 @@ public class GameDownloader
                 });
 
                 var process = await launcher.CreateProcessAsync(loadVersion, new MLaunchOption()).AsTask();
+            }
+            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException or KeyNotFoundException)
+            {
+                var title = $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
+                var details =
+                    $"Создание профиля {_profile.Name} пропущено для операционной системы {launcher.RulesContext.OS.Name} " +
+                    $"с архитектурой {launcher.RulesContext.OS.Arch}. " +
+                    $"Версия Minecraft {_profile.GameVersion} не поддерживает эту конфигурацию.";
+                await _notifications.SendMessage(title, details, NotificationType.Warn);
+                _exception.OnNext(exception);
+                _loadLog.OnNext(details);
             }
             catch (Exception exception)
             {
@@ -326,12 +360,23 @@ public class GameDownloader
 
                 if (javaVersion is null && _bootstrapProgram is not null)
                 {
-                    javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion);
+                    javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion.ToString());
                     // downloadVersion.ChangeJavaVersion(javaVersion);
                     // downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
                 }
 
                 await launcher.InstallAndBuildProcessAsync(versionName, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
+            }
+            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException or KeyNotFoundException)
+            {
+                var title = $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
+                var details =
+                    $"Создание профиля {_profile.Name} пропущено для операционной системы {launcher.RulesContext.OS.Name} " +
+                    $"с архитектурой {launcher.RulesContext.OS.Arch}. " +
+                    $"Версия Minecraft {_profile.GameVersion} не поддерживает эту конфигурацию.";
+                await _notifications.SendMessage(title, details, NotificationType.Warn);
+                _exception.OnNext(exception);
+                _loadLog.OnNext(details);
             }
             catch (Exception exception)
             {
@@ -379,12 +424,23 @@ public class GameDownloader
 
                 if (javaVersion is null && _bootstrapProgram is not null)
                 {
-                    javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion);
+                    javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion.ToString());
                     // downloadVersion.ChangeJavaVersion(javaVersion);
                     // downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
                 }
 
                 await launcher.InstallAndBuildProcessAsync(versionName, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
+            }
+            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException or KeyNotFoundException)
+            {
+                var title = $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
+                var details =
+                    $"Создание профиля {_profile.Name} пропущено для операционной системы {launcher.RulesContext.OS.Name} " +
+                    $"с архитектурой {launcher.RulesContext.OS.Arch}. " +
+                    $"Версия Minecraft {_profile.GameVersion} не поддерживает эту конфигурацию.";
+                await _notifications.SendMessage(title, details, NotificationType.Warn);
+                _exception.OnNext(exception);
+                _loadLog.OnNext(details);
             }
             catch (Exception exception)
             {
@@ -461,13 +517,16 @@ public class GameDownloader
                         ExtraJvmArguments = jvmArguments.Select(c => new MArgument(c))
                     }).AsTask();
                 }
-                catch (DirectoryNotFoundException exception)
+                catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException or KeyNotFoundException)
                 {
-                    var message =
-                        $"Пропущено создание профиля {_profile.Name}, для OS: {anyLauncher.RulesContext.OS.Name}, {anyLauncher.RulesContext.OS.Arch}. Данная система не поддерживается.";
-                    await _notifications.SendMessage(message, NotificationType.Warn);
+                    var title = $"{_profile.Name} {anyLauncher.RulesContext.OS.Name} [{anyLauncher.RulesContext.OS.Arch}] пропущен";
+                    var details =
+                        $"Создание профиля {_profile.Name} пропущено для операционной системы {anyLauncher.RulesContext.OS.Name} " +
+                        $"с архитектурой {anyLauncher.RulesContext.OS.Arch}. " +
+                        $"Версия Minecraft {_profile.GameVersion} не поддерживает эту конфигурацию.";
+                    await _notifications.SendMessage(title, details, NotificationType.Warn);
                     _exception.OnNext(exception);
-                    _loadLog.OnNext(message);
+                    _loadLog.OnNext(details);
                 }
                 catch (Exception exception)
                 {
@@ -501,5 +560,29 @@ public class GameDownloader
         launcher = returnLauncher;
 
         return isSuccess;
+    }
+
+    public async Task<bool> Validate()
+    {
+        foreach (var launcher in _launchers)
+        {
+            try
+            {
+                var version = _profile.LaunchVersion ?? throw new Exception("Profile not set");
+
+                await launcher.Value.BuildProcessAsync(version, new MLaunchOption());
+            }
+            catch (ZipException exception)
+            {
+
+            }
+            catch (Exception exception)
+            {
+                _exception.OnNext(exception);
+                return false;
+            }
+        }
+
+        return true;
     }
 }
