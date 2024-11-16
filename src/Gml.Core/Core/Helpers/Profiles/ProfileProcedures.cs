@@ -827,6 +827,8 @@ namespace Gml.Core.Helpers.Profiles
 
                     Task.WaitAll(tasks);
 
+                    Debug.WriteLine($"Skin URL: {player.TextureSkinGuid} | Cloak URL: {player.TextureCloakGuid}");
+
                     await player.SaveUserAsync();
                 }
             }

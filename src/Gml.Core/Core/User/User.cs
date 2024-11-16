@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using GmlCore.Interfaces;
@@ -36,6 +37,7 @@ namespace Gml.Core.User
 
         public async Task DownloadAndInstallSkinAsync(string skinUrl)
         {
+            Debug.WriteLine($"Get skin: {skinUrl}");
             TextureSkinUrl = await Manager.Integrations.TextureProvider.SetSkin(this, skinUrl);
 
             TextureSkinGuid = !string.IsNullOrEmpty(TextureSkinUrl)
@@ -46,6 +48,7 @@ namespace Gml.Core.User
 
         public async Task DownloadAndInstallCloakAsync(string cloakUrl)
         {
+            Debug.WriteLine($"Get cloak: {cloakUrl}");
             TextureCloakUrl = await Manager.Integrations.TextureProvider.SetCloak(this, cloakUrl);
 
             TextureCloakGuid = !string.IsNullOrEmpty(TextureCloakUrl)

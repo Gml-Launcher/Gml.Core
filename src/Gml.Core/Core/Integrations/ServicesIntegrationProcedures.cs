@@ -10,13 +10,17 @@ using GmlCore.Interfaces.Auth;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Integrations;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.Procedures;
 
 namespace Gml.Core.Integrations
 {
-    public class ServicesIntegrationProcedures(IGmlSettings settings, IStorageService storage)
+    public class ServicesIntegrationProcedures(
+        IGmlSettings settings,
+        IStorageService storage,
+        IBugTrackerProcedures bugTracker)
         : IServicesIntegrationProcedures
     {
-        public ITextureProvider TextureProvider { get; set; } = new TextureProvider(settings.TextureServiceEndpoint);
+        public ITextureProvider TextureProvider { get; set; } = new TextureProvider(settings.TextureServiceEndpoint, bugTracker);
         private IEnumerable<IAuthServiceInfo>? _authServices;
 
 
