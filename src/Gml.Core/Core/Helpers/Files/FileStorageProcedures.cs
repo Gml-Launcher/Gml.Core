@@ -8,6 +8,7 @@ using Gml.Models.System;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
+using GmlCore.Interfaces.Storage;
 using GmlCore.Interfaces.System;
 using Microsoft.AspNetCore.Http;
 using Minio;
@@ -41,6 +42,23 @@ namespace Gml.Core.Helpers.Files
             _launcherInfo = launcherInfo;
             _storage = storage;
             _bugTracker = bugTracker;
+
+            launcherInfo.SettingsUpdated.Subscribe(SettingsUpdated);
+        }
+
+        private void SettingsUpdated(IStorageSettings settings)
+        {
+            switch (_launcherInfo.StorageSettings.StorageType)
+            {
+                case StorageType.LocalStorage:
+                    break;
+                case StorageType.S3:
+                    _minioClient?.Dispose();
+                    _minioClient = null;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         public async Task<IFileInfo?> DownloadFileStream(
@@ -155,16 +173,7 @@ namespace Gml.Core.Helpers.Files
 
                     string bucketName = folder ?? "other";
 
-                    var beArgs = new BucketExistsArgs().WithBucket(bucketName);
-                    bool found = await MinioClient.BucketExistsAsync(beArgs).ConfigureAwait(false);
-
-                    if (!found)
-                    {
-                        var mbArgs = new MakeBucketArgs()
-                            .WithBucket(bucketName);
-
-                        await MinioClient.MakeBucketAsync(mbArgs).ConfigureAwait(false);
-                    }
+                    await CreateBuсketIfNotExists(bucketName);
 
                     if (fileStream.Length > 0)
                     {
@@ -190,6 +199,20 @@ namespace Gml.Core.Helpers.Files
             }
 
             return fileName;
+        }
+
+        private async Task CreateBuсketIfNotExists(string bucketName)
+        {
+            var beArgs = new BucketExistsArgs().WithBucket(bucketName);
+            bool found = await MinioClient.BucketExistsAsync(beArgs).ConfigureAwait(false);
+
+            if (!found)
+            {
+                var mbArgs = new MakeBucketArgs()
+                    .WithBucket(bucketName);
+
+                await MinioClient.MakeBucketAsync(mbArgs).ConfigureAwait(false);
+            }
         }
 
         public async Task<(Stream File, string fileName, long Length)> GetFileStream(string fileHash, string? backet = null)
@@ -292,8 +315,9 @@ namespace Gml.Core.Helpers.Files
                             .WithBucket(folder)
                             .WithObject(fileHash);
 
-                        await MinioClient.StatObjectAsync(fileCheck);
-                        return true;
+                        var data = await MinioClient.StatObjectAsync(fileCheck);
+
+                        return data.Size != 0;
                         break;
 
                     default:

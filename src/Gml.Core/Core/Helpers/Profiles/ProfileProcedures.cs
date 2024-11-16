@@ -433,57 +433,165 @@ namespace Gml.Core.Helpers.Profiles
         public async Task PackProfile(IGameProfile profile)
         {
             var fileInfos = await profile.GetAllProfileFiles(true);
+
+            var batchSize = 50;
+            var batches = fileInfos.Select((file, index) => new { file, index })
+                .GroupBy(x => x.index / batchSize)
+                .Select(g => g.Select(x => x.file)).ToList();
+
             var totalFiles = fileInfos.Length;
             var processed = 0;
 
-            foreach (var file in fileInfos)
+            foreach (var batch in batches)
             {
-                var percentage = processed * 100 / totalFiles;
-                try
+                await Task.WhenAll(batch.Select(async file =>
                 {
-                    var filePath = NormalizePath(_launcherInfo.InstallationDirectory, file.Directory);
-
-                    switch (_launcherInfo.StorageSettings.StorageType)
+                    var percentage = processed * 100 / totalFiles;
+                    try
                     {
-                        case StorageType.LocalStorage:
-                            file.FullPath = filePath;
-                            if (await _storageService.GetAsync<LocalFileInfo>(file.Hash) is not {} localFile || !File.Exists(localFile.FullPath))
-                            {
-                                await _storageService.SetAsync(file.Hash, file);
-                            }
+                        var filePath = NormalizePath(_launcherInfo.InstallationDirectory, file.Directory);
 
-                            _packChanged.OnNext(percentage);
+                        switch (_launcherInfo.StorageSettings.StorageType)
+                        {
+                            case StorageType.LocalStorage:
+                                file.FullPath = filePath;
+                                if (await _storageService.GetAsync<LocalFileInfo>(file.Hash) is not {} localFile || !File.Exists(localFile.FullPath))
+                                {
+                                    await _storageService.SetAsync(file.Hash, file);
+                                }
 
-                            break;
-                        case StorageType.S3:
-                            var tags = new Dictionary<string, string>
-                            {
-                                { "hash", file.Hash },
-                                { "file-name", file.Name }
-                            };
-                            if (await _gmlManager.Files.CheckFileExists("profiles", file.Hash) == false)
-                            {
-                                await _gmlManager.Files.LoadFile(File.OpenRead(filePath), "profiles", file.Hash, tags);
-                            }
+                                break;
+                            case StorageType.S3:
+                                var tags = new Dictionary<string, string>
+                                {
+                                    { "hash", file.Hash },
+                                    { "file-name", file.Name }
+                                };
 
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
+                                if (await _gmlManager.Files.CheckFileExists("profiles", file.Hash) == false)
+                                {
+                                    await _gmlManager.Files.LoadFile(File.OpenRead(filePath), "profiles", file.Hash, tags);
+                                }
+
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
                     }
-                }
-                catch (Exception exception)
-                {
-                    _bugTracker.CaptureException(exception);
-                    Console.WriteLine(exception);
-                    throw;
-                }
-                finally
-                {
-                    _packChanged.OnNext(percentage);
-                }
+                    catch (Exception exception)
+                    {
+                        _bugTracker.CaptureException(exception);
+                        Console.WriteLine(exception);
+                        throw;
+                    }
+                    finally
+                    {
+                        _packChanged.OnNext(percentage);
+                        Debug.WriteLine($"Compile percentage: {percentage} [{processed} / {totalFiles}]");
+                    }
 
-                processed++;
+                    processed++;
+                }));
             }
+
+
+            // Parallel.ForEach(fileInfos, async file =>
+            // {var percentage = processed * 100 / totalFiles;
+            //     try
+            //     {
+            //         var filePath = NormalizePath(_launcherInfo.InstallationDirectory, file.Directory);
+            //
+            //         switch (_launcherInfo.StorageSettings.StorageType)
+            //         {
+            //             case StorageType.LocalStorage:
+            //                 file.FullPath = filePath;
+            //                 if (await _storageService.GetAsync<LocalFileInfo>(file.Hash) is not {} localFile || !File.Exists(localFile.FullPath))
+            //                 {
+            //                     await _storageService.SetAsync(file.Hash, file);
+            //                 }
+            //
+            //                 break;
+            //             case StorageType.S3:
+            //                 var tags = new Dictionary<string, string>
+            //                 {
+            //                     { "hash", file.Hash },
+            //                     { "file-name", file.Name }
+            //                 };
+            //
+            //                 if (await _gmlManager.Files.CheckFileExists("profiles", file.Hash) == false)
+            //                 {
+            //                     await _gmlManager.Files.LoadFile(File.OpenRead(filePath), "profiles", file.Hash, tags);
+            //                 }
+            //
+            //                 break;
+            //             default:
+            //                 throw new ArgumentOutOfRangeException();
+            //         }
+            //     }
+            //     catch (Exception exception)
+            //     {
+            //         _bugTracker.CaptureException(exception);
+            //         Console.WriteLine(exception);
+            //         throw;
+            //     }
+            //     finally
+            //     {
+            //         _packChanged.OnNext(percentage);
+            //         Debug.WriteLine($"Compile percentage: {percentage}");
+            //     }
+            //
+            //     processed++;
+            //
+            // });
+
+            // foreach (var file in fileInfos)
+            // {
+            //     var percentage = processed * 100 / totalFiles;
+            //     try
+            //     {
+            //         var filePath = NormalizePath(_launcherInfo.InstallationDirectory, file.Directory);
+            //
+            //         switch (_launcherInfo.StorageSettings.StorageType)
+            //         {
+            //             case StorageType.LocalStorage:
+            //                 file.FullPath = filePath;
+            //                 if (await _storageService.GetAsync<LocalFileInfo>(file.Hash) is not {} localFile || !File.Exists(localFile.FullPath))
+            //                 {
+            //                     await _storageService.SetAsync(file.Hash, file);
+            //                 }
+            //
+            //                 break;
+            //             case StorageType.S3:
+            //                 var tags = new Dictionary<string, string>
+            //                 {
+            //                     { "hash", file.Hash },
+            //                     { "file-name", file.Name }
+            //                 };
+            //
+            //                 if (await _gmlManager.Files.CheckFileExists("profiles", file.Hash) == false)
+            //                 {
+            //                     await _gmlManager.Files.LoadFile(File.OpenRead(filePath), "profiles", file.Hash, tags);
+            //                 }
+            //
+            //                 break;
+            //             default:
+            //                 throw new ArgumentOutOfRangeException();
+            //         }
+            //     }
+            //     catch (Exception exception)
+            //     {
+            //         _bugTracker.CaptureException(exception);
+            //         Console.WriteLine(exception);
+            //         throw;
+            //     }
+            //     finally
+            //     {
+            //         _packChanged.OnNext(percentage);
+            //         Debug.WriteLine($"Compile percentage: {percentage}");
+            //     }
+            //
+            //     processed++;
+            // }
         }
 
         private string NormalizePath(string directory, string fileDirectory)
