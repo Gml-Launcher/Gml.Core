@@ -97,6 +97,7 @@ namespace Gml.Core.Services.Storage
                 Uuid = uuid,
                 SkinGuid = (value as IUser)?.TextureSkinGuid,
                 CloakGuid = (value as IUser)?.TextureCloakGuid,
+                AccessToken = (value as IUser)?.AccessToken,
                 TypeName = typeof(T).FullName,
                 Value = serializedValue
             };
