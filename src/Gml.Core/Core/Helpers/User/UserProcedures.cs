@@ -196,7 +196,7 @@ namespace Gml.Core.Helpers.User
             var token = new JwtSecurityToken(
                 issuer: _settings.Name,
                 audience: _settings.Name,
-                expires: DateTime.Now.AddHours(1),
+                expires: DateTime.Now.AddDays(10),
                 claims: claims,
                 signingCredentials: signingCredentials
             );
