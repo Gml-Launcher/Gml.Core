@@ -76,6 +76,7 @@ public class GameDownloader
         var progressSubject = new Subject<string>();
 
         progressSubject
+            .Merge(_systemProcedures.DownloadLogs)
             .Buffer(TimeSpan.FromMilliseconds(300))
             .Select(items => string.Join(Environment.NewLine, items))
             .Subscribe(combinedText =>
@@ -473,11 +474,11 @@ public class GameDownloader
             Directory.CreateDirectory(javaDirectory);
             // ToDo: Вынести пинг в другой класс
             _loadLog.OnNext("Get Java mirror...");
-            var mirror = await _systemProcedures.GetAvailableMirrorAsync(MirrorsHelper.JavaMirrors);
+            var mirrorUrl = await _systemProcedures.GetAvailableMirrorAsync(MirrorsHelper.JavaMirrors);
             _byteProgress.Report(new ByteProgress(0, 100));
             var tempZipFilePath = Path.Combine(javaDirectory, "java.zip");
             _loadLog.OnNext("Start downloading java...");
-            await _systemProcedures.DownloadFileAsync(mirror, tempZipFilePath);
+            await _systemProcedures.DownloadFileAsync(mirrorUrl, tempZipFilePath);
             _loadLog.OnNext("Download complete. Extracting...");
             _systemProcedures.ExtractZipFile(tempZipFilePath, jdkPath);
             _loadLog.OnNext($"Extraction complete. Java executable path: {javaPath}");

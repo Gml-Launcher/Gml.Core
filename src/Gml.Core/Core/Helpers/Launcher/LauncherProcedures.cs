@@ -107,7 +107,7 @@ public class LauncherProcedures : ILauncherProcedures
 
     }
 
-    public async Task Build(string version, string[] osNameVersions)
+    public async Task<bool> Build(string version, string[] osNameVersions)
     {
         var projectPath = new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "Launcher", version)).GetDirectories().First().FullName;
         var launcherDirectory = new DirectoryInfo(Path.Combine(projectPath, "src", "Gml.Launcher"));
@@ -119,6 +119,7 @@ public class LauncherProcedures : ILauncherProcedures
 
         var buildFolder = await CreateBuilds(osNameVersions, projectPath, launcherDirectory);
 
+        return buildFolder.IsSuccess;
     }
 
     public bool CanCompile(string version, out string message)
@@ -166,9 +167,11 @@ public class LauncherProcedures : ILauncherProcedures
         return Task.FromResult<IEnumerable<string>>(_allowedVersions);
     }
 
-    private Task<object> CreateBuilds(string[] versions, string projectPath, DirectoryInfo launcherDirectory)
+    private Task<(bool IsSuccess, string Path)> CreateBuilds(string[] versions, string projectPath, DirectoryInfo launcherDirectory)
     {
         var dotnetPath = _launcherInfo.Settings.SystemProcedures.BuildDotnetPath;
+
+        var statusCode = 0;
 
         foreach (var version in versions)
         {
@@ -218,6 +221,7 @@ public class LauncherProcedures : ILauncherProcedures
                 process.BeginErrorReadLine();
 
                 process.WaitForExit();
+                statusCode = process.ExitCode;
             }
         }
 
@@ -242,7 +246,7 @@ public class LauncherProcedures : ILauncherProcedures
             CopyDirectory(dir, newFolder);
         }
 
-        return Task.FromResult<object>(buildsFolder.FullName);
+        return Task.FromResult((statusCode == 0, buildsFolder.FullName));
     }
 
     private static void CopyDirectory(DirectoryInfo source, DirectoryInfo destination)
