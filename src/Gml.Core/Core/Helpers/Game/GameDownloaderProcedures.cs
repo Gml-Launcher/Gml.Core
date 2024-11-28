@@ -8,12 +8,15 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using CmlLib.Core;
 using Gml.Common;
+using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
+using Gml.Models;
 using Gml.Models.System;
 using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
+using GmlCore.Interfaces.Sentry;
 using GmlCore.Interfaces.System;
 using GmlCore.Interfaces.User;
 
@@ -22,29 +25,38 @@ namespace Gml.Core.Helpers.Game
     public class GameDownloaderProcedures : IGameDownloaderProcedures
     {
         private readonly ILauncherInfo _launcherInfo;
+        private readonly GameDownloader _gameLoader;
         private readonly IStorageService _storageService;
         private readonly IGameProfile _profile;
+        private readonly IBugTrackerProcedures _bugTracker;
         private Dictionary<GameLoader, Func<string, Task<string>>> _downloadMethods;
         private ConcurrentDictionary<string, string> _fileHashCache = new();
-
-        private readonly GameDownloader _gameLoader;
-
-        public GameDownloaderProcedures(
-            ILauncherInfo launcherInfo,
-            IStorageService storageService,
-            IGameProfile profile,
-            INotificationProcedures notifications)
-        {
-            _launcherInfo = launcherInfo;
-            _storageService = storageService;
-            _profile = profile;
-            _gameLoader = new GameDownloader(profile, launcherInfo, notifications);
-        }
 
         public IObservable<double> FullPercentages => _gameLoader.FullPercentages;
         public IObservable<double> LoadPercentages => _gameLoader.LoadPercentages;
         public IObservable<string> LoadLog => _gameLoader.LoadLog;
         public IObservable<Exception> LoadException => _gameLoader.LoadException;
+
+        public GameDownloaderProcedures(ILauncherInfo launcherInfo,
+            IStorageService storageService,
+            IGameProfile profile,
+            INotificationProcedures notifications, IBugTrackerProcedures bugTracker)
+        {
+            _launcherInfo = launcherInfo;
+            _storageService = storageService;
+            _profile = profile;
+            _bugTracker = bugTracker;
+            _gameLoader = new GameDownloader(profile, launcherInfo, notifications);
+
+            LoadException.Subscribe(CaptureException);
+        }
+
+        private void CaptureException(Exception bug)
+        {
+            var bugInfo = _bugTracker.CaptureException(bug);
+
+            _bugTracker.CaptureException(bugInfo);
+        }
 
         public Task<string> DownloadGame(string version, string? launchVersion, GameLoader loader, IBootstrapProgram? bootstrapProgram)
         {
@@ -165,6 +177,11 @@ namespace Gml.Core.Helpers.Game
             }
 
             return await GetHashFiles(systemFiles, []);
+        }
+
+        public Task<bool> ValidateProfile(IGameProfile gameProfile)
+        {
+            return _gameLoader.Validate();
         }
 
         private bool GetCustomLibrariesFolder(MinecraftLauncher launcher, out string folder)

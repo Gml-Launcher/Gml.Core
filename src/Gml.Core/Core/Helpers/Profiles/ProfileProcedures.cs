@@ -51,6 +51,7 @@ namespace Gml.Core.Helpers.Profiles
         private readonly IStorageService _storageService;
         private readonly GmlManager _gmlManager;
         private readonly INotificationProcedures _notifications;
+        private readonly IBugTrackerProcedures _bugTracker;
         private List<IGameProfile> _gameProfiles = new();
         private ConcurrentDictionary<string, string> _fileHashCache = new();
         private VersionMetadataCollection? _vanillaVersions;
@@ -59,16 +60,17 @@ namespace Gml.Core.Helpers.Profiles
         private ConcurrentDictionary<string, IEnumerable<NeoForgeVersion>>? _neoForgeVersions = new();
         private IReadOnlyList<LiteLoaderVersion>? _liteLoaderVersions;
 
-        public ProfileProcedures(
-            ILauncherInfo launcherInfo,
+        public ProfileProcedures(ILauncherInfo launcherInfo,
             IStorageService storageService,
             INotificationProcedures notifications,
+            IBugTrackerProcedures bugTracker,
             GmlManager gmlManager)
         {
             _launcherInfo = launcherInfo;
             _storageService = storageService;
             _gmlManager = gmlManager;
             _notifications = notifications;
+            _bugTracker = bugTracker;
         }
 
         public async Task AddProfile(IGameProfile? profile)
@@ -83,7 +85,7 @@ namespace Gml.Core.Helpers.Profiles
 
             profile.ProfileProcedures = this;
             profile.ServerProcedures = this;
-            profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications);
+            profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications, _gmlManager.BugTracker);
 
             _gameProfiles.Add(profile);
 
@@ -178,6 +180,8 @@ namespace Gml.Core.Helpers.Profiles
 
             if (profiles != null && !_gameProfiles.Any())
             {
+                _gameProfiles = [..profiles];
+
                 profiles = profiles.Where(c => c != null).ToList();
 
                 Parallel.ForEach(profiles, RestoreProfile);
@@ -328,7 +332,7 @@ namespace Gml.Core.Helpers.Profiles
             }
             catch (Exception exception)
             {
-                // ToDo: Sentry
+                _bugTracker.CaptureException(exception);
             }
             var arguments =
                 process?.StartInfo.Arguments
@@ -417,6 +421,7 @@ namespace Gml.Core.Helpers.Profiles
             }
             catch (Exception exception)
             {
+                _bugTracker.CaptureException(exception);
                 throw new Exception($"Не удалось восстановить игровой профиль. {exception}");
             }
             finally
@@ -428,56 +433,165 @@ namespace Gml.Core.Helpers.Profiles
         public async Task PackProfile(IGameProfile profile)
         {
             var fileInfos = await profile.GetAllProfileFiles(true);
+
+            var batchSize = 50;
+            var batches = fileInfos.Select((file, index) => new { file, index })
+                .GroupBy(x => x.index / batchSize)
+                .Select(g => g.Select(x => x.file)).ToList();
+
             var totalFiles = fileInfos.Length;
             var processed = 0;
 
-            foreach (var file in fileInfos)
+            foreach (var batch in batches)
             {
-                var percentage = processed * 100 / totalFiles;
-                try
+                await Task.WhenAll(batch.Select(async file =>
                 {
-                    var filePath = NormalizePath(_launcherInfo.InstallationDirectory, file.Directory);
-
-                    switch (_launcherInfo.StorageSettings.StorageType)
+                    var percentage = processed * 100 / totalFiles;
+                    try
                     {
-                        case StorageType.LocalStorage:
-                            file.FullPath = filePath;
-                            if (await _storageService.GetAsync<LocalFileInfo>(file.Hash) is not {} localFile || !File.Exists(localFile.FullPath))
-                            {
-                                await _storageService.SetAsync(file.Hash, file);
-                            }
+                        var filePath = NormalizePath(_launcherInfo.InstallationDirectory, file.Directory);
 
-                            _packChanged.OnNext(percentage);
+                        switch (_launcherInfo.StorageSettings.StorageType)
+                        {
+                            case StorageType.LocalStorage:
+                                file.FullPath = filePath;
+                                if (await _storageService.GetAsync<LocalFileInfo>(file.Hash) is not {} localFile || !File.Exists(localFile.FullPath))
+                                {
+                                    await _storageService.SetAsync(file.Hash, file);
+                                }
 
-                            break;
-                        case StorageType.S3:
-                            var tags = new Dictionary<string, string>
-                            {
-                                { "hash", file.Hash },
-                                { "file-name", file.Name }
-                            };
-                            if (await _gmlManager.Files.CheckFileExists("profiles", file.Hash) == false)
-                            {
-                                await _gmlManager.Files.LoadFile(File.OpenRead(filePath), "profiles", file.Hash, tags);
-                            }
+                                break;
+                            case StorageType.S3:
+                                var tags = new Dictionary<string, string>
+                                {
+                                    { "hash", file.Hash },
+                                    { "file-name", file.Name }
+                                };
 
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
+                                if (await _gmlManager.Files.CheckFileExists("profiles", file.Hash) == false)
+                                {
+                                    await _gmlManager.Files.LoadFile(File.OpenRead(filePath), "profiles", file.Hash, tags);
+                                }
+
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
                     }
-                }
-                catch (Exception exception)
-                {
-                    Console.WriteLine(exception);
-                    throw;
-                }
-                finally
-                {
-                    _packChanged.OnNext(percentage);
-                }
+                    catch (Exception exception)
+                    {
+                        _bugTracker.CaptureException(exception);
+                        Console.WriteLine(exception);
+                        throw;
+                    }
+                    finally
+                    {
+                        _packChanged.OnNext(percentage);
+                        Debug.WriteLine($"Compile percentage: {percentage} [{processed} / {totalFiles}]");
+                    }
 
-                processed++;
+                    processed++;
+                }));
             }
+
+
+            // Parallel.ForEach(fileInfos, async file =>
+            // {var percentage = processed * 100 / totalFiles;
+            //     try
+            //     {
+            //         var filePath = NormalizePath(_launcherInfo.InstallationDirectory, file.Directory);
+            //
+            //         switch (_launcherInfo.StorageSettings.StorageType)
+            //         {
+            //             case StorageType.LocalStorage:
+            //                 file.FullPath = filePath;
+            //                 if (await _storageService.GetAsync<LocalFileInfo>(file.Hash) is not {} localFile || !File.Exists(localFile.FullPath))
+            //                 {
+            //                     await _storageService.SetAsync(file.Hash, file);
+            //                 }
+            //
+            //                 break;
+            //             case StorageType.S3:
+            //                 var tags = new Dictionary<string, string>
+            //                 {
+            //                     { "hash", file.Hash },
+            //                     { "file-name", file.Name }
+            //                 };
+            //
+            //                 if (await _gmlManager.Files.CheckFileExists("profiles", file.Hash) == false)
+            //                 {
+            //                     await _gmlManager.Files.LoadFile(File.OpenRead(filePath), "profiles", file.Hash, tags);
+            //                 }
+            //
+            //                 break;
+            //             default:
+            //                 throw new ArgumentOutOfRangeException();
+            //         }
+            //     }
+            //     catch (Exception exception)
+            //     {
+            //         _bugTracker.CaptureException(exception);
+            //         Console.WriteLine(exception);
+            //         throw;
+            //     }
+            //     finally
+            //     {
+            //         _packChanged.OnNext(percentage);
+            //         Debug.WriteLine($"Compile percentage: {percentage}");
+            //     }
+            //
+            //     processed++;
+            //
+            // });
+
+            // foreach (var file in fileInfos)
+            // {
+            //     var percentage = processed * 100 / totalFiles;
+            //     try
+            //     {
+            //         var filePath = NormalizePath(_launcherInfo.InstallationDirectory, file.Directory);
+            //
+            //         switch (_launcherInfo.StorageSettings.StorageType)
+            //         {
+            //             case StorageType.LocalStorage:
+            //                 file.FullPath = filePath;
+            //                 if (await _storageService.GetAsync<LocalFileInfo>(file.Hash) is not {} localFile || !File.Exists(localFile.FullPath))
+            //                 {
+            //                     await _storageService.SetAsync(file.Hash, file);
+            //                 }
+            //
+            //                 break;
+            //             case StorageType.S3:
+            //                 var tags = new Dictionary<string, string>
+            //                 {
+            //                     { "hash", file.Hash },
+            //                     { "file-name", file.Name }
+            //                 };
+            //
+            //                 if (await _gmlManager.Files.CheckFileExists("profiles", file.Hash) == false)
+            //                 {
+            //                     await _gmlManager.Files.LoadFile(File.OpenRead(filePath), "profiles", file.Hash, tags);
+            //                 }
+            //
+            //                 break;
+            //             default:
+            //                 throw new ArgumentOutOfRangeException();
+            //         }
+            //     }
+            //     catch (Exception exception)
+            //     {
+            //         _bugTracker.CaptureException(exception);
+            //         Console.WriteLine(exception);
+            //         throw;
+            //     }
+            //     finally
+            //     {
+            //         _packChanged.OnNext(percentage);
+            //         Debug.WriteLine($"Compile percentage: {percentage}");
+            //     }
+            //
+            //     processed++;
+            // }
         }
 
         private string NormalizePath(string directory, string fileDirectory)
@@ -581,7 +695,7 @@ namespace Gml.Core.Helpers.Profiles
             profile.JvmArguments = jvmArguments;
             profile.GameArguments = gameArguments;
 
-            profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications);
+            profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications, _gmlManager.BugTracker);
 
             await SaveProfiles();
             await RestoreProfiles();
@@ -763,7 +877,7 @@ namespace Gml.Core.Helpers.Profiles
         {
             profile.FolderWhiteList ??= [];
 
-            if (!profile.FolderWhiteList.Any(c => c == folder))
+            if (profile.FolderWhiteList.Any(c => c == folder))
             {
                 profile.FolderWhiteList.Add(folder);
             }
@@ -821,12 +935,14 @@ namespace Gml.Core.Helpers.Profiles
 
                     Task.WaitAll(tasks);
 
+                    Debug.WriteLine($"Skin URL: {player.TextureSkinGuid} | Cloak URL: {player.TextureCloakGuid}");
+
                     await player.SaveUserAsync();
                 }
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
-                //ToDo: Send to sentry
+                _bugTracker.CaptureException(exception);
             }
 
         }
@@ -841,7 +957,7 @@ namespace Gml.Core.Helpers.Profiles
             }
         }
 
-        private Task UpdateProfilesService(GameProfile gameProfile)
+        private async Task UpdateProfilesService(GameProfile gameProfile)
         {
             foreach (var server in gameProfile.Servers)
             {
@@ -849,12 +965,15 @@ namespace Gml.Core.Helpers.Profiles
                 gameProfile.ServerAdded.OnNext(server);
             }
 
-            gameProfile.State = ProfileState.Ready;
+            gameProfile.State = ProfileState.Restoring;
             gameProfile.ProfileProcedures = this;
             gameProfile.ServerProcedures = this;
-            gameProfile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, gameProfile, _notifications);
+            gameProfile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, gameProfile, _notifications, _gmlManager.BugTracker);
 
-            return Task.CompletedTask;
+            if (await gameProfile.GameLoader.ValidateProfile(gameProfile))
+                gameProfile.State = ProfileState.Ready;
+            else
+                gameProfile.State = ProfileState.Error;
         }
 
         public IEnumerable<IFileInfo> GetWhiteListFilesProfileFiles(IEnumerable<IFileInfo> files)

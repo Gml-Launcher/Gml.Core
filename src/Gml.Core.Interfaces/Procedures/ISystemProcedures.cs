@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ namespace GmlCore.Interfaces.Procedures
     {
         public string DefaultInstallation { get; }
         string? BuildDotnetPath { get; }
+        IObservable<string> DownloadLogs { get; }
 
         string CleanFolderName(string name);
 

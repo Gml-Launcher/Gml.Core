@@ -1,15 +1,17 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Gml.Common.TextureService;
 using GmlCore.Interfaces.Integrations;
+using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.User;
 using Newtonsoft.Json;
 
 namespace Gml.Core.Integrations;
 
-public class TextureProvider(string textureServiceEndpoint) : ITextureProvider
+public class TextureProvider(string textureServiceEndpoint, IBugTrackerProcedures bugTracker) : ITextureProvider
 {
     private readonly HttpClient _httpClintSkinChecker = new();
     private readonly HttpClient _httpClientLoader = new()
@@ -30,8 +32,10 @@ public class TextureProvider(string textureServiceEndpoint) : ITextureProvider
 
             return model?.SkinUrl!;
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
+            bugTracker.CaptureException(exception);
+            Debug.WriteLine(exception);
             return string.Empty;
         }
     }
@@ -46,8 +50,10 @@ public class TextureProvider(string textureServiceEndpoint) : ITextureProvider
 
             return model?.ClockUrl!;
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
+            bugTracker.CaptureException(exception);
+            Debug.WriteLine(exception);
             return string.Empty;
         }
     }

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
+using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CmlLib.Core.Files;
@@ -29,7 +30,9 @@ namespace Gml.Core.Helpers.System
         private string? _buildDotnetPath;
         private readonly MinecraftJavaManifestResolver _javaManifestResolver = new(gmlSettings.HttpClient);
         private IEnumerable<MinecraftJavaManifestMetadata>? _javaManifestMetadata;
+        private Subject<string> _downloadLogs = new();
         public string? BuildDotnetPath => _buildDotnetPath;
+        public IObservable<string> DownloadLogs => _downloadLogs;
 
         public string DefaultInstallation
         {
@@ -147,17 +150,28 @@ namespace Gml.Core.Helpers.System
 
         public async Task DownloadFileAsync(string url, string destinationFilePath)
         {
+            _downloadLogs.OnNext($"Starting download: {url}");
             using HttpResponseMessage response =
                 await gmlSettings.HttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
+
+            long totalBytes = response.Content.Headers.ContentLength ?? -1L;
+            long totalBytesRead = 0L;
+
             await using Stream contentStream = await response.Content.ReadAsStreamAsync(),
-                fileStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None,
-                    8192, true);
+                fileStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
             var buffer = new byte[8192];
             int bytesRead;
             while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
             {
                 await fileStream.WriteAsync(buffer, 0, bytesRead);
+                totalBytesRead += bytesRead;
+
+                if (totalBytes > 0)
+                {
+                    double progress = (double)totalBytesRead / totalBytes * 100;
+                    _downloadLogs.OnNext($"Downloaded: {progress}%");
+                }
             }
         }
 

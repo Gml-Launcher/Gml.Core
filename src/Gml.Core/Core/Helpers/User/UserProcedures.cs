@@ -54,6 +54,7 @@ namespace Gml.Core.Helpers.User
             authUser.AccessToken = GenerateJwtToken(login);
             authUser.Uuid = customUuid ?? UsernameToUuid(login);
             authUser.ExpiredDate = DateTime.Now + TimeSpan.FromDays(30);
+            authUser.Manager = _gmlManager;
 
             await _storage.SetUserAsync(login, authUser.Uuid, authUser);
 
@@ -99,13 +100,25 @@ namespace Gml.Core.Helpers.User
                 return false;
             }
 
+            var handler = new JwtSecurityTokenHandler();
+
+            if (!handler.CanReadToken(user.AccessToken))
+                return false;
+
+            var jwtToken = handler.ReadJwtToken(user.AccessToken);
+
+            var claims = jwtToken.Claims.FirstOrDefault(c => c.Type == "name");
+
+            if (claims?.Value != user.Name)
+                return false;
+
             user.ServerUuid = serverUuid;
             user.ServerExpiredDate = DateTime.Now.AddMinutes(1);
             user.ServerJoinHistory.Add(new ServerJoinHistory(serverUuid, DateTime.Now));
 
             await UpdateUser(user);
 
-            return user.AccessToken?.StartsWith(accessToken) ?? false;
+            return user.AccessToken?.Equals(accessToken) ?? false;
         }
 
         public async Task<bool> CanJoinToServer(IUser user, string serverId)
@@ -159,6 +172,14 @@ namespace Gml.Core.Helpers.User
             return _gmlManager.Integrations.TextureProvider.GetCloakStream(user.TextureCloakUrl);
         }
 
+        public async Task<IUser?> GetUserByAccessToken(string accessToken)
+        {
+            return await _storage.GetUserByAccessToken<AuthUser>(accessToken, new JsonSerializerOptions
+                {
+                    Converters = { new SessionConverter() }
+                });
+        }
+
         private string GenerateJwtToken(string login)
         {
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.SecurityKey));
@@ -175,7 +196,7 @@ namespace Gml.Core.Helpers.User
             var token = new JwtSecurityToken(
                 issuer: _settings.Name,
                 audience: _settings.Name,
-                expires: DateTime.Now.AddHours(1),
+                expires: DateTime.Now.AddDays(10),
                 claims: claims,
                 signingCredentials: signingCredentials
             );
