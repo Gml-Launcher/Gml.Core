@@ -109,7 +109,7 @@ public class LauncherProcedures : ILauncherProcedures
 
     public async Task<bool> Build(string version, string[] osNameVersions)
     {
-        var projectPath = new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "Launcher", version)).GetDirectories().First().FullName;
+        var projectPath = new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "Launcher", version)).FullName;
         var launcherDirectory = new DirectoryInfo(Path.Combine(projectPath, "src", "Gml.Launcher"));
 
         if (!Directory.Exists(projectPath))
@@ -132,7 +132,7 @@ public class LauncherProcedures : ILauncherProcedures
             return false;
         }
 
-        var projectPath = new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "Launcher", version))?.GetDirectories().FirstOrDefault()?.FullName;
+        var projectPath = new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "Launcher", version)).FullName;
 
         if (string.IsNullOrEmpty(projectPath))
         {
