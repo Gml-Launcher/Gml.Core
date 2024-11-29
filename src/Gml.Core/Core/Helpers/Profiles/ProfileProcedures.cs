@@ -877,7 +877,7 @@ namespace Gml.Core.Helpers.Profiles
         {
             profile.FolderWhiteList ??= [];
 
-            if (profile.FolderWhiteList.Any(c => c == folder))
+            if (!profile.FolderWhiteList.Any(c => c == folder))
             {
                 profile.FolderWhiteList.Add(folder);
             }
