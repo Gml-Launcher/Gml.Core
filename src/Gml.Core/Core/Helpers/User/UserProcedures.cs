@@ -192,6 +192,11 @@ namespace Gml.Core.Helpers.User
             return _gmlManager.Integrations.TextureProvider.GetCloakStream(user.TextureCloakUrl);
         }
 
+        public Task<Stream> GetHead(IUser user)
+        {
+            return _gmlManager.Integrations.TextureProvider.GetHeadByNameStream(user.Name);
+        }
+
         public async Task<IUser?> GetUserByAccessToken(string accessToken)
         {
             return await _storage.GetUserByAccessToken<AuthUser>(accessToken, new JsonSerializerOptions
