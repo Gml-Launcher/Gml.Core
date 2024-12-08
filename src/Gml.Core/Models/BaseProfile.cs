@@ -57,6 +57,7 @@ namespace Gml.Models
         public List<IFileInfo>? FileWhiteList { get; set; }
 
         public List<IFolderInfo>? FolderWhiteList { get; set; }
+        public List<Guid> UserWhiteListGuid { get; set; } = [];
 
         public List<IProfileServer> Servers { get; set; } = new();
 
