@@ -153,6 +153,16 @@ namespace Gml.Core.Helpers.User
             return authUsers;
         }
 
+        public async Task<IEnumerable<IUser>> GetUsers(IEnumerable<string> userUuids)
+        {
+            var users = await _storage.GetUsersAsync<AuthUser>(new JsonSerializerOptions
+            {
+                Converters = { new SessionConverter() }
+            }, userUuids).ConfigureAwait(false);
+
+            return users;
+        }
+
         public Task UpdateUser(IUser user)
         {
             return _storage.SetUserAsync(user.Name, user.Uuid, (AuthUser)user);

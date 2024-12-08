@@ -87,7 +87,7 @@ namespace GmlCore.Interfaces.Launcher
         /// <summary>
         /// List of user GUIDs permitted by the profile.
         /// </summary>
-        List<Guid> UserWhiteListGuid { get; set; }
+        List<string> UserWhiteListGuid { get; set; }
 
         /// <summary>
         /// List of servers associated with the profile.

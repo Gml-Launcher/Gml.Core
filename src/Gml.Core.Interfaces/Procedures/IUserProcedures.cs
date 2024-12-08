@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -24,6 +25,7 @@ namespace GmlCore.Interfaces.Procedures
         Task<bool> CanJoinToServer(IUser user, string serverId);
         Task<IEnumerable<IUser>> GetUsers();
         Task<IEnumerable<IUser>> GetUsers(int take, int offset, string findName);
+        Task<IEnumerable<IUser>> GetUsers(IEnumerable<string> userUuids);
         Task UpdateUser(IUser user);
         Task StartSession(IUser user);
         Task EndSession(IUser user);
