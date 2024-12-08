@@ -49,6 +49,8 @@ namespace Gml.Core.Services.Storage
         Task<T?> GetUserBySkinAsync<T>(string guid, JsonSerializerOptions jsonSerializerOptions);
         Task SetUserAsync<T>(string login, string uuid, T value);
         Task<IEnumerable<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions);
+        Task<IEnumerable<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions, int take, int offset,
+            string findName);
         Task AddBugAsync(IBugInfo bugInfo);
         Task ClearBugsAsync();
         Task<IEnumerable<T>> GetBugsAsync<T>();
