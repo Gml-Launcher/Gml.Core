@@ -215,6 +215,7 @@ namespace Gml.Core.Helpers.User
                 new Claim(JwtRegisteredClaimNames.Sub, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, DateTime.Now.Ticks.ToString()),
                 new Claim(JwtRegisteredClaimNames.UniqueName, login),
+                new Claim(ClaimTypes.Role, "Player"),
                 new Claim(JwtRegisteredClaimNames.Name, login)
             };
 
