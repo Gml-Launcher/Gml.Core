@@ -105,6 +105,9 @@ namespace Gml.Core.Helpers.User
             if (!handler.CanReadToken(user.AccessToken))
                 return false;
 
+            if (user.IsBanned)
+                return false;
+
             var jwtToken = handler.ReadJwtToken(user.AccessToken);
 
             var claims = jwtToken.Claims.FirstOrDefault(c => c.Type == "name");
