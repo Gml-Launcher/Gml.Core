@@ -71,8 +71,7 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
 
     public IBugInfo CaptureException(Exception exception)
     {
-
-        return new BugInfo
+        var bugInfo = new BugInfo
         {
             SendAt = DateTime.Now,
             Username = _settings.Name,
@@ -100,6 +99,10 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
             },
             ProjectType = ProjectType.Backend,
         };
+
+        CaptureException(bugInfo);
+
+        return bugInfo;
     }
 
     private async Task ProcessBugAsync(IBugInfo bug)
