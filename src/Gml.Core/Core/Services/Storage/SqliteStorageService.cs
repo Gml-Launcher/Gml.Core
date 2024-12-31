@@ -115,6 +115,32 @@ namespace Gml.Core.Services.Storage
             return users!;
         }
 
+        public async Task<IEnumerable<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions,
+            IEnumerable<string> userUuids)
+        {
+            var users = (await _database
+                    .Table<UserStorageItem>()
+                    .Where(c => userUuids.Contains(c.Uuid))
+                    .ToListAsync())
+                .Select(x => JsonSerializer.Deserialize<T>(x.Value, jsonSerializerOptions));
+
+            return users.OfType<T>();
+        }
+
+        public async Task<IEnumerable<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions, int take,
+            int offset, string findName)
+        {
+            var users = (await _database
+                    .Table<UserStorageItem>()
+                    .Where(c => c.Login.Contains(findName))
+                    .Take(take)
+                    .Skip(offset)
+                    .ToListAsync())
+                .Select(x => JsonSerializer.Deserialize<T>(x.Value, jsonSerializerOptions));
+
+            return users!;
+        }
+
         public async Task AddBugAsync(IBugInfo bugInfo)
         {
             var serializedValue = JsonSerializer.Serialize(bugInfo, new JsonSerializerOptions { WriteIndented = true });

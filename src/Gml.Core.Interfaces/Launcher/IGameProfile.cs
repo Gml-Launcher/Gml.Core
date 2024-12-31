@@ -14,41 +14,179 @@ namespace GmlCore.Interfaces.Launcher
 {
     public interface IGameProfile : IDisposable
     {
+        /// <summary>
+        /// Responsible for handling profile-specific operations.
+        /// </summary>
         [JsonIgnore] IProfileProcedures ProfileProcedures { get; set; }
+
+        /// <summary>
+        /// Responsible for server-specific operations related to the profile.
+        /// </summary>
         [JsonIgnore] IProfileServersProcedures ServerProcedures { get; set; }
+
+        /// <summary>
+        /// Manages game downloading operations.
+        /// </summary>
         [JsonIgnore] IGameDownloaderProcedures GameLoader { get; set; }
 
+        /// <summary>
+        /// Name of the game profile.
+        /// </summary>
         string Name { get; set; }
+
+        /// <summary>
+        /// Indicates if the game profile is enabled.
+        /// </summary>
         bool IsEnabled { get; set; }
+
+        /// <summary>
+        /// Version of the game.
+        /// </summary>
         string GameVersion { get; set; }
+
+        /// <summary>
+        /// Version of the game at launch.
+        /// </summary>
         string? LaunchVersion { get; set; }
+
+        /// <summary>
+        /// Game loader associated with the profile.
+        /// </summary>
         GameLoader Loader { get; }
+
+        /// <summary>
+        /// Path to the game client.
+        /// </summary>
         string ClientPath { get; set; }
+
+        /// <summary>
+        /// Base64 encoded icon for the profile.
+        /// </summary>
         string IconBase64 { get; set; }
+
+        /// <summary>
+        /// Key for the background image.
+        /// </summary>
         string BackgroundImageKey { get; set; }
+
+        /// <summary>
+        /// Description of the game profile.
+        /// </summary>
         string Description { get; set; }
+
+        /// <summary>
+        /// List of files permitted by the profile.
+        /// </summary>
         List<IFileInfo>? FileWhiteList { get; set; }
+
+        /// <summary>
+        /// List of folders permitted by the profile.
+        /// </summary>
         List<IFolderInfo>? FolderWhiteList { get; set; }
-        List<IProfileServer> Servers { get; set; }
-        DateTimeOffset CreateDate { get; set; }
+
+        /// <summary>
+        /// List of user GUIDs permitted by the profile.
+        /// </summary>
+        List<string> UserWhiteListGuid { get; set; }
+
+        /// <summary>
+        /// List of servers associated with the profile.
+        /// </summary>
+        List<IProfileServer> Servers { get; }
+
+        /// <summary>
+        /// Date and time when the profile was created.
+        /// </summary>
+        DateTimeOffset CreateDate { get; }
+
+        /// <summary>
+        /// JVM arguments for the game.
+        /// </summary>
         string? JvmArguments { get; set; }
+
+        /// <summary>
+        /// Game arguments used at runtime.
+        /// </summary>
         string? GameArguments { get; set; }
+
+        /// <summary>
+        /// Current state of the game profile.
+        /// </summary>
         ProfileState State { get; set; }
 
+        /// <summary>
+        /// Validates the game profile.
+        /// </summary>
         Task<bool> ValidateProfile();
+
+        /// <summary>
+        /// Checks if the profile is fully loaded.
+        /// </summary>
         Task<bool> CheckIsFullLoaded(IStartupOptions startupOptions);
+
+        /// <summary>
+        /// Removes the game profile.
+        /// </summary>
         Task Remove();
+
+        /// <summary>
+        /// Initiates the download process for the game.
+        /// </summary>
         Task DownloadAsync();
+
+        /// <summary>
+        /// Creates a process for the game.
+        /// </summary>
         Task<Process> CreateProcess(IStartupOptions startupOptions, IUser user);
+
+        /// <summary>
+        /// Checks if the game client exists.
+        /// </summary>
         Task<bool> CheckClientExists();
+
+        /// <summary>
+        /// Checks if the operating system type is loaded.
+        /// </summary>
         Task<bool> CheckOsTypeLoaded(IStartupOptions startupOptions);
+
+        /// <summary>
+        /// Installs authentication libraries.
+        /// </summary>
         Task<string[]> InstallAuthLib();
+
+        /// <summary>
+        /// Retrieves cached profile information.
+        /// </summary>
         Task<IGameProfileInfo?> GetCacheProfile();
+
+        /// <summary>
+        /// Adds a server to the profile.
+        /// </summary>
         void AddServer(IProfileServer server);
+
+        /// <summary>
+        /// Removes a server from the profile.
+        /// </summary>
         void RemoveServer(IProfileServer server);
+
+        /// <summary>
+        /// Creates a mods folder for the profile.
+        /// </summary>
         Task CreateModsFolder();
+
+        /// <summary>
+        /// Retrieves profile files based on operating system details.
+        /// </summary>
         Task<ICollection<IFileInfo>> GetProfileFiles(string osName, string osArchitecture);
+
+        /// <summary>
+        /// Retrieves all profile files, optionally restoring from cache.
+        /// </summary>
         Task<IFileInfo[]> GetAllProfileFiles(bool needRestoreCache);
+
+        /// <summary>
+        /// Creates a user session asynchronously.
+        /// </summary>
         Task CreateUserSessionAsync(IUser user);
     }
 }

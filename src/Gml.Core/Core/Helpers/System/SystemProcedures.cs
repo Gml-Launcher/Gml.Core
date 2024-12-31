@@ -141,11 +141,16 @@ namespace Gml.Core.Helpers.System
                 .GroupBy(c => new
                 {
                     Name = c.Component,
-                    MajorVersion = int.Parse(c.GetMajorVersion() ?? "0"),
+                    MajorVersion = TryParseMajorVersion(c.GetMajorVersion()),
                     Version = c.VersionName
                 });
 
             return javaVersions.Select(c => new JavaBootstrapProgram(c.Key.Name, c.Key.Version!, c.Key.MajorVersion!));
+        }
+
+        private int TryParseMajorVersion(string? majorVersion)
+        {
+            return int.TryParse(majorVersion, out var result) ? result : 0;
         }
 
         public async Task DownloadFileAsync(string url, string destinationFilePath)

@@ -105,6 +105,9 @@ namespace Gml.Core.Helpers.User
             if (!handler.CanReadToken(user.AccessToken))
                 return false;
 
+            if (user.IsBanned)
+                return false;
+
             var jwtToken = handler.ReadJwtToken(user.AccessToken);
 
             var claims = jwtToken.Claims.FirstOrDefault(c => c.Type == "name");
@@ -143,6 +146,26 @@ namespace Gml.Core.Helpers.User
             });
         }
 
+        public async Task<IEnumerable<IUser>> GetUsers(int take, int offset, string findName)
+        {
+            var authUsers = await _storage.GetUsersAsync<AuthUser>(new JsonSerializerOptions
+            {
+                Converters = { new SessionConverter() }
+            }, take, offset, findName).ConfigureAwait(false);
+
+            return authUsers;
+        }
+
+        public async Task<IEnumerable<IUser>> GetUsers(IEnumerable<string> userUuids)
+        {
+            var users = await _storage.GetUsersAsync<AuthUser>(new JsonSerializerOptions
+            {
+                Converters = { new SessionConverter() }
+            }, userUuids).ConfigureAwait(false);
+
+            return users;
+        }
+
         public Task UpdateUser(IUser user)
         {
             return _storage.SetUserAsync(user.Name, user.Uuid, (AuthUser)user);
@@ -172,6 +195,11 @@ namespace Gml.Core.Helpers.User
             return _gmlManager.Integrations.TextureProvider.GetCloakStream(user.TextureCloakUrl);
         }
 
+        public Task<Stream> GetHead(IUser user)
+        {
+            return _gmlManager.Integrations.TextureProvider.GetHeadByNameStream(user.Name);
+        }
+
         public async Task<IUser?> GetUserByAccessToken(string accessToken)
         {
             return await _storage.GetUserByAccessToken<AuthUser>(accessToken, new JsonSerializerOptions
@@ -190,6 +218,7 @@ namespace Gml.Core.Helpers.User
                 new Claim(JwtRegisteredClaimNames.Sub, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, DateTime.Now.Ticks.ToString()),
                 new Claim(JwtRegisteredClaimNames.UniqueName, login),
+                new Claim(ClaimTypes.Role, "Player"),
                 new Claim(JwtRegisteredClaimNames.Name, login)
             };
 

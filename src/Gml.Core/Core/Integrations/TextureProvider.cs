@@ -68,6 +68,11 @@ public class TextureProvider(string textureServiceEndpoint, IBugTrackerProcedure
         return _httpClintSkinChecker.GetStreamAsync(textureUrl);
     }
 
+    public Task<Stream> GetHeadByNameStream(string? userName)
+    {
+        return _httpClientLoader.GetStreamAsync($"/skin/{userName}/head/128");
+    }
+
     private async Task<TextureReadDto?> UpdateTexture(IUser user, string skinUrl, string requestUri, string prefix)
     {
         var skinResponseMessage = await _httpClintSkinChecker.GetStreamAsync(skinUrl);
