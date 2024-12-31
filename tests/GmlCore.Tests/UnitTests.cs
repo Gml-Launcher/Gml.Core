@@ -266,7 +266,8 @@ public class Tests
             var options = new MinecraftPingOptions
             {
                 Address = "45.153.68.20",
-                Port = 25565
+                Port = 25565,
+                TimeOut = TimeSpan.FromSeconds(3)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
@@ -291,7 +292,8 @@ public class Tests
             var options = new MinecraftPingOptions
             {
                 Address = "45.153.68.20",
-                Port = 25565
+                Port = 25565,
+                TimeOut = TimeSpan.FromSeconds(3)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
@@ -316,7 +318,8 @@ public class Tests
             var options = new MinecraftPingOptions
             {
                 Address = "45.153.68.20",
-                Port = 25565
+                Port = 25565,
+                TimeOut = TimeSpan.FromSeconds(3)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
@@ -341,7 +344,8 @@ public class Tests
             var options = new MinecraftPingOptions
             {
                 Address = "45.153.68.20",
-                Port = 25565
+                Port = 25565,
+                TimeOut = TimeSpan.FromSeconds(3)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
@@ -368,7 +372,8 @@ public class Tests
             var options = new MinecraftPingOptions
             {
                 Address = "45.153.68.20",
-                Port = 25565
+                Port = 25565,
+                TimeOut = TimeSpan.FromSeconds(3)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
@@ -395,7 +400,8 @@ public class Tests
             var options = new MinecraftPingOptions
             {
                 Address = "45.153.68.20",
-                Port = 25565
+                Port = 25565,
+                TimeOut = TimeSpan.FromSeconds(3)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
