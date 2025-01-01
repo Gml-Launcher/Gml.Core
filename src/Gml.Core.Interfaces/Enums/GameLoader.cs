@@ -7,6 +7,7 @@ namespace GmlCore.Interfaces.Enums
         Forge = 2,
         Fabric = 3,
         LiteLoader = 4,
-        NeoForge = 5
+        NeoForge = 5,
+        Quilt = 6,
     }
 }
