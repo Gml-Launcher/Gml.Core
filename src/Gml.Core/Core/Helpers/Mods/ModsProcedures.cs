@@ -54,6 +54,7 @@ public class ModsProcedures(IGmlSettings settings) : IModsProcedures
 
         return mods.Hits.Select(mod => new ModrinthMod
         {
+            Id = mod.ProjectId,
             Name = mod.Title,
             Description = mod.Description,
             FollowsCount = mod.Follows,

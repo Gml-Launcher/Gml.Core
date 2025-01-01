@@ -6,6 +6,7 @@ namespace Gml.Models.Mods;
 
 public class ModrinthMod : IMod
 {
+    public string Id { get; set; }
     public string Name { get; set; }
     public string Description { get; set; }
     public string Url { get; set; }
@@ -15,4 +16,5 @@ public class ModrinthMod : IMod
     public Stream Icon { get; set; }
     public IEnumerable<string> Files { get; set; }
     public IEnumerable<IMod> Dependencies { get; set; }
+    public ModType Type => ModType.Modrinth;
 }

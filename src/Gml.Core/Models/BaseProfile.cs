@@ -222,7 +222,7 @@ namespace Gml.Models
             return files.Select(file => new LocalProfileMod
             {
                 Name = Path.GetFileNameWithoutExtension(file.Name),
-            });
+            }).OrderBy(c => c.Name);
         }
 
         public async Task<IEnumerable<IMod>> GetOptionalsModsAsync()
@@ -232,7 +232,7 @@ namespace Gml.Models
             return files.Select(file => new LocalProfileMod
             {
                 Name = Path.GetFileNameWithoutExtension(file.Name),
-            });
+            }).OrderBy(c => c.Name);
         }
 
     }
