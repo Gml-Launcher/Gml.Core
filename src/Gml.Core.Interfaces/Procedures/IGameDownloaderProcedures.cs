@@ -23,6 +23,8 @@ namespace GmlCore.Interfaces.Procedures
         Task<Process> CreateProcess(IStartupOptions startupOptions, IUser user, bool needDownload,
             string[] jvmArguments, string[] gameArguments);
         Task<IFileInfo[]> GetAllFiles(bool needRestoreCache);
+        Task<IFileInfo[]> GetMods();
+        Task<IFileInfo[]> GetOptionalsMods();
         bool GetLauncher(string launcherKey, out object launcher);
         Task<ICollection<IFileInfo>> GetLauncherFiles(string osName, string osArchitecture);
         Task<bool> ValidateProfile(IGameProfile gameProfile);

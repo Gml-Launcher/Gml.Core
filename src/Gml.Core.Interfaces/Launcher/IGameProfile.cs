@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Enums;
+using GmlCore.Interfaces.Mods;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.Servers;
 using GmlCore.Interfaces.System;
@@ -188,5 +189,16 @@ namespace GmlCore.Interfaces.Launcher
         /// Creates a user session asynchronously.
         /// </summary>
         Task CreateUserSessionAsync(IUser user);
+
+        /// <summary>
+        /// Retrieves the mods associated with the game profile.
+        /// </summary>
+        Task<IEnumerable<IMod>> GetModsAsync();
+
+        /// <summary>
+        /// Retrieves the optional mods associated with a game profile.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a collection of optional mods.</returns>
+        Task<IEnumerable<IMod>> GetOptionalsModsAsync();
     }
 }

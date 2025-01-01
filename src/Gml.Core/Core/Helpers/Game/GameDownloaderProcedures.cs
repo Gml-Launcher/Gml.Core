@@ -110,6 +110,26 @@ namespace Gml.Core.Helpers.Game
             return localFilesInfo;
         }
 
+        private async Task<IFileInfo[]> GetModsFromDirectory(string pattern)
+        {
+            var anyLauncher = _gameLoader.AnyLauncher;
+            var modsDirectory = Path.Combine(anyLauncher.MinecraftPath.BasePath, "mods");
+            var files = Directory.GetFiles(modsDirectory, pattern, SearchOption.AllDirectories);
+            return await GetHashFiles(files, []).ConfigureAwait(false);
+        }
+
+        public async Task<IFileInfo[]> GetMods()
+        {
+            var allMods = await GetModsFromDirectory("*.jar").ConfigureAwait(false);
+
+            return allMods.Where(mod => !mod.Name.Contains("-optional-mod")).ToArray();
+        }
+
+        public async Task<IFileInfo[]> GetOptionalsMods()
+        {
+            return await GetModsFromDirectory("*-optional-mod.jar").ConfigureAwait(false);
+        }
+
         public bool GetLauncher(string launcherKey, out object launcher)
         {
             return _gameLoader.GetLauncher(launcherKey, out launcher);

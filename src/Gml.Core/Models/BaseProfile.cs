@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Gml.Models.Converters;
 using Gml.Models.Enums;
+using Gml.Models.Mods;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.Mods;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.Servers;
 using GmlCore.Interfaces.System;
@@ -210,5 +214,26 @@ namespace Gml.Models
         {
             return ProfileProcedures.CreateUserSessionAsync(this, user);
         }
+
+        public async Task<IEnumerable<IMod>> GetModsAsync()
+        {
+            var files = await ProfileProcedures.GetModsAsync(this);
+
+            return files.Select(file => new LocalProfileMod
+            {
+                Name = Path.GetFileNameWithoutExtension(file.Name),
+            });
+        }
+
+        public async Task<IEnumerable<IMod>> GetOptionalsModsAsync()
+        {
+            var files = await ProfileProcedures.GetOptionalsModsAsync(this);
+
+            return files.Select(file => new LocalProfileMod
+            {
+                Name = Path.GetFileNameWithoutExtension(file.Name),
+            });
+        }
+
     }
 }

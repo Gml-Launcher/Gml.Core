@@ -775,6 +775,16 @@ namespace Gml.Core.Helpers.Profiles
             return baseProfile.GameLoader.GetAllFiles(needRestoreCache);
         }
 
+        public Task<IFileInfo[]> GetModsAsync(IGameProfile baseProfile)
+        {
+            return baseProfile.GameLoader.GetMods();
+        }
+
+        public Task<IFileInfo[]> GetOptionalsModsAsync(IGameProfile baseProfile)
+        {
+            return baseProfile.GameLoader.GetOptionalsMods();
+        }
+
         public async Task<IEnumerable<string>> GetAllowVersions(GameLoader gameLoader, string? minecraftVersion)
         {
             try

@@ -7,6 +7,7 @@ using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.Mods;
 using GmlCore.Interfaces.System;
 using GmlCore.Interfaces.User;
 
@@ -51,6 +52,8 @@ namespace GmlCore.Interfaces.Procedures
         Task CreateModsFolder(IGameProfile profile);
         Task<ICollection<IFileInfo>> GetProfileFiles(IGameProfile profile, string osName, string osArchitecture);
         Task<IFileInfo[]> GetAllProfileFiles(IGameProfile baseProfile, bool needRestoreCache);
+        Task<IFileInfo[]> GetModsAsync(IGameProfile baseProfile);
+        Task<IFileInfo[]> GetOptionalsModsAsync(IGameProfile baseProfile);
         Task<IEnumerable<string>> GetAllowVersions(GameLoader result, string? minecraftVersion);
         Task ChangeBootstrapProgram(IGameProfile testGameProfile, IBootstrapProgram version);
         Task AddFolderToWhiteList(IGameProfile profile, IFolderInfo folder);
