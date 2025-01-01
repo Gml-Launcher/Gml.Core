@@ -114,6 +114,10 @@ namespace Gml.Core.Helpers.Game
         {
             var anyLauncher = _gameLoader.AnyLauncher;
             var modsDirectory = Path.Combine(anyLauncher.MinecraftPath.BasePath, "mods");
+
+            if (!Directory.Exists(modsDirectory))
+                return [];
+
             var files = Directory.GetFiles(modsDirectory, pattern, SearchOption.AllDirectories);
             return await GetHashFiles(files, []).ConfigureAwait(false);
         }
