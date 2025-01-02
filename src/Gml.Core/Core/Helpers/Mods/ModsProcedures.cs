@@ -31,14 +31,14 @@ public class ModsProcedures(IGmlSettings settings) : IModsProcedures
         throw new NotImplementedException();
     }
 
-    public async Task<IExternalMod?> GetModInfo(string identify)
+    public async Task<IExternalMod?> GetInfo(string identify)
     {
         var mod = await _modrinthApi.Mods.FindAsync<ModProject>(identify, CancellationToken.None)
             .ConfigureAwait(false);
 
-        var versions = mod.Versions;
-
-        return new ModrinthMod
+        return mod is null
+            ?  null
+            : new ModrinthMod
         {
             Id = mod.Id,
             Name = mod.Title,
@@ -47,6 +47,24 @@ public class ModsProcedures(IGmlSettings settings) : IModsProcedures
             DownloadCount = mod.Downloads,
             IconUrl = mod.IconUrl
         };
+    }
+
+    public async Task<IReadOnlyCollection<IModVersion>> GetVersions(IExternalMod modInfo, GameLoader profileLoader,
+        string gameVersion)
+    {
+        var versions = await _modrinthApi.Versions
+            .GetVersionsByModId(modInfo.Id, profileLoader.ToModrinthString(), gameVersion, CancellationToken.None)
+            .ConfigureAwait(false);
+
+        return versions.Select(version =>  new ModrinthModVersion
+        {
+            Id = version.Id,
+            Name = version.Name,
+            VersionName = version.VersionNumber,
+            DatePublished = version.DatePublished,
+            Downloads = version.Downloads,
+            Dependencies = version.Dependencies,
+        }).ToArray();
     }
 
     public async Task<IEnumerable<IMod>> FindModsAsync(
