@@ -31,6 +31,24 @@ public class ModsProcedures(IGmlSettings settings) : IModsProcedures
         throw new NotImplementedException();
     }
 
+    public async Task<IExternalMod?> GetModInfo(string identify)
+    {
+        var mod = await _modrinthApi.Mods.FindAsync<ModProject>(identify, CancellationToken.None)
+            .ConfigureAwait(false);
+
+        var versions = mod.Versions;
+
+        return new ModrinthMod
+        {
+            Id = mod.Id,
+            Name = mod.Title,
+            Description = mod.Description,
+            FollowsCount = mod.Followers,
+            DownloadCount = mod.Downloads,
+            IconUrl = mod.IconUrl
+        };
+    }
+
     public async Task<IEnumerable<IMod>> FindModsAsync(
         GameLoader profileLoader,
         string gameVersion,

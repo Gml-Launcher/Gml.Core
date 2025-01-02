@@ -9,8 +9,12 @@ public interface IMod
     string Url { get; set; }
     ModType Type { get; }
     Stream Icon { get; set; }
-    IEnumerable<string> Files { get; set; }
-    IEnumerable<IMod> Dependencies { get; set; }
+}
+
+public interface IExternalMod : IMod
+{
+    IReadOnlyCollection<string> Files { get; set; }
+    IReadOnlyCollection<IMod> Dependencies { get; set; }
 }
 
 public enum ModType
