@@ -96,6 +96,16 @@ namespace GmlCore.Interfaces.Launcher
         List<IProfileServer> Servers { get; }
 
         /// <summary>
+        /// Represents a collection of optional mods that can be selected to enhance or customize the game experience.
+        /// </summary>
+        List<IMod> OptionalMods { get; }
+
+        /// <summary>
+        /// Represents a collection of core modifications or modules applicable to the game profile.
+        /// </summary>
+        List<IMod> Mods { get; }
+
+        /// <summary>
         /// Date and time when the profile was created.
         /// </summary>
         DateTimeOffset CreateDate { get; }

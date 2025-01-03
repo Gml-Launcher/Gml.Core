@@ -20,7 +20,11 @@ namespace Gml.Models
 {
     public class BaseProfile : IGameProfile
     {
-        private bool IsDisposed;
+        private bool _isDisposed;
+        // private Lazy<IMod> _mods = new Lazy<IMod>(async () =>
+        // {
+        //     return await GetModsAsync();
+        // });
 
         public BaseProfile()
         {
@@ -64,6 +68,8 @@ namespace Gml.Models
         public List<string> UserWhiteListGuid { get; set; } = [];
 
         public List<IProfileServer> Servers { get; set; } = new();
+        public List<IMod> OptionalMods { get; } = [];
+        public List<IMod> Mods { get; } = [];
 
         public DateTimeOffset CreateDate { get; set; }
 
@@ -150,10 +156,10 @@ namespace Gml.Models
 
         public void Dispose()
         {
-            if (IsDisposed) return;
+            if (_isDisposed) return;
 
 
-            IsDisposed = true;
+            _isDisposed = true;
         }
 
         public Task<bool> CheckIsLoaded()
@@ -170,19 +176,19 @@ namespace Gml.Models
 
         private void CheckDispose()
         {
-            if (IsDisposed)
+            if (_isDisposed)
                 throw new ObjectDisposedException(Name);
         }
 
         public void Dispose(bool disposing)
         {
-            if (IsDisposed) return;
+            if (_isDisposed) return;
 
             if (disposing)
             {
             }
 
-            IsDisposed = true;
+            _isDisposed = true;
         }
 
         public virtual void AddServer(IProfileServer server)
