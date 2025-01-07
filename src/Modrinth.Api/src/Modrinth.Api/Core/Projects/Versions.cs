@@ -1,11 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Modrinth.Api.Core.Endpoints;
 using Modrinth.Api.Core.System;
-using Modrinth.Api.Models.Dto;
+using NotImplementedException = System.NotImplementedException;
+using Version = Modrinth.Api.Models.Dto.Version;
 
 namespace Modrinth.Api.Core.Projects
 {
@@ -20,7 +23,7 @@ namespace Modrinth.Api.Core.Projects
             _httpClient = httpClient;
         }
 
-        private async Task<Version?> GetVersionById(string identifier, CancellationToken token)
+        public async Task<Version?> GetVersionById(string identifier, CancellationToken token)
         {
             var endPoint = ModrinthEndpoints.Version.Replace("{id}", identifier);
 
@@ -36,6 +39,35 @@ namespace Modrinth.Api.Core.Projects
             var content = await response.Content.ReadAsStringAsync();
 
             return JsonSerializer.Deserialize<Version>(content) ?? null;
+        }
+
+        public async Task<IReadOnlyCollection<Version>> GetVersionsByModId(string identifier, string loader, string gameVersion, CancellationToken token)
+        {
+            if (_httpClient.BaseAddress == null)
+            {
+                throw new InvalidOperationException("BaseAddress в HttpClient не установлен.");
+            }
+
+            var endPoint = ModrinthEndpoints.ProjectVersions.Replace("{id}", identifier);
+
+            var uriBuilder = new UriBuilder(new Uri(_httpClient.BaseAddress, endPoint));
+
+            var query = HttpUtility.ParseQueryString(uriBuilder.Query);
+            query["loaders"] = $"[\"{loader}\"]";
+            query["game_versions"] = $"[\"{gameVersion}\"]";
+            uriBuilder.Query = query.ToString();
+
+            var fullUri = uriBuilder.ToString();
+            var response = await _httpClient.GetAsync(fullUri, token);
+            RequestHelper.UpdateApiRequestInfo(_api, response);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return Array.Empty<Version>();
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<Version[]>(content) ?? Array.Empty<Version>();
         }
     }
 }
