@@ -547,9 +547,10 @@ public class Tests
     [Order(92)]
     public async Task ChangeProfileVersion()
     {
+        var versions = await GmlManager.System.GetJavaVersions();
+        Assert.That(versions, Is.Not.Empty);
 
         return;
-        var versions = await GmlManager.System.GetJavaVersions();
 
         var version = versions.First(c => c.Version == "21.0.3");
 
