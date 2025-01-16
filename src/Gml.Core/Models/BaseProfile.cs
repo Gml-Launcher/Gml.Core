@@ -241,5 +241,19 @@ namespace Gml.Models
             }).OrderBy(c => c.Name);
         }
 
+        public Task<IMod> AddMod(string fileName, Stream streamData)
+        {
+            return ProfileProcedures.AddMod(this, fileName, streamData);
+        }
+
+        public Task<IMod> AddOptionalMod(string fileName, Stream streamData)
+        {
+            return ProfileProcedures.AddOptionalMod(this, fileName, streamData);
+        }
+
+        public Task<bool> RemoveMod(string modName)
+        {
+            return ProfileProcedures.RemoveMod(this, modName);
+        }
     }
 }

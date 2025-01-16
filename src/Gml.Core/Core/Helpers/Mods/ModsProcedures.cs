@@ -77,7 +77,7 @@ public class ModsProcedures(IGmlSettings settings) : IModsProcedures
         var searchFilter = new ProjectModFilter
         {
             Query = modName,
-            Index = FaceIndexEnum.Downloads,
+            Index = FaceIndexEnum.Relevance,
             Limit = take,
             Offset = offset
         };

@@ -25,11 +25,13 @@ using Gml.Core.Helpers.Game;
 using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
 using Gml.Models;
+using Gml.Models.Mods;
 using Gml.Models.System;
 using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.Mods;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.System;
 using GmlCore.Interfaces.User;
@@ -989,6 +991,41 @@ namespace Gml.Core.Helpers.Profiles
             }
 
         }
+
+        public async Task<IMod> AddMod(IGameProfile profile, string fileName, Stream streamData)
+        {
+            var file = await profile.GameLoader.AddMod(fileName, streamData).ConfigureAwait(false);
+
+            return new LocalProfileMod
+            {
+                Name = Path.GetFileNameWithoutExtension(file.Name),
+            };
+        }
+
+        public async Task<IMod> AddOptionalMod(IGameProfile profile, string fileName, Stream streamData)
+        {
+            var extension = Path.GetExtension(fileName);
+
+            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+
+            if (!fileNameWithoutExtension.EndsWith("-optional-mod"))
+            {
+                fileName = $"{fileNameWithoutExtension}-optional-mod{extension}";
+            }
+
+            var file = await profile.GameLoader.AddMod(fileName, streamData).ConfigureAwait(false);
+
+            return new LocalProfileMod
+            {
+                Name = Path.GetFileNameWithoutExtension(file.Name),
+            };
+        }
+
+        public Task<bool> RemoveMod(IGameProfile profile, string modName)
+        {
+            return profile.GameLoader.RemoveMod(modName);
+        }
+
 
         private void RemoveWhiteListFolderIfNotExists(IGameProfile profile, IFolderInfo folder)
         {

@@ -112,14 +112,75 @@ namespace Gml.Core.Helpers.Game
 
         private async Task<IFileInfo[]> GetModsFromDirectory(string pattern)
         {
-            var anyLauncher = _gameLoader.AnyLauncher;
-            var modsDirectory = Path.Combine(anyLauncher.MinecraftPath.BasePath, "mods");
+            var modsDirectory = GetModsDirectory();
 
             if (!Directory.Exists(modsDirectory))
                 return [];
 
             var files = Directory.GetFiles(modsDirectory, pattern, SearchOption.AllDirectories);
             return await GetHashFiles(files, []).ConfigureAwait(false);
+        }
+
+        private string GetModsDirectory()
+        {
+            var anyLauncher = _gameLoader.AnyLauncher;
+
+            return Path.Combine(anyLauncher.MinecraftPath.BasePath, "mods");;
+        }
+
+        public async Task<FileInfo> AddMod(string fileName, Stream streamData)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                throw new ArgumentException("File name cannot be null or empty.", nameof(fileName));
+            }
+
+            if (streamData == null || !streamData.CanRead)
+            {
+                throw new ArgumentException("Invalid stream data.", nameof(streamData));
+            }
+
+            var modsDirectory = GetModsDirectory();
+
+            if (!Directory.Exists(modsDirectory))
+            {
+                Directory.CreateDirectory(modsDirectory);
+            }
+
+            var filePath = Path.Combine(modsDirectory, fileName);
+
+            await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+            await streamData.CopyToAsync(fileStream);
+
+            return new FileInfo(filePath);
+        }
+
+        public Task<bool> RemoveMod(string fileName)
+        {
+            try
+            {
+                var modsDirectory = GetModsDirectory();
+
+                if (!Directory.Exists(modsDirectory))
+                {
+                    Directory.CreateDirectory(modsDirectory);
+                }
+
+                var filePath = Path.Combine(modsDirectory, fileName);
+
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                    return Task.FromResult(true);
+                }
+            }
+            catch (Exception exception)
+            {
+                _bugTracker.CaptureException(exception);
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(false);
         }
 
         public async Task<IFileInfo[]> GetMods()

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Gml.Web.Api.Domains.System;
@@ -210,5 +211,9 @@ namespace GmlCore.Interfaces.Launcher
         /// </summary>
         /// <returns>A task that represents the asynchronous operation. The task result contains a collection of optional mods.</returns>
         Task<IEnumerable<IMod>> GetOptionalsModsAsync();
+
+        Task<IMod> AddMod(string fileName, Stream streamData);
+        Task<IMod> AddOptionalMod(string fileName, Stream streamData);
+        Task<bool> RemoveMod(string modName);
     }
 }
