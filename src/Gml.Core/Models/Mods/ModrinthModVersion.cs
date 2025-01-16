@@ -14,4 +14,5 @@ public class ModrinthModVersion : IModVersion
     public DateTimeOffset DatePublished { get; set; }
     public int Downloads { get; set; }
     public List<Dependency> Dependencies { get; set; } = [];
+    public List<string> Files { get; set; } = [];
 }

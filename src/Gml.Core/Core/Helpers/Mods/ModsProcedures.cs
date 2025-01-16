@@ -64,6 +64,7 @@ public class ModsProcedures(IGmlSettings settings) : IModsProcedures
             DatePublished = version.DatePublished,
             Downloads = version.Downloads,
             Dependencies = version.Dependencies,
+            Files = version.Files.Select(c => c.Url).ToList()
         }).ToArray();
     }
 
