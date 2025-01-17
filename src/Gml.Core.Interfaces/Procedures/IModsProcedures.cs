@@ -16,4 +16,7 @@ public interface IModsProcedures
     Task<IEnumerable<IMod>> FindModsAsync(GameLoader profileLoader, string gameVersion, string modName,
         short take,
         short offset);
+    Task SetModDetails(string modName, string title, string description);
+    Task Retore();
+    ICollection<IModInfo> ModsDetails { get; }
 }

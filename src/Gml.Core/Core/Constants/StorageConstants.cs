@@ -13,5 +13,6 @@ namespace Gml.Core.Constants
         public const string Notifications = "Notifications";
         public const string ActualVersion = "ActualVersion";
         public const string ActualVersionInfo = "ActualVersionInfo";
+        public const string ModsInfo = "ModsInfo";
     }
 }
