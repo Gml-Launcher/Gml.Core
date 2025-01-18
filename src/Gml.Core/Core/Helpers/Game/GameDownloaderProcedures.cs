@@ -7,6 +7,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using CmlLib.Core;
+using CmlLib.Core.Java;
+using CmlLib.Core.Rules;
 using Gml.Common;
 using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
@@ -292,9 +294,17 @@ namespace Gml.Core.Helpers.Game
         private static bool GetJavaRuntimeFolder(string osName, string osArchitecture, MinecraftLauncher launcher,
             out string runtimeFolder)
         {
+            var osRule = new LauncherOSRule
+            {
+                Name = osName,
+                Arch = osArchitecture
+            };
+
+            var osDirectory = MinecraftJavaManifestResolver.GetOSNameForJava(osRule);
+
             runtimeFolder = Directory
                 .GetDirectories(
-                    launcher.MinecraftPath.Runtime, $"{osName}??{osArchitecture}", SearchOption.AllDirectories)
+                    launcher.MinecraftPath.Runtime, osDirectory, SearchOption.AllDirectories)
                 .FirstOrDefault() ?? string.Empty;
 
             if (string.IsNullOrEmpty(runtimeFolder) && osName == "linux")
