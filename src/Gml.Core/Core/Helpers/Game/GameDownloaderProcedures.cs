@@ -163,18 +163,14 @@ namespace Gml.Core.Helpers.Game
             {
                 var modsDirectory = GetModsDirectory();
 
-                if (!Directory.Exists(modsDirectory))
-                {
-                    Directory.CreateDirectory(modsDirectory);
-                }
-
                 var filePath = Path.Combine(modsDirectory, fileName);
 
-                if (File.Exists(filePath))
-                {
-                    File.Delete(filePath);
+                if (!File.Exists(filePath))
                     return Task.FromResult(true);
-                }
+
+                File.Delete(filePath);
+                return Task.FromResult(true);
+
             }
             catch (Exception exception)
             {

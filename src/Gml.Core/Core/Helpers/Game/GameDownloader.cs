@@ -352,6 +352,15 @@ public class GameDownloader
             try
             {
                 _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
+
+                if (launcher.Versions?.FirstOrDefault(c => c.Name == launchVersion) is {} hasVersion)
+                {
+
+                    versionName = launchVersion;
+                    await launcher.InstallAndBuildProcessAsync(hasVersion.Name, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
+                    continue;
+                }
+
                 if (fabricVersion is null)
                 {
                     var versionLoaders = await fabricLoader.GetLoaders(version);
@@ -401,7 +410,7 @@ public class GameDownloader
         CancellationToken cancellationToken)
     {
         var versionName = string.Empty;
-        var fabricLoader = new QuiltInstaller(new HttpClient());
+        var quiltInstaller = new QuiltInstaller(new HttpClient());
         QuiltLoader? fabricVersion = default;
         JavaVersion? javaVersion = default;
         IVersion? downloadVersion = default;
@@ -410,13 +419,21 @@ public class GameDownloader
             try
             {
                 _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
+
+                if (launcher.Versions?.FirstOrDefault(c => c.Name == launchVersion) is {} hasVersion)
+                {
+                    versionName = launchVersion;
+                    await launcher.InstallAndBuildProcessAsync(hasVersion.Name, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
+                    continue;
+                }
+
                 if (fabricVersion is null)
                 {
-                    var versionLoaders = await fabricLoader.GetLoaders(version);
+                    var versionLoaders = await quiltInstaller.GetLoaders(version);
                     fabricVersion = versionLoaders.First(c => c.Version == launchVersion);
                 }
 
-                versionName = await fabricLoader.Install(version, fabricVersion.Version!, launcher.MinecraftPath);
+                versionName = await quiltInstaller.Install(version, fabricVersion.Version!, launcher.MinecraftPath);
                 downloadVersion ??= await launcher.GetVersionAsync(versionName,  cancellationToken);
 
                 if (javaVersion is null && _bootstrapProgram is not null)
