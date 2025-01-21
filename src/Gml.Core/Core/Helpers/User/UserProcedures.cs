@@ -202,10 +202,18 @@ namespace Gml.Core.Helpers.User
 
         public async Task<IUser?> GetUserByAccessToken(string accessToken)
         {
-            return await _storage.GetUserByAccessToken<AuthUser>(accessToken, new JsonSerializerOptions
-                {
-                    Converters = { new SessionConverter() }
-                });
+            var user = await _storage.GetUserByAccessToken<AuthUser>(accessToken, new JsonSerializerOptions
+            {
+                Converters = { new SessionConverter() }
+            });
+
+            if (user is not null)
+            {
+                user.Manager = _gmlManager;
+
+            }
+
+            return user;
         }
 
         private string GenerateJwtToken(string login)
