@@ -17,6 +17,7 @@ using CmlLib.Core.Installers;
 using CmlLib.Core.Java;
 using CmlLib.Core.ModLoaders.FabricMC;
 using CmlLib.Core.ModLoaders.LiteLoader;
+using CmlLib.Core.ModLoaders.QuiltMC;
 using CmlLib.Core.ProcessBuilder;
 using CmlLib.Core.Rules;
 using CmlLib.Core.Version;
@@ -62,6 +63,7 @@ public class GameDownloader
             { GameLoader.Vanilla, DownloadVanilla },
             { GameLoader.Forge, DownloadForge },
             { GameLoader.Fabric, DownloadFabric },
+            { GameLoader.Quilt, DownloadQuilt },
             { GameLoader.LiteLoader, DownloadLiteLoader },
             { GameLoader.NeoForge, DownloadNeoForge }
         };
@@ -350,6 +352,15 @@ public class GameDownloader
             try
             {
                 _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
+
+                if (launcher.Versions?.FirstOrDefault(c => c.Name == launchVersion) is {} hasVersion)
+                {
+
+                    versionName = launchVersion;
+                    await launcher.InstallAndBuildProcessAsync(hasVersion.Name, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
+                    continue;
+                }
+
                 if (fabricVersion is null)
                 {
                     var versionLoaders = await fabricLoader.GetLoaders(version);
@@ -357,6 +368,72 @@ public class GameDownloader
                 }
 
                 versionName = await fabricLoader.Install(version, fabricVersion.Version!, launcher.MinecraftPath);
+                downloadVersion ??= await launcher.GetVersionAsync(versionName,  cancellationToken);
+
+                if (javaVersion is null && _bootstrapProgram is not null)
+                {
+                    javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion.ToString());
+                    // downloadVersion.ChangeJavaVersion(javaVersion);
+                    // downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
+                }
+
+                await launcher.InstallAndBuildProcessAsync(versionName, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
+            }
+            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException or KeyNotFoundException)
+            {
+                var title = $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
+                var details =
+                    $"Создание профиля {_profile.Name} пропущено для операционной системы {launcher.RulesContext.OS.Name} " +
+                    $"с архитектурой {launcher.RulesContext.OS.Arch}. " +
+                    $"Версия Minecraft {_profile.GameVersion} не поддерживает эту конфигурацию.";
+                await _notifications.SendMessage(title, details, NotificationType.Warn);
+                _exception.OnNext(exception);
+                _loadLog.OnNext(details);
+            }
+            catch (Exception exception)
+            {
+                var message =
+                    $"Клиент для {launcher.RulesContext.OS.Name}, {launcher.RulesContext.OS.Arch} не был установлен!";
+                await _notifications.SendMessage(message, exception);
+                _exception.OnNext(exception);
+                _loadLog.OnNext(message);
+            }
+            finally
+            {
+                OnStep();
+            }
+
+        return versionName;
+    }
+
+    private async Task<string> DownloadQuilt(string version, string? launchVersion,
+        CancellationToken cancellationToken)
+    {
+        var versionName = string.Empty;
+        var quiltInstaller = new QuiltInstaller(new HttpClient());
+        QuiltLoader? fabricVersion = default;
+        JavaVersion? javaVersion = default;
+        IVersion? downloadVersion = default;
+
+        foreach (var launcher in _launchers.Values)
+            try
+            {
+                _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
+
+                if (launcher.Versions?.FirstOrDefault(c => c.Name == launchVersion) is {} hasVersion)
+                {
+                    versionName = launchVersion;
+                    await launcher.InstallAndBuildProcessAsync(hasVersion.Name, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
+                    continue;
+                }
+
+                if (fabricVersion is null)
+                {
+                    var versionLoaders = await quiltInstaller.GetLoaders(version);
+                    fabricVersion = versionLoaders.First(c => c.Version == launchVersion);
+                }
+
+                versionName = await quiltInstaller.Install(version, fabricVersion.Version!, launcher.MinecraftPath);
                 downloadVersion ??= await launcher.GetVersionAsync(versionName,  cancellationToken);
 
                 if (javaVersion is null && _bootstrapProgram is not null)

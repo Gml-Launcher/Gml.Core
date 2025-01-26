@@ -15,6 +15,7 @@ using CmlLib.Core.Installer.Forge;
 using CmlLib.Core.Installer.Forge.Versions;
 using CmlLib.Core.ModLoaders.FabricMC;
 using CmlLib.Core.ModLoaders.LiteLoader;
+using CmlLib.Core.ModLoaders.QuiltMC;
 using CmlLib.Core.VersionMetadata;
 using CommunityToolkit.Diagnostics;
 using Gml.Common;
@@ -24,11 +25,13 @@ using Gml.Core.Helpers.Game;
 using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
 using Gml.Models;
+using Gml.Models.Mods;
 using Gml.Models.System;
 using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.Mods;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.System;
 using GmlCore.Interfaces.User;
@@ -56,6 +59,7 @@ namespace Gml.Core.Helpers.Profiles
         private ConcurrentDictionary<string, string> _fileHashCache = new();
         private VersionMetadataCollection? _vanillaVersions;
         private ConcurrentDictionary<string, IEnumerable<string>> _fabricVersions = new();
+        private ConcurrentDictionary<string, IEnumerable<string>> _quiltVersions = new();
         private ConcurrentDictionary<string, IEnumerable<ForgeVersion>>? _forgeVersions = new();
         private ConcurrentDictionary<string, IEnumerable<NeoForgeVersion>>? _neoForgeVersions = new();
         private IReadOnlyList<LiteLoaderVersion>? _liteLoaderVersions;
@@ -141,6 +145,8 @@ namespace Gml.Core.Helpers.Profiles
                 case GameLoader.LiteLoader:
                     return versions.Any(c => c.Equals(loaderVersion));
                 case GameLoader.NeoForge:
+                    return versions.Any(c => c.Equals(loaderVersion));
+                case GameLoader.Quilt:
                     return versions.Any(c => c.Equals(loaderVersion));
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dtoGameLoader), dtoGameLoader, null);
@@ -771,6 +777,16 @@ namespace Gml.Core.Helpers.Profiles
             return baseProfile.GameLoader.GetAllFiles(needRestoreCache);
         }
 
+        public Task<IFileInfo[]> GetModsAsync(IGameProfile baseProfile)
+        {
+            return baseProfile.GameLoader.GetMods();
+        }
+
+        public Task<IFileInfo[]> GetOptionalsModsAsync(IGameProfile baseProfile)
+        {
+            return baseProfile.GameLoader.GetOptionalsMods();
+        }
+
         public async Task<IEnumerable<string>> GetAllowVersions(GameLoader gameLoader, string? minecraftVersion)
         {
             try
@@ -802,29 +818,32 @@ namespace Gml.Core.Helpers.Profiles
                             .Select(c => versionMapper.CreateInstaller(c).ForgeVersion.ForgeVersionName);
 
                     case GameLoader.Fabric:
-
-                        var fabricLoader = new FabricInstaller(new HttpClient());
-
-                        var loaders = await fabricLoader.GetLoaders(minecraftVersion);
-
-                        var versions = loaders
-                            .Where(c => !string.IsNullOrEmpty(c.Version))
-                            .OrderBy(c => c.Stable)
-                            .Select(c => c.Version!)
-                            .ToList()
-                            .AsReadOnly();
-
-                        if (!_fabricVersions.Any(c => c.Key == minecraftVersion))
+                        using (var client = new HttpClient())
                         {
-                            _fabricVersions[minecraftVersion] = versions;
+                            var fabricLoader = new FabricInstaller(client);
+
+                            var loaders = await fabricLoader.GetLoaders(minecraftVersion);
+
+                            var versions = loaders
+                                .Where(c => !string.IsNullOrEmpty(c.Version))
+                                .OrderBy(c => c.Stable)
+                                .Select(c => c.Version!)
+                                .ToList()
+                                .AsReadOnly();
+
+                            if (!_quiltVersions.Any(c => c.Key == minecraftVersion))
+                            {
+                                _quiltVersions[minecraftVersion] = versions;
+                            }
+
+                            if (_quiltVersions[minecraftVersion] is null || !_quiltVersions[minecraftVersion].Any())
+                            {
+                                throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
+                            }
+
+                            return _quiltVersions[minecraftVersion];
                         }
 
-                        if (_fabricVersions[minecraftVersion] is null || !_fabricVersions[minecraftVersion].Any())
-                        {
-                            throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
-                        }
-
-                        return _fabricVersions[minecraftVersion];
 
                     case GameLoader.LiteLoader:
                         var liteLoaderVersionLoader = new LiteLoaderInstaller(new HttpClient());
@@ -847,6 +866,32 @@ namespace Gml.Core.Helpers.Profiles
                         return _neoForgeVersions[minecraftVersion]
                             .Select(c => neoForgeVersionMapper.CreateInstaller(c).VersionName)
                             .Reverse();
+                    case GameLoader.Quilt:
+                        using (var client = new HttpClient())
+                        {
+                            var quiltLoader = new QuiltInstaller(client);
+
+                            var loaders = await quiltLoader.GetLoaders(minecraftVersion);
+
+                            var versions = loaders
+                                .Where(c => !string.IsNullOrEmpty(c.Version))
+                                .OrderBy(c => c.Stable)
+                                .Select(c => c.Version!)
+                                .ToList()
+                                .AsReadOnly();
+
+                            if (!_fabricVersions.Any(c => c.Key == minecraftVersion))
+                            {
+                                _fabricVersions[minecraftVersion] = versions;
+                            }
+
+                            if (_fabricVersions[minecraftVersion] is null || !_fabricVersions[minecraftVersion].Any())
+                            {
+                                throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
+                            }
+
+                            return _fabricVersions[minecraftVersion];
+                        }
                     default:
                         throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
                 }
@@ -946,6 +991,41 @@ namespace Gml.Core.Helpers.Profiles
             }
 
         }
+
+        public async Task<IMod> AddMod(IGameProfile profile, string fileName, Stream streamData)
+        {
+            var file = await profile.GameLoader.AddMod(fileName, streamData).ConfigureAwait(false);
+
+            return new LocalProfileMod
+            {
+                Name = Path.GetFileNameWithoutExtension(file.Name),
+            };
+        }
+
+        public async Task<IMod> AddOptionalMod(IGameProfile profile, string fileName, Stream streamData)
+        {
+            var extension = Path.GetExtension(fileName);
+
+            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+
+            if (!fileNameWithoutExtension.EndsWith("-optional-mod"))
+            {
+                fileName = $"{fileNameWithoutExtension}-optional-mod{extension}";
+            }
+
+            var file = await profile.GameLoader.AddMod(fileName, streamData).ConfigureAwait(false);
+
+            return new LocalProfileMod
+            {
+                Name = Path.GetFileNameWithoutExtension(file.Name),
+            };
+        }
+
+        public Task<bool> RemoveMod(IGameProfile profile, string modName)
+        {
+            return profile.GameLoader.RemoveMod(modName);
+        }
+
 
         private void RemoveWhiteListFolderIfNotExists(IGameProfile profile, IFolderInfo folder)
         {

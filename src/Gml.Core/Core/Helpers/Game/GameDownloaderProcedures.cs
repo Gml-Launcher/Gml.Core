@@ -7,6 +7,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using CmlLib.Core;
+using CmlLib.Core.Java;
+using CmlLib.Core.Rules;
 using Gml.Common;
 using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
@@ -110,6 +112,87 @@ namespace Gml.Core.Helpers.Game
             return localFilesInfo;
         }
 
+        private async Task<IFileInfo[]> GetModsFromDirectory(string pattern)
+        {
+            var modsDirectory = GetModsDirectory();
+
+            if (!Directory.Exists(modsDirectory))
+                return [];
+
+            var files = Directory.GetFiles(modsDirectory, pattern, SearchOption.AllDirectories);
+            return await GetHashFiles(files, []).ConfigureAwait(false);
+        }
+
+        private string GetModsDirectory()
+        {
+            var anyLauncher = _gameLoader.AnyLauncher;
+
+            return Path.Combine(anyLauncher.MinecraftPath.BasePath, "mods");;
+        }
+
+        public async Task<FileInfo> AddMod(string fileName, Stream streamData)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                throw new ArgumentException("File name cannot be null or empty.", nameof(fileName));
+            }
+
+            if (streamData == null || !streamData.CanRead)
+            {
+                throw new ArgumentException("Invalid stream data.", nameof(streamData));
+            }
+
+            var modsDirectory = GetModsDirectory();
+
+            if (!Directory.Exists(modsDirectory))
+            {
+                Directory.CreateDirectory(modsDirectory);
+            }
+
+            var filePath = Path.Combine(modsDirectory, fileName);
+
+            await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+            await streamData.CopyToAsync(fileStream);
+
+            return new FileInfo(filePath);
+        }
+
+        public Task<bool> RemoveMod(string fileName)
+        {
+            try
+            {
+                var modsDirectory = GetModsDirectory();
+
+                var filePath = Path.Combine(modsDirectory, fileName);
+
+                if (!File.Exists(filePath))
+                    return Task.FromResult(true);
+
+                File.Delete(filePath);
+                return Task.FromResult(true);
+
+            }
+            catch (Exception exception)
+            {
+                _bugTracker.CaptureException(exception);
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(false);
+        }
+
+        public async Task<IFileInfo[]> GetMods()
+        {
+            var allMods = await GetModsFromDirectory("*.jar").ConfigureAwait(false);
+
+            return allMods.Where(mod => !mod.Name.Contains("-optional-mod")).ToArray();
+        }
+
+        public async Task<IFileInfo[]> GetOptionalsMods()
+        {
+            return await GetModsFromDirectory("*-optional-mod.jar").ConfigureAwait(false);
+        }
+
         public bool GetLauncher(string launcherKey, out object launcher)
         {
             return _gameLoader.GetLauncher(launcherKey, out launcher);
@@ -207,9 +290,17 @@ namespace Gml.Core.Helpers.Game
         private static bool GetJavaRuntimeFolder(string osName, string osArchitecture, MinecraftLauncher launcher,
             out string runtimeFolder)
         {
+            var osRule = new LauncherOSRule
+            {
+                Name = osName,
+                Arch = osArchitecture
+            };
+
+            var osDirectory = MinecraftJavaManifestResolver.GetOSNameForJava(osRule);
+
             runtimeFolder = Directory
                 .GetDirectories(
-                    launcher.MinecraftPath.Runtime, $"{osName}??{osArchitecture}", SearchOption.AllDirectories)
+                    launcher.MinecraftPath.Runtime, osDirectory, SearchOption.AllDirectories)
                 .FirstOrDefault() ?? string.Empty;
 
             if (string.IsNullOrEmpty(runtimeFolder) && osName == "linux")

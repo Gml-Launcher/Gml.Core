@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Enums;
+using GmlCore.Interfaces.Mods;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.Servers;
 using GmlCore.Interfaces.System;
@@ -93,6 +95,16 @@ namespace GmlCore.Interfaces.Launcher
         /// List of servers associated with the profile.
         /// </summary>
         List<IProfileServer> Servers { get; }
+
+        /// <summary>
+        /// Represents a collection of optional mods that can be selected to enhance or customize the game experience.
+        /// </summary>
+        List<IMod> OptionalMods { get; }
+
+        /// <summary>
+        /// Represents a collection of core modifications or modules applicable to the game profile.
+        /// </summary>
+        List<IMod> Mods { get; }
 
         /// <summary>
         /// Date and time when the profile was created.
@@ -188,5 +200,20 @@ namespace GmlCore.Interfaces.Launcher
         /// Creates a user session asynchronously.
         /// </summary>
         Task CreateUserSessionAsync(IUser user);
+
+        /// <summary>
+        /// Retrieves the mods associated with the game profile.
+        /// </summary>
+        Task<IEnumerable<IMod>> GetModsAsync();
+
+        /// <summary>
+        /// Retrieves the optional mods associated with a game profile.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a collection of optional mods.</returns>
+        Task<IEnumerable<IMod>> GetOptionalsModsAsync();
+
+        Task<IMod> AddMod(string fileName, Stream streamData);
+        Task<IMod> AddOptionalMod(string fileName, Stream streamData);
+        Task<bool> RemoveMod(string modName);
     }
 }
