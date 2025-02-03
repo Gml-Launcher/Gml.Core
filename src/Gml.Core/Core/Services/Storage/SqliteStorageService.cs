@@ -210,6 +210,18 @@ namespace Gml.Core.Services.Storage
             return JsonConvert.DeserializeObject<List<BugInfo>>(json, _bugsConverter) ?? [];
         }
 
+        public async Task RemoveUserByUuidAsync(string userUuid)
+        {
+            var user = await _database.Table<UserStorageItem>()
+                .Where(u => u.Uuid == userUuid)
+                .FirstOrDefaultAsync();
+
+            if (user != null)
+            {
+                await _database.DeleteAsync(user);
+            }
+        }
+
         private static Expression RebindParameter(Expression body, ParameterExpression oldParameter, ParameterExpression newParameter)
         {
             return new ReplaceParameterVisitor(oldParameter, newParameter).Visit(body);

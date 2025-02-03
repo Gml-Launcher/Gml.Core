@@ -171,6 +171,11 @@ namespace Gml.Core.Helpers.User
             return _storage.SetUserAsync(user.Name, user.Uuid, (AuthUser)user);
         }
 
+        public Task RemoveUser(IUser user)
+        {
+            return _storage.RemoveUserByUuidAsync(user.Uuid);
+        }
+
         public Task StartSession(IUser user)
         {
             user.Sessions.Add(new GameSession());
