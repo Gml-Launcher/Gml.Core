@@ -206,9 +206,18 @@ namespace Gml.Models
             return ProfileProcedures.CreateModsFolder(this);
         }
 
-        public Task<ICollection<IFileInfo>> GetProfileFiles(string osName, string osArchitecture)
+        public async Task<ICollection<IFileInfo>> GetProfileFiles(string osName, string osArchitecture)
         {
-            return ProfileProcedures.GetProfileFiles(this, osName, osArchitecture);
+            try
+            {
+                return await ProfileProcedures.GetProfileFiles(this, osName, osArchitecture);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+                await SetState(ProfileState.Error);
+                return [];
+            }
         }
 
         public Task<IFileInfo[]> GetAllProfileFiles(bool needRestoreCache = false)
@@ -263,7 +272,7 @@ namespace Gml.Models
         {
             State = state;
 
-            
+
 
             return ProfileProcedures.SaveProfiles();
         }
