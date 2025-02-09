@@ -241,19 +241,31 @@ namespace Gml.Models
             }).OrderBy(c => c.Name);
         }
 
-        public Task<IMod> AddMod(string fileName, Stream streamData)
+        public async Task<IMod> AddMod(string fileName, Stream streamData)
         {
-            return ProfileProcedures.AddMod(this, fileName, streamData);
+            await SetState(ProfileState.NeedCompile);
+            return await ProfileProcedures.AddMod(this, fileName, streamData).ConfigureAwait(false);
         }
 
-        public Task<IMod> AddOptionalMod(string fileName, Stream streamData)
+        public async Task<IMod> AddOptionalMod(string fileName, Stream streamData)
         {
-            return ProfileProcedures.AddOptionalMod(this, fileName, streamData);
+            await SetState(ProfileState.NeedCompile);
+            return await ProfileProcedures.AddOptionalMod(this, fileName, streamData).ConfigureAwait(false);
         }
 
-        public Task<bool> RemoveMod(string modName)
+        public async Task<bool> RemoveMod(string modName)
         {
-            return ProfileProcedures.RemoveMod(this, modName);
+            await SetState(ProfileState.NeedCompile);
+            return await  ProfileProcedures.RemoveMod(this, modName).ConfigureAwait(false);
+        }
+
+        public Task SetState(ProfileState state)
+        {
+            State = state;
+
+            
+
+            return ProfileProcedures.SaveProfiles();
         }
     }
 }

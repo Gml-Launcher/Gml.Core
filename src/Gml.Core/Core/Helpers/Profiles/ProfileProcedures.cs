@@ -432,12 +432,13 @@ namespace Gml.Core.Helpers.Profiles
             }
             finally
             {
-                profile.State = ProfileState.Ready;
+                profile.State = ProfileState.NeedCompile;
             }
         }
 
         public async Task PackProfile(IGameProfile profile)
         {
+            await profile.SetState(ProfileState.Packing);
             var fileInfos = await profile.GetAllProfileFiles(true);
 
             var batchSize = 50;
@@ -598,6 +599,8 @@ namespace Gml.Core.Helpers.Profiles
             //
             //     processed++;
             // }
+
+            await profile.SetState(ProfileState.Ready);
         }
 
         private string NormalizePath(string directory, string fileDirectory)
@@ -702,7 +705,7 @@ namespace Gml.Core.Helpers.Profiles
             profile.GameArguments = gameArguments;
 
             profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications, _gmlManager.BugTracker);
-
+            profile.State = ProfileState.NeedCompile;
             await SaveProfiles();
             await RestoreProfiles();
 
@@ -1012,7 +1015,6 @@ namespace Gml.Core.Helpers.Profiles
             {
                 fileName = $"{fileNameWithoutExtension}-optional-mod{extension}";
             }
-
             var file = await profile.GameLoader.AddMod(fileName, streamData).ConfigureAwait(false);
 
             return new LocalProfileMod
