@@ -314,7 +314,7 @@ namespace Gml.Core.Helpers.Profiles
             var jvmArgs = new List<string>();
             var gameArguments = new List<string>();
 
-            if (profile.JvmArguments is not null)
+            if (!string.IsNullOrEmpty(profile.JvmArguments))
                 jvmArgs.Add(profile.JvmArguments);
 
             var files =
