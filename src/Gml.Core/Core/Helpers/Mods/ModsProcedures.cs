@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CurseForge.APIClient;
+using CurseForge.APIClient.Models.Files;
 using Gml.Core.Constants;
 using Gml.Core.Extensions;
 using Gml.Core.Services.Storage;
@@ -117,8 +118,6 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
             Name = version.FileName,
             VersionName = version.FileName,
             DatePublished = version.FileDate,
-            Downloads = Convert.ToInt32(version.DownloadCount),
-            Files = new List<string> { version.DownloadUrl }
         }).ToArray();
     }
 
