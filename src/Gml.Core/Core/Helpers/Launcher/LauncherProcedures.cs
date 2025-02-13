@@ -35,7 +35,9 @@ public class LauncherProcedures : ILauncherProcedures
         "linux-musl-x64",
         "linux-arm",
         "linux-arm64",
-        "linux-x64"
+        "linux-x64",
+        "osx-x64",
+        "osx-arm64",
     ];
 
     public LauncherProcedures(ILauncherInfo launcherInfo, IStorageService storage, IFileStorageProcedures files)

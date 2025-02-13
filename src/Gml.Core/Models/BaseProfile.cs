@@ -206,9 +206,18 @@ namespace Gml.Models
             return ProfileProcedures.CreateModsFolder(this);
         }
 
-        public Task<ICollection<IFileInfo>> GetProfileFiles(string osName, string osArchitecture)
+        public async Task<ICollection<IFileInfo>> GetProfileFiles(string osName, string osArchitecture)
         {
-            return ProfileProcedures.GetProfileFiles(this, osName, osArchitecture);
+            try
+            {
+                return await ProfileProcedures.GetProfileFiles(this, osName, osArchitecture);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+                await SetState(ProfileState.Error);
+                return [];
+            }
         }
 
         public Task<IFileInfo[]> GetAllProfileFiles(bool needRestoreCache = false)
@@ -241,19 +250,31 @@ namespace Gml.Models
             }).OrderBy(c => c.Name);
         }
 
-        public Task<IMod> AddMod(string fileName, Stream streamData)
+        public async Task<IMod> AddMod(string fileName, Stream streamData)
         {
-            return ProfileProcedures.AddMod(this, fileName, streamData);
+            await SetState(ProfileState.NeedCompile);
+            return await ProfileProcedures.AddMod(this, fileName, streamData).ConfigureAwait(false);
         }
 
-        public Task<IMod> AddOptionalMod(string fileName, Stream streamData)
+        public async Task<IMod> AddOptionalMod(string fileName, Stream streamData)
         {
-            return ProfileProcedures.AddOptionalMod(this, fileName, streamData);
+            await SetState(ProfileState.NeedCompile);
+            return await ProfileProcedures.AddOptionalMod(this, fileName, streamData).ConfigureAwait(false);
         }
 
-        public Task<bool> RemoveMod(string modName)
+        public async Task<bool> RemoveMod(string modName)
         {
-            return ProfileProcedures.RemoveMod(this, modName);
+            await SetState(ProfileState.NeedCompile);
+            return await  ProfileProcedures.RemoveMod(this, modName).ConfigureAwait(false);
+        }
+
+        public Task SetState(ProfileState state)
+        {
+            State = state;
+
+
+
+            return ProfileProcedures.SaveProfiles();
         }
     }
 }
