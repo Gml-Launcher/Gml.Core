@@ -30,11 +30,12 @@ namespace Gml.Models
         {
         }
 
-        internal BaseProfile(string name, string gameVersion, GameLoader loader)
+        internal BaseProfile(string name, string displayName, string gameVersion, GameLoader loader)
         {
             Loader = loader;
             GameVersion = gameVersion;
             Name = name;
+            DisplayName = displayName;
 
             IsValidProfile = NullableBool.Undefined;
         }
@@ -48,6 +49,7 @@ namespace Gml.Models
         [JsonIgnore] public IGameDownloaderProcedures GameLoader { get; set; }
 
         public string Name { get; set; }
+        public string DisplayName { get; set; }
         public bool IsEnabled { get; set; }
         public string GameVersion { get; set; }
         public string? LaunchVersion { get; set; }

@@ -126,6 +126,8 @@ namespace GmlCore.Interfaces.Launcher
         /// </summary>
         ProfileState State { get; set; }
 
+        string DisplayName { get; set; }
+
         /// <summary>
         /// Validates the game profile.
         /// </summary>
