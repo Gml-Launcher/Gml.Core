@@ -21,6 +21,7 @@ namespace Gml.Core.Integrations
         : IServicesIntegrationProcedures
     {
         public ITextureProvider TextureProvider { get; set; } = new TextureProvider(settings.TextureServiceEndpoint, bugTracker);
+        public INewsListenerProvider NewsProvider { get; set; } = new NewsListenerProvider(TimeSpan.FromMinutes(1));
         private IEnumerable<IAuthServiceInfo>? _authServices;
 
 
