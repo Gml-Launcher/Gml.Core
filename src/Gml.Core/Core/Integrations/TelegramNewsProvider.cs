@@ -7,7 +7,7 @@ namespace Gml.Core.Integrations;
 
 public class TelegramNewsProvider : INewsProvider
 {
-    public Task<IReadOnlyCollection<INews>> GetNews(int count = 20)
+    public Task<IReadOnlyCollection<INewsData>> GetNews(int count = 20)
     {
         throw new System.NotImplementedException();
     }

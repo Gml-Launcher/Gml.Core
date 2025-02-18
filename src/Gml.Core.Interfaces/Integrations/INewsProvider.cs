@@ -6,5 +6,5 @@ namespace GmlCore.Interfaces.Integrations;
 
 public interface INewsProvider
 {
-    Task<IReadOnlyCollection<INews>> GetNews(int count = 20);
+    Task<IReadOnlyCollection<INewsData>> GetNews(int count = 20);
 }

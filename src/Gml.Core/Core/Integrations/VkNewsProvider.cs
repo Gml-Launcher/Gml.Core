@@ -21,7 +21,7 @@ public class VkNewsProvider : INewsProvider
         _groupId = id;
     }
 
-    public async Task<IReadOnlyCollection<INews>> GetNews(int count = 20)
+    public async Task<IReadOnlyCollection<INewsData>> GetNews(int count = 20)
     {
         var url = "https://api.vk.com/method/wall.get";
         using var client = new HttpClient();
@@ -45,9 +45,9 @@ public class VkNewsProvider : INewsProvider
             var data = Newtonsoft.Json.JsonConvert.DeserializeObject<VkNewsResponse>(json);
 
             if (data is null)
-                return Array.Empty<INews>();
+                return Array.Empty<INewsData>();
 
-            return data.Response.Items.Select(x => new News
+            return data.Response.Items.Select(x => new NewsData
             {
                 Title = x.Title ?? "Нет заголовка",
                 Content = x.Text,
@@ -55,6 +55,6 @@ public class VkNewsProvider : INewsProvider
             }).ToList();
         }
 
-        return Array.Empty<INews>();
+        return Array.Empty<INewsData>();
     }
 }

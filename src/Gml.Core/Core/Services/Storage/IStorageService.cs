@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.News;
 using GmlCore.Interfaces.Sentry;
 using GmlCore.Interfaces.User;
 
@@ -167,5 +168,8 @@ namespace Gml.Core.Services.Storage
         /// <param name="userUuid">The UUID of the user to remove.</param>
         /// <returns>An asynchronous operation representing the completion of the removal process.</returns>
         Task RemoveUserByUuidAsync(string userUuid);
+        Task AddNewsListenerAsync(INews newsListener);
+        Task RemoveNewsListenerAsync(INews newsListener);
+        Task<IEnumerable<INews?>> GetNewsListenerAsync();
     }
 }

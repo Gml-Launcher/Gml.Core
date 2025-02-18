@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using Gml.Core.Services.Storage;
+using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Integrations;
 using GmlCore.Interfaces.News;
 
@@ -11,20 +12,43 @@ namespace Gml.Core.Integrations;
 public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDisposable
 {
     private readonly List<INewsProvider> _providers = [];
-    private readonly LinkedList<INews> _cache = [];
+    private readonly LinkedList<INewsData> _cache = [];
     private readonly IDisposable _timer;
+    private readonly IStorageService _storage;
 
     private const int MaxCacheSize = 20;
 
-    public NewsListenerProvider(TimeSpan timespan)
+    public NewsListenerProvider(TimeSpan timespan, IStorageService storage)
     {
+        _storage = storage;
         _timer = Observable.Timer(timespan).Subscribe(RefreshAsync);
 
-        RefreshAsync(0);
+        var newsListeners = _storage.GetNewsListenerAsync().Result;
+
+        foreach (var newsListener in newsListeners)
+        {
+            switch (newsListener!.Type)
+            {
+                case NewsListenerType.Azuriom:
+                    AddListener(new AzuriomNewsProvider(newsListener.Url));
+                    break;
+                case NewsListenerType.UnicoreCMS:
+                    AddListener(new UnicoreNewsProvider(newsListener.Url));
+                    break;
+                case NewsListenerType.Custom:
+                    AddListener(new CustomNewsProvider(newsListener.Url));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        RefreshAsync();
     }
-    public Task<ICollection<INews>> GetNews(int count = 20)
+
+    public Task<ICollection<INewsData>> GetNews(int count = 20)
     {
-        return Task.FromResult<ICollection<INews>>(_cache);
+        return Task.FromResult<ICollection<INewsData>>(_cache);
     }
 
     public async void RefreshAsync(long number = 0)
@@ -47,10 +71,10 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
 
     public Task AddListener(INewsProvider newsProvider)
     {
-        if (!_providers.Contains(newsProvider))
-        {
-            _providers.Add(newsProvider);
-        }
+        if (_providers.Contains(newsProvider))
+            _providers.Remove(newsProvider);
+
+        _providers.Add(newsProvider);
 
         return Task.CompletedTask;
     }

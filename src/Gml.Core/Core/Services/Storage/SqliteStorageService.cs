@@ -10,6 +10,7 @@ using Gml.Core.Launcher;
 using Gml.Models.Converters;
 using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.News;
 using GmlCore.Interfaces.Sentry;
 using GmlCore.Interfaces.User;
 using Newtonsoft.Json;
@@ -220,6 +221,43 @@ namespace Gml.Core.Services.Storage
             {
                 await _database.DeleteAsync(user);
             }
+        }
+
+        public async Task AddNewsListenerAsync(INews newsListener)
+        {
+            var storageNews = await _database.Table<StorageItem>()
+                .Where(n => typeof(INews).FullName == newsListener.GetType().FullName)
+                .Where(n => n.Key == newsListener.Type.ToString())
+                .FirstOrDefaultAsync();
+
+            if (storageNews is null)
+            {
+                await _database.InsertAsync(storageNews);
+            }
+
+            await _database.UpdateAsync(storageNews);
+        }
+
+        public async Task RemoveNewsListenerAsync(INews newsListener)
+        {
+            var storageNews = await _database.Table<StorageItem>()
+                .Where(n => typeof(INews).FullName == newsListener.GetType().FullName)
+                .Where(n => n.Key == newsListener.Type.ToString())
+                .FirstOrDefaultAsync();
+
+            if (storageNews is not null)
+            {
+                await _database.DeleteAsync(storageNews);
+            }
+        }
+
+        public async Task<IEnumerable<INews?>> GetNewsListenerAsync()
+        {
+            var storageNews = await _database.Table<StorageItem>()
+                .Where(n => typeof(INews).FullName == n.TypeName)
+                .ToListAsync();
+
+            return storageNews.Select(n => JsonSerializer.Deserialize<INews>(n.Value));
         }
 
         private static Expression RebindParameter(Expression body, ParameterExpression oldParameter, ParameterExpression newParameter)

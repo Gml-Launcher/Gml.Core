@@ -20,7 +20,7 @@ public class UnicoreNewsProvider : INewsProvider
         _url = url;
     }
 
-    public async Task<IReadOnlyCollection<INews>> GetNews(int count = 20)
+    public async Task<IReadOnlyCollection<INewsData>> GetNews(int count = 20)
     {
         using var httpClient = new HttpClient();
 
@@ -35,9 +35,9 @@ public class UnicoreNewsProvider : INewsProvider
             var data = JsonConvert.DeserializeObject<UnicoreNewsResponse>(decoded);
 
             if (data is null)
-                return Array.Empty<INews>();
+                return Array.Empty<INewsData>();
 
-            return data.Data.Select(x => new News
+            return data.Data.Select(x => new NewsData
             {
                 Title = x.Title ?? "Нет заголовка",
                 Content = x.Description ?? "Нет описания",
@@ -45,6 +45,6 @@ public class UnicoreNewsProvider : INewsProvider
             }).ToList();
         }
 
-        return Array.Empty<INews>();
+        return Array.Empty<INewsData>();
     }
 }

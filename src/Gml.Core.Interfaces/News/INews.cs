@@ -1,10 +1,9 @@
-﻿using System;
+﻿using GmlCore.Interfaces.Enums;
 
 namespace GmlCore.Interfaces.News;
 
-public interface INews
+public class INews
 {
-    public string Title { get; }
-    public string Content { get; }
-    public DateTimeOffset Date { get; }
+    public string Url { get; set; }
+    public NewsListenerType Type { get; set; }
 }

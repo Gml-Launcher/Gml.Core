@@ -6,7 +6,7 @@ namespace GmlCore.Interfaces.Integrations;
 
 public interface INewsListenerProvider
 {
-    Task<ICollection<INews>> GetNews(int count = 20);
+    Task<ICollection<INewsData>> GetNews(int count = 20);
     void RefreshAsync(long nubmer = 0);
     Task AddListener(INewsProvider newsProvider);
     Task RemoveListener(INewsProvider newsProvider);
