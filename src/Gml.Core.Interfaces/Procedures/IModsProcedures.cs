@@ -13,7 +13,8 @@ public interface IModsProcedures
     Task<IExternalMod?> GetInfo(string identify);
     Task<IReadOnlyCollection<IModVersion>> GetVersions(IExternalMod modInfo, GameLoader profileLoader,
         string gameVersion);
-    Task<IEnumerable<IMod>> FindModsAsync(GameLoader profileLoader, string gameVersion, string modName,
+    Task<IReadOnlyCollection<IMod>> FindModsAsync(GameLoader profileLoader, string gameVersion, ModType modLoaderType,
+        string modName,
         short take,
         short offset);
     Task SetModDetails(string modName, string title, string description);
