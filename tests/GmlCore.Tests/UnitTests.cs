@@ -192,6 +192,13 @@ public class Tests
 
     [Test]
     [Order(6)]
+    public async Task RemoveServer()
+    {
+        await GmlManager.Servers.RemoveServer(_testGameProfile, ServerName);
+    }
+
+    [Test]
+    [Order(6)]
     public async Task Get_All_Minecraft_Versions()
     {
         var versions = await GmlManager.Profiles.GetAllowVersions(GameLoader.Vanilla, string.Empty);
@@ -227,12 +234,14 @@ public class Tests
     }
 
     [Test]
-    [Order(40)]
+    [Order(900)]
     public async Task Remove_Profile()
     {
+        var name = _testGameProfile.Name;
+
         await _testGameProfile.Remove();
 
-        var checkProfile = await GmlManager.Profiles.GetProfile(CheckProfileName);
+        var checkProfile = await GmlManager.Profiles.GetProfile(name);
 
         Assert.That(checkProfile, Is.Null);
     }
@@ -248,7 +257,7 @@ public class Tests
             {
                 Address = "45.153.68.20",
                 Port = 25565,
-                TimeOut = TimeSpan.FromSeconds(3)
+                TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
@@ -274,7 +283,7 @@ public class Tests
             {
                 Address = "45.153.68.20",
                 Port = 25565,
-                TimeOut = TimeSpan.FromSeconds(3)
+                TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
@@ -300,7 +309,7 @@ public class Tests
             {
                 Address = "45.153.68.20",
                 Port = 25565,
-                TimeOut = TimeSpan.FromSeconds(3)
+                TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
@@ -326,7 +335,7 @@ public class Tests
             {
                 Address = "45.153.68.20",
                 Port = 25565,
-                TimeOut = TimeSpan.FromSeconds(3)
+                TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
@@ -352,7 +361,7 @@ public class Tests
             {
                 Address = "45.153.68.20",
                 Port = 25565,
-                TimeOut = TimeSpan.FromSeconds(3)
+                TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
@@ -378,7 +387,7 @@ public class Tests
             {
                 Address = "45.153.68.20",
                 Port = 25565,
-                TimeOut = TimeSpan.FromSeconds(3)
+                TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
@@ -445,14 +454,20 @@ public class Tests
         var version = launcherVersions.First();
         bool isBuild = false;
 
+        var logsDisposable = GmlManager.System.DownloadLogs.Subscribe(logs =>
+        {
+            Console.WriteLine(logs);
+            Debug.WriteLine(logs);
+        });
+
+        var eventDisposable = GmlManager.Launcher.BuildLogs.Subscribe(logs =>
+        {
+            Console.WriteLine(logs);
+            Debug.WriteLine(logs);
+        });
+
         if (await GmlManager.System.InstallDotnet())
         {
-            GmlManager.Launcher.BuildLogs.Subscribe(log =>
-            {
-                Console.WriteLine(log);
-                Debug.WriteLine(log);
-            });
-
             if (!GmlManager.Launcher.CanCompile(version, out var _))
             {
                 await GmlManager.Launcher.Download(version, "http://localhost:5000", "GmlLauncher");
@@ -463,8 +478,12 @@ public class Tests
                 Console.WriteLine(message);
                 Debug.WriteLine(message);
                 isBuild = await GmlManager.Launcher.Build(version, ["win-x64"]);
+
             }
         }
+
+        logsDisposable.Dispose();
+        eventDisposable.Dispose();
 
         Assert.Multiple(() =>
         {
@@ -550,31 +569,106 @@ public class Tests
     [Order(92)]
     public async Task GetMods_By_Modrinth()
     {
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Forge)}-mods";
+
+        var profile = await GmlManager.Profiles.GetProfile(name)
+                      ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", string.Empty, GameLoader.Forge,
+                          string.Empty,
+                          string.Empty)
+                      ?? throw new Exception("Failed to create profile instance");
+
         var mods = await GmlManager.Mods.FindModsAsync(
-            _testGameProfile.Loader,
-            _testGameProfile.GameVersion,
+            profile.Loader,
+            profile.GameVersion,
             ModType.Modrinth,
             string.Empty,
             10,
             0);
 
+        await profile.Remove();
+
         Assert.That(mods, Is.Not.Empty);
         Assert.That(mods.OfType<ModrinthMod>(), Is.Not.Empty);
     }
+
     [Test]
     [Order(92)]
     public async Task GetMods_By_CurseForge()
     {
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Forge)}-mods";
+
+        var profile = await GmlManager.Profiles.GetProfile(name)
+                           ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", string.Empty, GameLoader.Forge,
+                               string.Empty,
+                               string.Empty)
+                           ?? throw new Exception("Failed to create profile instance");
+
         var mods = await GmlManager.Mods.FindModsAsync(
-            _testGameProfile.Loader,
-            _testGameProfile.GameVersion,
+            profile.Loader,
+            profile.GameVersion,
             ModType.CurseForge,
             string.Empty,
             10,
             0);
 
+        await profile.Remove();
+
         Assert.That(mods, Is.Not.Empty);
         Assert.That(mods.OfType<CurseForgeMod>(), Is.Not.Empty);
+    }
+
+    [Test]
+    [Order(92)]
+    public async Task GetModsInfo_By_Modrinth()
+    {
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Forge)}-mods";
+
+        var profile = await GmlManager.Profiles.GetProfile(name)
+                      ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", string.Empty, GameLoader.Forge,
+                          string.Empty,
+                          string.Empty)
+                      ?? throw new Exception("Failed to create profile instance");
+
+        var mod = (await GmlManager.Mods.FindModsAsync(
+            profile.Loader,
+            profile.GameVersion,
+            ModType.Modrinth,
+            string.Empty,
+            1,
+            0)).First();
+
+        var mods = await GmlManager.Mods.GetInfo(mod.Id, mod.Type);
+
+        await profile.Remove();
+
+        Assert.That(mods, Is.Not.Null);
+    }
+
+    [Test]
+    [Order(92)]
+    public async Task GetModsInfo_By_CurseForge()
+    {
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Forge)}-mods";
+
+        var profile = await GmlManager.Profiles.GetProfile(name)
+                      ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", string.Empty, GameLoader.Forge,
+                          string.Empty,
+                          string.Empty)
+                      ?? throw new Exception("Failed to create profile instance");
+
+        var mod = (await GmlManager.Mods.FindModsAsync(
+            profile.Loader,
+            profile.GameVersion,
+            ModType.CurseForge,
+            string.Empty,
+            1,
+            0)).First();
+
+        var mods = await GmlManager.Mods.GetInfo(mod.Id, mod.Type);
+
+        await profile.Remove();
+
+        Assert.That(mods, Is.Not.Null);
     }
 
     [Test]

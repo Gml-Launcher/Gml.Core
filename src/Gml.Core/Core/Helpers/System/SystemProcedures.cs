@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,11 +9,11 @@ using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using CmlLib.Core.Files;
 using CmlLib.Core.Java;
 using Gml.Core.Helpers.Mirrors;
-using Gml.Core.Launcher;
 using Gml.Core.Services.System;
 using Gml.Models.Bootstrap;
 using Gml.Models.Mirror;
@@ -78,6 +77,8 @@ namespace Gml.Core.Helpers.System
                 return true;
             }
 
+            _downloadLogs.OnNext("Check install Dotnet");
+
             try
             {
                 var system = SystemService.GetPlatform();
@@ -87,7 +88,9 @@ namespace Gml.Core.Helpers.System
                 var dotnetPath = Path.Combine(dotnetDirectoryPath, dotnetName);
                 if (!Directory.Exists(dotnetDirectory) || !File.Exists(dotnetPath))
                 {
+                    _downloadLogs.OnNext("Starting install Dotnet");
                     Directory.CreateDirectory(dotnetDirectory);
+                    _downloadLogs.OnNext("Get active mirrors...");
                     var mirror = await GetAvailableMirrorAsync(MirrorsHelper.DotnetMirrors);
                     var tempZipFilePath = Path.Combine(dotnetDirectory, "dotnet.zip");
                     await DownloadFileAsync(mirror, tempZipFilePath);
@@ -145,7 +148,7 @@ namespace Gml.Core.Helpers.System
                     Version = c.VersionName
                 });
 
-            return javaVersions.Select(c => new JavaBootstrapProgram(c.Key.Name, c.Key.Version!, c.Key.MajorVersion!));
+            return javaVersions.Select(c => new JavaBootstrapProgram(c.Key.Name, c.Key.Version!, c.Key.MajorVersion));
         }
 
         private int TryParseMajorVersion(string? majorVersion)
@@ -162,9 +165,11 @@ namespace Gml.Core.Helpers.System
 
             long totalBytes = response.Content.Headers.ContentLength ?? -1L;
             long totalBytesRead = 0L;
+            int lastReportedProgress = -1;
 
             await using Stream contentStream = await response.Content.ReadAsStreamAsync(),
-                fileStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+                fileStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None,
+                    8192, true);
             var buffer = new byte[8192];
             int bytesRead;
             while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
@@ -174,8 +179,12 @@ namespace Gml.Core.Helpers.System
 
                 if (totalBytes > 0)
                 {
-                    double progress = (double)totalBytesRead / totalBytes * 100;
-                    _downloadLogs.OnNext($"Downloaded: {progress}%");
+                    int progress = (int)((double)totalBytesRead / totalBytes * 100);
+                    if (progress != lastReportedProgress)
+                    {
+                        _downloadLogs.OnNext($"Downloaded: {progress}%");
+                        lastReportedProgress = progress;
+                    }
                 }
             }
         }
@@ -193,16 +202,15 @@ namespace Gml.Core.Helpers.System
 
         public async Task<string> GetAvailableMirrorAsync(IDictionary<string, string[]> mirrorUrls)
         {
-            if (mirrorUrls.TryGetValue(SystemService.GetPlatform(), out string[] mirrors))
+            if (mirrorUrls.TryGetValue(SystemService.GetPlatform(), out var mirrors))
             {
-                List<MirrorPingModel?> mirrorsPing = [];
+                List<MirrorPingModel> mirrorsPing = [];
 
                 foreach (string url in mirrors)
                 {
                     try
                     {
                         Ping mirrorPing = new Ping();
-
                         Uri uri = new Uri(url);
                         string domain = uri.Host;
 
@@ -224,20 +232,30 @@ namespace Gml.Core.Helpers.System
                 {
                     try
                     {
-                        HttpResponseMessage response =
-                            await gmlSettings.HttpClient.GetAsync(pingModel.Url,
-                                HttpCompletionOption.ResponseHeadersRead);
+                        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(3000));
+                        HttpResponseMessage response = await gmlSettings.HttpClient.GetAsync(pingModel.Url,
+                            HttpCompletionOption.ResponseHeadersRead, cts.Token);
 
-                        if (response.StatusCode is HttpStatusCode.OK)
-                            return pingModel.Url;
+                        if (response.StatusCode == HttpStatusCode.OK)
+                        {
+                            await using var stream = await response.Content.ReadAsStreamAsync();
+                            byte[] buffer = new byte[8192];
+                            int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cts.Token);
+                            if (bytesRead > 0)
+                                return pingModel.Url;
+                        }
                     }
                     catch (HttpRequestException)
                     {
                         // Ignore the exception and try the next URL
                     }
+                    catch (TaskCanceledException)
+                    {
+                        // Catch timeout exception and continue to the next URL
+                    }
                     catch (Exception)
                     {
-                        // Ignore the exception and try the next URL
+                        // Ignore other exceptions and try the next URL
                     }
                 }
             }

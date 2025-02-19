@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.GitHub;
@@ -17,6 +18,8 @@ public class GitHubService : IGitHubService
     private readonly HttpClient _httpClient;
     private IReadOnlyCollection<string> _versions;
     private IReadOnlyCollection<string> _branches;
+    private Subject<string> _logs = new();
+    public IObservable<string> Logs => _logs;
 
     public GitHubService(HttpClient httpClient, IGmlManager gmlManager)
     {
@@ -121,21 +124,39 @@ public class GitHubService : IGitHubService
 
         using var process = new Process();
         process.StartInfo = processInfo;
+        process.OutputDataReceived += SendLog;
+        process.ErrorDataReceived += SendLog;
+
         process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
 
-        var output = await process.StandardOutput.ReadToEndAsync();
-        var error = await process.StandardError.ReadToEndAsync();
 
+#if NETSTANDARD2_1
         process.WaitForExit();
+#else
+        await process.WaitForExitAsync();
+#endif
 
         if (process.ExitCode != 0)
         {
-            throw new InvalidOperationException($"An error occurred while cloning the repository: {error}");
+            throw new InvalidOperationException($"An error occurred while cloning the repository");
         }
 
-        Console.WriteLine(output);
+        process.OutputDataReceived -= SendLog;
+        process.ErrorDataReceived -= SendLog;
 
         return directory.FullName;
+    }
+
+    private void SendLog(object sender, DataReceivedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(e.Data))
+        {
+            return;
+        }
+
+        _logs.OnNext(e.Data);
     }
 
     private string NormalizePath(string directory, string fileDirectory)

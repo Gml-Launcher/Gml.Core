@@ -39,14 +39,25 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
         throw new NotImplementedException();
     }
 
-    public async Task<IExternalMod?> GetInfo(string identify)
+    public async Task<IExternalMod?> GetInfo(string identify, ModType modrinth)
     {
-        return await GetInfoModByCurseForge(identify);
+        switch (modrinth)
+        {
+            case ModType.Modrinth:
+                return await GetInfoModByModrinth(identify);
+            case ModType.CurseForge:
+                return await GetInfoModByCurseForge(identify);
+            case ModType.Local:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(modrinth), modrinth, null);
+        }
+
     }
 
     private async Task<IExternalMod?> GetInfoModByModrinth(string identify)
     {
-        var mod = await _modrinthApi.Mods.FindAsync<ModProject>(identify, CancellationToken.None)
+        var mod = await _modrinthApi.Mods
+            .FindAsync<ModProject>(identify, CancellationToken.None)
             .ConfigureAwait(false);
 
         return mod is null
@@ -64,7 +75,8 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
 
     private async Task<IExternalMod?> GetInfoModByCurseForge(string identify)
     {
-        var mod = await _curseForgeApi.GetModAsync(Int32.Parse(identify))
+        var mod = await _curseForgeApi
+            .GetModAsync(int.Parse(identify))
             .ConfigureAwait(false);
 
         return mod is null ? null : new CurseForgeMod
@@ -122,7 +134,7 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
     }
 
     // TODO: нужно сделать реализацию поиска модов по выбору где искать CurseForge или Modrinth
-    public Task<IReadOnlyCollection<IMod>> FindModsAsync(GameLoader profileLoader,
+    public Task<IReadOnlyCollection<IExternalMod>> FindModsAsync(GameLoader profileLoader,
         string gameVersion,
         ModType modLoaderType,
         string modName,
@@ -142,7 +154,7 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
     }
 
     // Работа с Modrinth
-    private async Task<IReadOnlyCollection<IMod>> FindByModrinthMods(GameLoader profileLoader, string gameVersion, string modName, short take,
+    private async Task<IReadOnlyCollection<IExternalMod>> FindByModrinthMods(GameLoader profileLoader, string gameVersion, string modName, short take,
         short offset)
     {
         var searchFilter = new ProjectModFilter
@@ -171,16 +183,19 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
     }
 
     // Работа с CurseForge
-    private async Task<IReadOnlyCollection<IMod>> FindByCurseForgeMods(GameLoader profileLoader, string gameVersion, string modName, short take,
+    private async Task<IReadOnlyCollection<IExternalMod>> FindByCurseForgeMods(GameLoader profileLoader, string gameVersion, string modName, short take,
         short offset)
     {
         var mods = await _curseForgeApi.SearchModsAsync(
                 gameId: _curseForgeGameId,
                 gameVersion: gameVersion,
                 modLoaderType: profileLoader.ToCurseForge(),
-                searchFilter: modName
+                searchFilter: modName,
+                pageSize: take,
+                index: offset
                 )
             .ConfigureAwait(false);
+
         return mods.Data.Select(mod => new CurseForgeMod
         {
             Id = mod.Id.ToString(),

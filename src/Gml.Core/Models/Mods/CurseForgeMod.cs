@@ -15,6 +15,6 @@ public class CurseForgeMod : IExternalMod
     public int FollowsCount { get; set; }
     public IReadOnlyCollection<string> Files { get; set; }
     public IReadOnlyCollection<IMod> Dependencies { get; set; }
-    public ModType Type { get; }
+    public ModType Type => ModType.CurseForge;
     public Stream Icon { get; set; }
 }
