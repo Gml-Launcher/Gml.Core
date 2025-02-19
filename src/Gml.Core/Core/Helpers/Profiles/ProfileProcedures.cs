@@ -97,6 +97,7 @@ namespace Gml.Core.Helpers.Profiles
         }
 
         public async Task<IGameProfile?> AddProfile(string name,
+            string displayName,
             string version,
             string loaderVersion,
             GameLoader loader,
@@ -109,7 +110,7 @@ namespace Gml.Core.Helpers.Profiles
             if (string.IsNullOrEmpty(version))
                 ThrowHelper.ThrowArgumentNullException<string>(version);
 
-            var profile = new GameProfile(name, version, loader)
+            var profile = new GameProfile(name, displayName, version, loader)
             {
                 ProfileProcedures = this,
                 ServerProcedures = this,
@@ -354,6 +355,7 @@ namespace Gml.Core.Helpers.Profiles
                 return new GameProfileInfo
                 {
                     ProfileName = profile.Name,
+                    DisplayName = profile.DisplayName,
                     Description = profile.Description,
                     IconBase64 = profile.IconBase64,
                     JvmArguments = profile.JvmArguments ?? string.Empty,
@@ -374,6 +376,7 @@ namespace Gml.Core.Helpers.Profiles
             return new GameProfileInfo
             {
                 ProfileName = profile.Name,
+                DisplayName = profile.DisplayName,
                 Arguments = string.Empty,
                 JavaPath = string.Empty,
                 State = profile.State,
@@ -650,6 +653,7 @@ namespace Gml.Core.Helpers.Profiles
 
         public async Task UpdateProfile(IGameProfile profile,
             string newProfileName,
+            string displayName,
             Stream? icon,
             Stream? backgroundImage,
             string updateDtoDescription,
@@ -675,7 +679,7 @@ namespace Gml.Core.Helpers.Profiles
                 ? profile.BackgroundImageKey
                 : await _gmlManager.Files.LoadFile(backgroundImage, "profile-backgrounds");
 
-            await UpdateProfile(profile, newProfileName, iconBase64, backgroundKey, updateDtoDescription,
+            await UpdateProfile(profile, newProfileName, displayName, iconBase64, backgroundKey, updateDtoDescription,
                 needRenameFolder, directory, newDirectory, isEnabled, jvmArguments, gameArguments);
         }
 
@@ -689,7 +693,7 @@ namespace Gml.Core.Helpers.Profiles
             }
         }
 
-        private async Task UpdateProfile(IGameProfile profile, string newProfileName, string newIcon,
+        private async Task UpdateProfile(IGameProfile profile, string newProfileName, string displayName, string newIcon,
             string backgroundImageKey,
             string newDescription, bool needRenameFolder, DirectoryInfo directory, DirectoryInfo newDirectory,
             bool isEnabled,
@@ -697,6 +701,7 @@ namespace Gml.Core.Helpers.Profiles
             string gameArguments)
         {
             profile.Name = newProfileName;
+            profile.DisplayName = displayName;
             profile.IconBase64 = newIcon;
             profile.BackgroundImageKey = backgroundImageKey;
             profile.Description = newDescription;

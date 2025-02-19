@@ -32,7 +32,7 @@ namespace Gml.Models
         }
 
         public static IGameProfile Empty { get; set; } =
-            new GameProfile("Empty", "0.0.0", GmlCore.Interfaces.Enums.GameLoader.Undefined);
+            new GameProfile("Empty", "Empty", "0.0.0", GmlCore.Interfaces.Enums.GameLoader.Undefined);
 
         public GameProfile()
         {
@@ -49,8 +49,8 @@ namespace Gml.Models
             _serverTimers.TryAdd(server, timer);
         }
 
-        internal GameProfile(string name, string gameVersion, GameLoader gameLoader)
-            : base(name, gameVersion, gameLoader)
+        internal GameProfile(string name, string displayName, string gameVersion, GameLoader gameLoader)
+            : base(name, displayName, gameVersion, gameLoader)
         {
             _serverAdded.Subscribe(CreateServerListener);
 

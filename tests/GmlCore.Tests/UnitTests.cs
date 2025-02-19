@@ -30,11 +30,9 @@ public class Tests
     [OneTimeSetUp]
     public async Task Setup()
     {
-        await GmlManager.Profiles.RestoreProfiles();
-
         _testGameProfile = await GmlManager.Profiles.GetProfile(CheckProfileName)
-                           ?? await GmlManager.Profiles.AddProfile(CheckProfileName, CheckMinecraftVersion,
-                               CheckLaunchVersion,
+                           ?? await GmlManager.Profiles.AddProfile(CheckProfileName, CheckProfileName, CheckMinecraftVersion,
+                               CheckMinecraftVersion,
                                CheckLoader,
                                string.Empty,
                                string.Empty)
@@ -60,7 +58,7 @@ public class Tests
         const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.LiteLoader)}";
 
         _testGameProfile = await GmlManager.Profiles.GetProfile(name)
-                           ?? await GmlManager.Profiles.AddProfile(name, "1.7.10", "1.7.10_04",
+                           ?? await GmlManager.Profiles.AddProfile(name, CheckProfileName, "1.7.10", "1.7.10_04",
                                GameLoader.LiteLoader,
                                string.Empty,
                                string.Empty)
@@ -80,7 +78,7 @@ public class Tests
         const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Vanilla)}";
 
         _testGameProfile = await GmlManager.Profiles.GetProfile(name)
-                           ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", string.Empty, GameLoader.Vanilla,
+                           ?? await GmlManager.Profiles.AddProfile(name, CheckProfileName, "1.20.1", string.Empty, GameLoader.Vanilla,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
@@ -100,7 +98,7 @@ public class Tests
         const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Forge)}";
 
         _testGameProfile = await GmlManager.Profiles.GetProfile(name)
-                           ?? await GmlManager.Profiles.AddProfile(name, "1.7.10", "10.13.4.1614", GameLoader.Forge,
+                           ?? await GmlManager.Profiles.AddProfile(name, CheckProfileName, "1.7.10", "10.13.4.1614", GameLoader.Forge,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
@@ -140,7 +138,7 @@ public class Tests
         const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Fabric)}";
 
         _testGameProfile = await GmlManager.Profiles.GetProfile(name)
-                           ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", "0.16.0", GameLoader.Fabric,
+                           ?? await GmlManager.Profiles.AddProfile(name, CheckProfileName, "1.20.1", "0.16.0", GameLoader.Fabric,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
@@ -414,7 +412,7 @@ public class Tests
     public async Task DownloadProfile()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
-                           ?? await GmlManager.Profiles.AddProfile("HiTech", "1.20.1", string.Empty, GameLoader.Vanilla,
+                           ?? await GmlManager.Profiles.AddProfile("HiTech", "HiTech", "1.20.1", string.Empty, GameLoader.Vanilla,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
@@ -428,7 +426,7 @@ public class Tests
     public async Task CheckIsFullLoaded()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
-                           ?? await GmlManager.Profiles.AddProfile("HiTech", "1.20.1", string.Empty, GameLoader.Vanilla,
+                           ?? await GmlManager.Profiles.AddProfile("HiTech", "HiTech", "1.20.1", string.Empty, GameLoader.Vanilla,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
