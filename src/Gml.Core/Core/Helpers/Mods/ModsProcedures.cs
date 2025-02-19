@@ -122,18 +122,27 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
     }
 
     // TODO: нужно сделать реализацию поиска модов по выбору где искать CurseForge или Modrinth
-    public async Task<IEnumerable<IMod>> FindModsAsync(
-        GameLoader profileLoader,
+    public Task<IReadOnlyCollection<IMod>> FindModsAsync(GameLoader profileLoader,
         string gameVersion,
+        ModType modLoaderType,
         string modName,
         short take,
         short offset)
     {
-        return await FindByCurseForgeMods(profileLoader, gameVersion, modName, take, offset);
+        switch (modLoaderType)
+        {
+            case ModType.Modrinth:
+                return FindByModrinthMods(profileLoader, gameVersion, modName, take, offset);
+            case ModType.CurseForge:
+                return FindByCurseForgeMods(profileLoader, gameVersion, modName, take, offset);
+            case ModType.Local:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(modLoaderType), modLoaderType, null);
+        }
     }
 
     // Работа с Modrinth
-    private async Task<IEnumerable<IMod>> FindByModrinthMods(GameLoader profileLoader, string gameVersion, string modName, short take,
+    private async Task<IReadOnlyCollection<IMod>> FindByModrinthMods(GameLoader profileLoader, string gameVersion, string modName, short take,
         short offset)
     {
         var searchFilter = new ProjectModFilter
@@ -158,11 +167,11 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
             FollowsCount = mod.Follows,
             DownloadCount = mod.Downloads,
             IconUrl = mod.IconUrl,
-        });
+        }).ToArray();
     }
 
     // Работа с CurseForge
-    private async Task<IEnumerable<IMod>> FindByCurseForgeMods(GameLoader profileLoader, string gameVersion, string modName, short take,
+    private async Task<IReadOnlyCollection<IMod>> FindByCurseForgeMods(GameLoader profileLoader, string gameVersion, string modName, short take,
         short offset)
     {
         var mods = await _curseForgeApi.SearchModsAsync(
@@ -180,7 +189,7 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
             FollowsCount = Convert.ToInt32(mod.Rating),
             DownloadCount = Convert.ToInt32(mod.DownloadCount),
             IconUrl = mod.Logo.Url,
-        });
+        }).ToArray();
     }
 
     // TODO: нужно версию так же выбирать откуда брать данные CurseForge или Modrinth
