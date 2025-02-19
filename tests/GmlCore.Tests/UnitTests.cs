@@ -2,8 +2,10 @@ using System.Diagnostics;
 using System.Net.Sockets;
 using Gml;
 using Gml.Core.Launcher;
+using Gml.Models.Mods;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.Mods;
 using Pingo;
 using Pingo.Status;
 
@@ -542,6 +544,36 @@ public class Tests
         //                    ?? throw new Exception("Failed to create profile instance");
         //
         // await GmlManager.Profiles.ChangeBootstrapProgram(_testGameProfile, version);
+    }
+
+    [Test]
+    [Order(92)]
+    public async Task GetMods_By_Modrinth()
+    {
+        var mods = await GmlManager.Mods.FindModsAsync(
+            _testGameProfile.Loader,
+            _testGameProfile.GameVersion,
+            ModType.Modrinth,
+            string.Empty,
+            10,
+            0);
+
+        Assert.That(mods, Is.Not.Empty);
+        Assert.That(mods.All(c => c.GetType() == typeof(ModrinthMod)), Is.Not.Empty);
+    }
+    [Test]
+    [Order(92)]
+    public async Task GetMods_By_CurseForge()
+    {
+        var mods = await GmlManager.Mods.FindModsAsync(
+            _testGameProfile.Loader,
+            _testGameProfile.GameVersion,
+            ModType.CurseForge,
+            string.Empty,
+            10,
+            0);
+
+        Assert.That(mods, Is.Not.Empty);
     }
 
     [Test]
