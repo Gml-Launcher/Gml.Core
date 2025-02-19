@@ -559,7 +559,7 @@ public class Tests
             0);
 
         Assert.That(mods, Is.Not.Empty);
-        Assert.That(mods.All(c => c.GetType() == typeof(ModrinthMod)), Is.Not.Empty);
+        Assert.That(mods.OfType<ModrinthMod>(), Is.Not.Empty);
     }
     [Test]
     [Order(92)]
@@ -574,6 +574,7 @@ public class Tests
             0);
 
         Assert.That(mods, Is.Not.Empty);
+        Assert.That(mods.OfType<CurseForgeMod>(), Is.Not.Empty);
     }
 
     [Test]
