@@ -672,6 +672,89 @@ public class Tests
     }
 
     [Test]
+    [Order(92)]
+    public async Task AddModToProfile_From_Modrinth()
+    {
+        var modType = ModType.Modrinth;
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Fabric)}-mods";
+
+        var profile = await GmlManager.Profiles.GetProfile(name)
+                      ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", string.Empty, GameLoader.Fabric,
+                          string.Empty,
+                          string.Empty)
+                      ?? throw new Exception("Failed to create profile instance");
+
+        var mod = (await GmlManager.Mods.FindModsAsync(
+            profile.Loader,
+            profile.GameVersion,
+            modType,
+            "FabricApi",
+            1,
+            0)).First();
+
+        var modInfo = await GmlManager.Mods.GetInfo(mod.Id, mod.Type);
+
+        if (modInfo is null)
+        {
+            throw new Exception("Failed to get mod info");
+        }
+
+        var versions = await GmlManager.Mods.GetVersions(modInfo, modType, profile.Loader, profile.GameVersion);
+
+        var version = versions.First(c => c.Files.Any()).Files.First();
+
+        await profile.AddMod(Path.GetFileName(version), await GmlManager.LauncherInfo.Settings.HttpClient.GetStreamAsync(version));
+
+        var mods = (await profile.GetModsAsync()).Any(c => c.Name == Path.GetFileNameWithoutExtension(version));
+
+        await profile.Remove();
+
+        Assert.That(mods, Is.True);
+
+    }
+
+    [Test]
+    [Order(92)]
+    public async Task AddModToProfile_From_Forge()
+    {
+        var modType = ModType.CurseForge;
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Fabric)}-mods";
+
+        var profile = await GmlManager.Profiles.GetProfile(name)
+                      ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", string.Empty, GameLoader.Fabric,
+                          string.Empty,
+                          string.Empty)
+                      ?? throw new Exception("Failed to create profile instance");
+
+        var mod = (await GmlManager.Mods.FindModsAsync(
+            profile.Loader,
+            profile.GameVersion,
+            modType,
+            "Skins",
+            1,
+            0)).First();
+
+        var modInfo = await GmlManager.Mods.GetInfo(mod.Id, mod.Type);
+
+        if (modInfo is null)
+        {
+            throw new Exception("Failed to get mod info");
+        }
+
+        var versions = await GmlManager.Mods.GetVersions(modInfo, modType, profile.Loader, profile.GameVersion);
+
+        var version = versions.First(c => c.Files.Any()).Files.First();
+
+        await profile.AddMod(Path.GetFileName(version), await GmlManager.LauncherInfo.Settings.HttpClient.GetStreamAsync(version));
+
+        var mods = (await profile.GetModsAsync()).Any(c => c.Name == Path.GetFileNameWithoutExtension(version));
+
+        await profile.Remove();
+
+        Assert.That(mods, Is.True);
+    }
+
+    [Test]
     [Order(900)]
     public Task CheckInstallationFromOriginalCmlLib()
     {

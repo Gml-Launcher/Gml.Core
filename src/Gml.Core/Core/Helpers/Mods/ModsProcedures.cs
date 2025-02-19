@@ -91,10 +91,23 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
     }
 
 
-    public async Task<IReadOnlyCollection<IModVersion>> GetVersions(IExternalMod modInfo, GameLoader profileLoader,
+    public async Task<IReadOnlyCollection<IModVersion>> GetVersions(IExternalMod modInfo,
+        ModType modType,
+        GameLoader profileLoader,
         string gameVersion)
     {
-        return await GetCurseForgeModVersions(modInfo, profileLoader, gameVersion);
+
+        switch (modType)
+        {
+            case ModType.Modrinth:
+                return await GetModrinthModVersions(modInfo, profileLoader, gameVersion);
+            case ModType.CurseForge:
+                return await GetCurseForgeModVersions(modInfo, profileLoader, gameVersion);
+            case ModType.Local:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(modType), modType, null);
+        }
+
     }
 
     private async Task<IReadOnlyCollection<IModVersion>> GetModrinthModVersions(IExternalMod modInfo, GameLoader profileLoader, string gameVersion)
@@ -130,6 +143,7 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
             Name = version.FileName,
             VersionName = version.FileName,
             DatePublished = version.FileDate,
+            Files = [ version.DownloadUrl ]
         }).ToArray();
     }
 
@@ -171,6 +185,11 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
         var mods = await _modrinthApi.Mods.FindAsync<ModProject>(searchFilter, CancellationToken.None)
             .ConfigureAwait(false);
 
+        if (mods.Hits.Count == 0)
+        {
+            return [];
+        }
+
         return mods.Hits.Select(mod => new ModrinthMod
         {
             Id = mod.ProjectId,
@@ -195,6 +214,11 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
                 index: offset
                 )
             .ConfigureAwait(false);
+
+        if (mods?.Data is null || mods.Data.Count == 0)
+        {
+            return [];
+        }
 
         return mods.Data.Select(mod => new CurseForgeMod
         {
