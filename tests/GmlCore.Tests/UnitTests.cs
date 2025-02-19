@@ -32,7 +32,7 @@ public class Tests
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile(CheckProfileName)
                            ?? await GmlManager.Profiles.AddProfile(CheckProfileName, CheckProfileName, CheckMinecraftVersion,
-                               CheckMinecraftVersion,
+                               CheckLaunchVersion,
                                CheckLoader,
                                string.Empty,
                                string.Empty)
@@ -118,7 +118,7 @@ public class Tests
         const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.NeoForge)}";
 
         _testGameProfile = await GmlManager.Profiles.GetProfile(name)
-                           ?? await GmlManager.Profiles.AddProfile(name, "1.20.4", "neoforge-20.4.237", GameLoader.NeoForge,
+                           ?? await GmlManager.Profiles.AddProfile(name, name, "1.20.4", "neoforge-20.4.237", GameLoader.NeoForge,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
@@ -570,7 +570,7 @@ public class Tests
         const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Forge)}-mods";
 
         var profile = await GmlManager.Profiles.GetProfile(name)
-                      ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", string.Empty, GameLoader.Forge,
+                      ?? await GmlManager.Profiles.AddProfile(name, name, "1.20.1", string.Empty, GameLoader.Forge,
                           string.Empty,
                           string.Empty)
                       ?? throw new Exception("Failed to create profile instance");
@@ -596,7 +596,7 @@ public class Tests
         const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Forge)}-mods";
 
         var profile = await GmlManager.Profiles.GetProfile(name)
-                           ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", string.Empty, GameLoader.Forge,
+                           ?? await GmlManager.Profiles.AddProfile(name, name, "1.20.1", string.Empty, GameLoader.Forge,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
@@ -622,7 +622,7 @@ public class Tests
         const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Forge)}-mods";
 
         var profile = await GmlManager.Profiles.GetProfile(name)
-                      ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", string.Empty, GameLoader.Forge,
+                      ?? await GmlManager.Profiles.AddProfile(name, name, "1.20.1", string.Empty, GameLoader.Forge,
                           string.Empty,
                           string.Empty)
                       ?? throw new Exception("Failed to create profile instance");
@@ -649,7 +649,7 @@ public class Tests
         const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Forge)}-mods";
 
         var profile = await GmlManager.Profiles.GetProfile(name)
-                      ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", string.Empty, GameLoader.Forge,
+                      ?? await GmlManager.Profiles.AddProfile(name, name, "1.20.1", string.Empty, GameLoader.Forge,
                           string.Empty,
                           string.Empty)
                       ?? throw new Exception("Failed to create profile instance");
@@ -677,7 +677,7 @@ public class Tests
         const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Fabric)}-mods";
 
         var profile = await GmlManager.Profiles.GetProfile(name)
-                      ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", string.Empty, GameLoader.Fabric,
+                      ?? await GmlManager.Profiles.AddProfile(name, name, "1.20.1", string.Empty, GameLoader.Fabric,
                           string.Empty,
                           string.Empty)
                       ?? throw new Exception("Failed to create profile instance");
@@ -719,7 +719,7 @@ public class Tests
         const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Fabric)}-mods";
 
         var profile = await GmlManager.Profiles.GetProfile(name)
-                      ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", string.Empty, GameLoader.Fabric,
+                      ?? await GmlManager.Profiles.AddProfile(name, name, "1.20.1", string.Empty, GameLoader.Fabric,
                           string.Empty,
                           string.Empty)
                       ?? throw new Exception("Failed to create profile instance");
