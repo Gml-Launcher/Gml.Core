@@ -9,8 +9,11 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Gml.Core.Constants;
 using Gml.Core.Launcher;
+using Gml.Core.Services.GitHub;
 using Gml.Core.Services.Storage;
 using Gml.Web.Api.Domains.System;
+using GmlCore.Interfaces.Enums;
+using GmlCore.Interfaces.GitHub;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.Storage;
@@ -22,9 +25,12 @@ public class LauncherProcedures : ILauncherProcedures
     private readonly ILauncherInfo _launcherInfo;
     private readonly IStorageService _storage;
     private readonly IFileStorageProcedures _files;
+    private readonly GmlManager _gmlManager;
+    private readonly IGitHubService _githubService;
     private ISubject<string> _buildLogs = new Subject<string>();
     private readonly Subject<string> _logsBuffer;
     public IObservable<string> BuildLogs => _buildLogs;
+    private const string _launcherGitHub = "https://github.com/Gml-Launcher/Gml.Launcher";
 
     private string[] _allowedVersions =
     [
@@ -40,7 +46,11 @@ public class LauncherProcedures : ILauncherProcedures
         "osx-arm64",
     ];
 
-    public LauncherProcedures(ILauncherInfo launcherInfo, IStorageService storage, IFileStorageProcedures files)
+    public LauncherProcedures(
+        ILauncherInfo launcherInfo,
+        IStorageService storage,
+        IFileStorageProcedures files,
+        GmlManager gmlManager)
     {
         _logsBuffer = new Subject<string>();
 
@@ -55,9 +65,11 @@ public class LauncherProcedures : ILauncherProcedures
                 }
             });
 
+        _gmlManager = gmlManager;
         _launcherInfo = launcherInfo;
         _storage = storage;
         _files = files;
+        _githubService = new GitHubService(launcherInfo.Settings.HttpClient, gmlManager);
     }
 
     public async Task<string> CreateVersion(IVersionFile version, ILauncherBuild launcherBuild)
@@ -168,6 +180,48 @@ public class LauncherProcedures : ILauncherProcedures
     {
         return Task.FromResult<IEnumerable<string>>(_allowedVersions);
     }
+
+    public async Task Download(string version, string host, string folderName)
+    {
+        try
+        {
+            var projectPath = Path.Combine(_gmlManager.LauncherInfo.InstallationDirectory, "Launcher", version);
+
+            if (Directory.Exists(projectPath))
+            {
+                await _gmlManager.Notifications
+                    .SendMessage("Лаунчер уже существует в папке, удалите его перед сборкой", NotificationType.Error);
+                return;
+            }
+
+            projectPath = Path.Combine(_gmlManager.LauncherInfo.InstallationDirectory, "Launcher");
+
+            var allowedVersions = await _githubService
+                .GetRepositoryTags("Gml-Launcher", "Gml.Launcher");
+
+            if (allowedVersions.All(c => c != version))
+            {
+                await _gmlManager.Notifications
+                    .SendMessage($"Полученная версия лаунчера \"{version}\" не поддерживается", NotificationType.Error);
+                return;
+            }
+
+            var newFolder = await _githubService.DownloadProject(projectPath, version, _launcherGitHub);
+
+            await _githubService.EditLauncherFiles(newFolder, host, folderName);
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine(exception);
+            await _gmlManager.Notifications.SendMessage("Ошибка при загрузке клиента лаунчера", exception);
+        }
+    }
+
+    public Task<IReadOnlyCollection<string>> GetVersions()
+    {
+        return _githubService.GetRepositoryTags("Gml-Launcher", "Gml.Launcher");
+    }
+
 
     private Task<(bool IsSuccess, string Path)> CreateBuilds(string[] versions, string projectPath, DirectoryInfo launcherDirectory)
     {

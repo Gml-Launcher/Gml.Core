@@ -39,7 +39,7 @@ namespace Gml
             Mods = new ModsProcedures(settings, Storage, BugTracker);
             Integrations = new ServicesIntegrationProcedures(settings, Storage, BugTracker);
             Users = new UserProcedures(settings, Storage, this);
-            Launcher = new LauncherProcedures(LauncherInfo, Storage, Files);
+            Launcher = new LauncherProcedures(LauncherInfo, Storage, Files, this);
             Servers = (IProfileServersProcedures)Profiles;
         }
         public IStorageService Storage { get; }
