@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace Gml.Core.Integrations;
 public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDisposable
 {
     private List<INewsProvider> _providers = [];
-    private readonly LinkedList<INewsData> _cache = [];
+    private readonly LinkedList<INewsData> _newsCache = [];
     private readonly IDisposable _timer;
     private readonly IStorageService _storage;
     private readonly IBugTrackerProcedures _bugTracker;
@@ -29,7 +30,7 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
     {
         _storage = storage;
         _bugTracker = bugTracker;
-        _timer = Observable.Timer(timespan).Subscribe(OnProvide);
+        _timer = Observable.Timer(TimeSpan.Zero, timespan).Subscribe(OnProvide);
     }
 
     private async void OnProvide(long _)
@@ -46,7 +47,7 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
 
     public Task<ICollection<INewsData>> GetNews(int count = 20)
     {
-        return Task.FromResult<ICollection<INewsData>>(_cache);
+        return Task.FromResult<ICollection<INewsData>>(_newsCache);
     }
 
     public async Task RefreshAsync(long number = 0)
@@ -59,11 +60,11 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
 
                 foreach (var newsItem in providerNews)
                 {
-                    _cache.AddLast(newsItem);
+                    _newsCache.AddLast(newsItem);
 
-                    if (_cache.Count > MaxCacheSize)
+                    if (_newsCache.Count > MaxCacheSize)
                     {
-                        _cache.RemoveFirst();
+                        _newsCache.RemoveFirst();
                     }
                 }
             }
@@ -104,6 +105,9 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
     public Task RemoveListenerByType(NewsListenerType type)
     {
         _providers.RemoveAll(x => x.Type == type);
+
+        foreach (var news in _newsCache.Where(c => c.Type == type).ToArray())
+            _newsCache.Remove(news);
 
         return _storage.SetAsync(StorageConstants.NewsProviders, _providers);
     }
