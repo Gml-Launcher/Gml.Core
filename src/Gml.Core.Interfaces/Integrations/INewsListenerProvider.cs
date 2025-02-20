@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.News;
 
 namespace GmlCore.Interfaces.Integrations;
@@ -11,4 +12,5 @@ public interface INewsListenerProvider
     Task AddListener(INewsProvider newsProvider);
     Task RemoveListener(INewsProvider newsProvider);
     Task Retore();
+    Task RemoveListenerByType(NewsListenerType type);
 }

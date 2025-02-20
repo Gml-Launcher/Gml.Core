@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Gml.Core.Constants;
 using Gml.Core.Services.Storage;
 using Gml.Models.Converters;
+using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Integrations;
 using GmlCore.Interfaces.News;
 using GmlCore.Interfaces.Procedures;
@@ -84,6 +85,13 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
             {
                 Converters = { new NewsProviderConverter() }
             }) ?? [];
+    }
+
+    public Task RemoveListenerByType(NewsListenerType type)
+    {
+        _providers.RemoveAll(x => x.Type == type);
+
+        return _storage.SetAsync(StorageConstants.NewsProviders, _providers);
     }
 
     public void Dispose()
