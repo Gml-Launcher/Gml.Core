@@ -21,13 +21,27 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
     private readonly IStorageService _storage;
     private readonly IBugTrackerProcedures _bugTracker;
 
+    public IReadOnlyCollection<INewsProvider> Providers => _providers;
+
     private const int MaxCacheSize = 20;
 
     public NewsListenerProvider(TimeSpan timespan, IStorageService storage, IBugTrackerProcedures bugTracker)
     {
         _storage = storage;
         _bugTracker = bugTracker;
-        _timer = Observable.Timer(timespan).Subscribe(RefreshAsync);
+        _timer = Observable.Timer(timespan).Subscribe(OnProvide);
+    }
+
+    private async void OnProvide(long _)
+    {
+        try
+        {
+            await RefreshAsync();
+        }
+        catch (Exception e)
+        {
+            _bugTracker.CaptureException(e);
+        }
     }
 
     public Task<ICollection<INewsData>> GetNews(int count = 20)
@@ -35,7 +49,7 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
         return Task.FromResult<ICollection<INewsData>>(_cache);
     }
 
-    public async void RefreshAsync(long number = 0)
+    public async Task RefreshAsync(long number = 0)
     {
         try
         {
@@ -65,7 +79,7 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
         _providers.Remove(newsProvider);
         _providers.Add(newsProvider);
 
-        return _storage.SetAsync(StorageConstants.NewsProviders, _providers);
+        return Task.WhenAll([_storage.SetAsync(StorageConstants.NewsProviders, _providers), RefreshAsync()]);
     }
 
     public Task RemoveListener(INewsProvider newsProvider)

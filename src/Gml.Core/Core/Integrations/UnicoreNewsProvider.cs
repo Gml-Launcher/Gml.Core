@@ -44,6 +44,7 @@ public class UnicoreNewsProvider : BaseNewsProvider
             {
                 Title = x.Title ?? "Нет заголовка",
                 Content = x.Description ?? "Нет описания",
+                Type = Type,
                 Date = x.Created
             }).ToList();
         }
