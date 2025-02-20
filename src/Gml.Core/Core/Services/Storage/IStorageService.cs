@@ -30,8 +30,9 @@ namespace Gml.Core.Services.Storage
         /// </summary>
         /// <typeparam name="T">The type of the value to retrieve.</typeparam>
         /// <param name="key">The key associated with the item.</param>
+        /// <param name="jsonSerializerOptions"></param>
         /// <returns>An asynchronous operation that yields the retrieved value.</returns>
-        Task<T?> GetAsync<T>(string key);
+        Task<T?> GetAsync<T>(string key, JsonSerializerOptions? jsonSerializerOptions = null);
 
         Task<T?> GetUserAsync<T>(string login, JsonSerializerOptions jsonSerializerOptions);
 
@@ -168,8 +169,5 @@ namespace Gml.Core.Services.Storage
         /// <param name="userUuid">The UUID of the user to remove.</param>
         /// <returns>An asynchronous operation representing the completion of the removal process.</returns>
         Task RemoveUserByUuidAsync(string userUuid);
-        Task AddNewsListenerAsync(INews newsListener);
-        Task RemoveNewsListenerAsync(INews newsListener);
-        Task<IEnumerable<INews?>> GetNewsListenerAsync();
     }
 }

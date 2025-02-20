@@ -1,50 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Gml.Core.Constants;
 using Gml.Core.Services.Storage;
-using GmlCore.Interfaces.Enums;
+using Gml.Models.Converters;
 using GmlCore.Interfaces.Integrations;
 using GmlCore.Interfaces.News;
+using GmlCore.Interfaces.Procedures;
 
 namespace Gml.Core.Integrations;
 
 public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDisposable
 {
-    private readonly List<INewsProvider> _providers = [];
+    private List<INewsProvider> _providers = [];
     private readonly LinkedList<INewsData> _cache = [];
     private readonly IDisposable _timer;
     private readonly IStorageService _storage;
+    private readonly IBugTrackerProcedures _bugTracker;
 
     private const int MaxCacheSize = 20;
 
-    public NewsListenerProvider(TimeSpan timespan, IStorageService storage)
+    public NewsListenerProvider(TimeSpan timespan, IStorageService storage, IBugTrackerProcedures bugTracker)
     {
         _storage = storage;
+        _bugTracker = bugTracker;
         _timer = Observable.Timer(timespan).Subscribe(RefreshAsync);
-
-        var newsListeners = _storage.GetNewsListenerAsync().Result;
-
-        foreach (var newsListener in newsListeners)
-        {
-            switch (newsListener!.Type)
-            {
-                case NewsListenerType.Azuriom:
-                    AddListener(new AzuriomNewsProvider(newsListener.Url));
-                    break;
-                case NewsListenerType.UnicoreCMS:
-                    AddListener(new UnicoreNewsProvider(newsListener.Url));
-                    break;
-                case NewsListenerType.Custom:
-                    AddListener(new CustomNewsProvider(newsListener.Url));
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        RefreshAsync();
     }
 
     public Task<ICollection<INewsData>> GetNews(int count = 20)
@@ -54,27 +36,32 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
 
     public async void RefreshAsync(long number = 0)
     {
-        foreach (var provider in _providers)
+        try
         {
-            var providerNews = await provider.GetNews();
-
-            foreach (var newsItem in providerNews)
+            foreach (var provider in _providers)
             {
-                _cache.AddLast(newsItem);
+                var providerNews = await provider.GetNews();
 
-                if (_cache.Count > MaxCacheSize)
+                foreach (var newsItem in providerNews)
                 {
-                    _cache.RemoveFirst();
+                    _cache.AddLast(newsItem);
+
+                    if (_cache.Count > MaxCacheSize)
+                    {
+                        _cache.RemoveFirst();
+                    }
                 }
             }
+        }
+        catch (Exception exception)
+        {
+            _bugTracker.CaptureException(exception);
         }
     }
 
     public Task AddListener(INewsProvider newsProvider)
     {
-        if (_providers.Contains(newsProvider))
-            _providers.Remove(newsProvider);
-
+        _providers.Remove(newsProvider);
         _providers.Add(newsProvider);
 
         return _storage.SetAsync(StorageConstants.NewsProviders, _providers);
@@ -82,11 +69,7 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
 
     public Task RemoveListener(INewsProvider newsProvider)
     {
-        if (_providers.Contains(newsProvider))
-        {
-            _providers.Remove(newsProvider);
-        }
-        else
+        if (!_providers.Remove(newsProvider))
         {
             throw new NewsProviderNotFoundException("The provider was not found.");
         }
@@ -96,8 +79,11 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
 
     public async Task Retore()
     {
-        var providers = await _storage.GetAsync<INewsProvider>(StorageConstants.NewsProviders);
-
+        _providers = await _storage.GetAsync<List<INewsProvider>>(StorageConstants.NewsProviders,
+            new JsonSerializerOptions
+            {
+                Converters = { new NewsProviderConverter() }
+            }) ?? [];
     }
 
     public void Dispose()

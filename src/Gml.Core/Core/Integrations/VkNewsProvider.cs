@@ -5,13 +5,16 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Gml.Models.News;
+using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Integrations;
 using GmlCore.Interfaces.News;
 
 namespace Gml.Core.Integrations;
 
-public class VkNewsProvider : INewsProvider
+public class VkNewsProvider : BaseNewsProvider
 {
+    public NewsListenerType Type { get; }
+
     private readonly string _groupId;
     private readonly string _apikey;
 
@@ -21,7 +24,7 @@ public class VkNewsProvider : INewsProvider
         _groupId = id;
     }
 
-    public async Task<IReadOnlyCollection<INewsData>> GetNews(int count = 20)
+    public override async Task<IReadOnlyCollection<INewsData>> GetNews(int count = 20)
     {
         var url = "https://api.vk.com/method/wall.get";
         using var client = new HttpClient();

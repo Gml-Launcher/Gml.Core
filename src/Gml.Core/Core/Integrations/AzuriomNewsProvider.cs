@@ -4,22 +4,24 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Gml.Models.News;
-using GmlCore.Interfaces.Integrations;
+using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.News;
 using Newtonsoft.Json;
 
 namespace Gml.Core.Integrations;
 
-public class AzuriomNewsProvider : INewsProvider
+public class AzuriomNewsProvider : BaseNewsProvider
 {
+    public NewsListenerType Type { get; }
     private readonly string _url;
 
-    public AzuriomNewsProvider(string url)
+    public AzuriomNewsProvider(string url, NewsListenerType type)
     {
+        Type = type;
         _url = url;
     }
 
-    public async Task<IReadOnlyCollection<INewsData>> GetNews(int count = 20)
+    public override async Task<IReadOnlyCollection<INewsData>> GetNews(int count = 20)
     {
         using var httpClient = new HttpClient();
 

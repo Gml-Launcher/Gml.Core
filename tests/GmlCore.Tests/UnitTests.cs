@@ -778,7 +778,7 @@ public class Tests
     [Order(94)]
     public async Task GetNewsForUnicore()
     {
-        var unicoreProvider = new UnicoreNewsProvider("https://api.unicorecms2.ru/news");
+        var unicoreProvider = new UnicoreNewsProvider("https://api.unicorecms2.ru/news", NewsListenerType.UnicoreCMS);
 
         await GmlManager.Integrations.NewsProvider.AddListener(unicoreProvider);
 
@@ -799,7 +799,7 @@ public class Tests
     [Order(95)]
     public async Task GetNewsForAzuriom()
     {
-        var azuriomProvider = new AzuriomNewsProvider("https://magcent.ru/api/posts");
+        var azuriomProvider = new AzuriomNewsProvider("https://magcent.ru/api/posts", NewsListenerType.Azuriom);
 
         await GmlManager.Integrations.NewsProvider.AddListener(azuriomProvider);
 
@@ -820,7 +820,7 @@ public class Tests
     [Order(96)]
     public async Task GetNewsForCustom()
     {
-        var customProvider = new CustomNewsProvider("http://localhost:5292/api/v1/news");
+        var customProvider = new CustomNewsProvider("http://localhost:5292/api/v1/news", NewsListenerType.Custom);
 
         await GmlManager.Integrations.NewsProvider.AddListener(customProvider);
 

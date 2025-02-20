@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 using Gml.Core.Launcher;
 using Gml.Models.Converters;
@@ -45,7 +46,13 @@ namespace Gml.Core.Services.Storage
 
         public async Task SetAsync<T>(string key, T? value)
         {
-            var serializedValue = JsonSerializer.Serialize(value);
+            var options = new JsonSerializerOptions
+            {
+                TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+                WriteIndented = true
+            };
+
+            var serializedValue = JsonSerializer.Serialize(value, options);
             var storageItem = new StorageItem
             {
                 Key = key,
@@ -56,14 +63,16 @@ namespace Gml.Core.Services.Storage
             await _database.InsertOrReplaceAsync(storageItem);
         }
 
-        public async Task<T?> GetAsync<T>(string key)
+        public async Task<T?> GetAsync<T>(string key, JsonSerializerOptions? jsonSerializerOptions = null)
         {
+            jsonSerializerOptions ??= new JsonSerializerOptions();
+
             var storageItem = await _database.Table<StorageItem>()
                 .Where(si => si.Key == key)
                 .FirstOrDefaultAsync();
 
             return storageItem != null
-                ?  JsonSerializer.Deserialize<T>(storageItem.Value)
+                ?  JsonSerializer.Deserialize<T>(storageItem.Value, jsonSerializerOptions)
                 : default;
         }
 
