@@ -92,7 +92,7 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
         return _storage.SetAsync(StorageConstants.NewsProviders, _providers);
     }
 
-    public async Task Retore()
+    public async Task Restore()
     {
         _providers = await _storage.GetAsync<List<INewsProvider>>(StorageConstants.NewsProviders,
             new JsonSerializerOptions

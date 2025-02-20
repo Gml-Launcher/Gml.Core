@@ -61,7 +61,7 @@ namespace Gml
             {
                 Profiles.RestoreProfiles().Wait();
                 Notifications.Retore().Wait();
-                Integrations.NewsProvider.Retore().Wait();
+                Integrations.NewsProvider.Restore().Wait();
                 Mods.Retore().Wait();
 
                 var versionReleases = Storage.GetAsync<Dictionary<string, T?>>(StorageConstants.ActualVersionInfo).Result;

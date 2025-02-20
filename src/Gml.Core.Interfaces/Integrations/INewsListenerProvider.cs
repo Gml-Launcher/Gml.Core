@@ -12,6 +12,6 @@ public interface INewsListenerProvider
     Task RefreshAsync(long nubmer = 0);
     Task AddListener(INewsProvider newsProvider);
     Task RemoveListener(INewsProvider newsProvider);
-    Task Retore();
+    Task Restore();
     Task RemoveListenerByType(NewsListenerType type);
 }
