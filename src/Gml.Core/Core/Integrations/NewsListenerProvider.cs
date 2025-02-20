@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Gml.Core.Constants;
 using Gml.Core.Services.Storage;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Integrations;
@@ -76,7 +77,7 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
 
         _providers.Add(newsProvider);
 
-        return Task.CompletedTask;
+        return _storage.SetAsync(StorageConstants.NewsProviders, _providers);
     }
 
     public Task RemoveListener(INewsProvider newsProvider)
@@ -90,7 +91,13 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
             throw new NewsProviderNotFoundException("The provider was not found.");
         }
 
-        return Task.CompletedTask;
+        return _storage.SetAsync(StorageConstants.NewsProviders, _providers);
+    }
+
+    public async Task Retore()
+    {
+        var providers = await _storage.GetAsync<INewsProvider>(StorageConstants.NewsProviders);
+
     }
 
     public void Dispose()
