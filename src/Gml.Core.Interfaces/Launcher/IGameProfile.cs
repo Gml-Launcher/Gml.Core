@@ -218,5 +218,6 @@ namespace GmlCore.Interfaces.Launcher
         Task<IMod> AddOptionalMod(string fileName, Stream streamData);
         Task<bool> RemoveMod(string modName);
         Task SetState(ProfileState state);
+        Task<bool> CanLoadMods();
     }
 }

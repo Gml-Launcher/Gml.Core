@@ -10,7 +10,7 @@ public interface IModsProcedures
 {
     Task<IEnumerable<IMod>> GetModsAsync(IGameProfile profile);
     Task<IEnumerable<IMod>> GetModsAsync(IGameProfile profile, string name);
-    Task<IExternalMod?> GetInfo(string identify, ModType modrinth);
+    Task<IExternalMod?> GetInfo(string identify, ModType modType);
     Task<IReadOnlyCollection<IModVersion>> GetVersions(IExternalMod modInfo, ModType modType, GameLoader profileLoader,
         string gameVersion);
     Task<IReadOnlyCollection<IExternalMod>> FindModsAsync(GameLoader profileLoader, string gameVersion,

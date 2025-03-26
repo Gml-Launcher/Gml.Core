@@ -39,9 +39,9 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
         throw new NotImplementedException();
     }
 
-    public async Task<IExternalMod?> GetInfo(string identify, ModType modrinth)
+    public async Task<IExternalMod?> GetInfo(string identify, ModType modType)
     {
-        switch (modrinth)
+        switch (modType)
         {
             case ModType.Modrinth:
                 return await GetInfoModByModrinth(identify);
@@ -49,7 +49,7 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
                 return await GetInfoModByCurseForge(identify);
             case ModType.Local:
             default:
-                throw new ArgumentOutOfRangeException(nameof(modrinth), modrinth, null);
+                throw new ArgumentOutOfRangeException(nameof(modType), modType, null);
         }
 
     }

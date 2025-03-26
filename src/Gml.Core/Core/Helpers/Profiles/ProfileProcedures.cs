@@ -710,7 +710,7 @@ namespace Gml.Core.Helpers.Profiles
             profile.GameArguments = gameArguments;
 
             profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications, _gmlManager.BugTracker);
-            profile.State = ProfileState.NeedCompile;
+            profile.State = profile.State == ProfileState.Created ? profile.State : ProfileState.NeedCompile;
             await SaveProfiles();
             await RestoreProfiles();
 

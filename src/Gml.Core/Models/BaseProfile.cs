@@ -278,5 +278,11 @@ namespace Gml.Models
 
             return ProfileProcedures.SaveProfiles();
         }
+
+        public Task<bool> CanLoadMods()
+        {
+            return Task.FromResult(Loader == GmlCore.Interfaces.Enums.GameLoader.Undefined &&
+                                   Loader != GmlCore.Interfaces.Enums.GameLoader.Vanilla);
+        }
     }
 }
