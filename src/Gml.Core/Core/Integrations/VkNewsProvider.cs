@@ -76,7 +76,7 @@ public class VkNewsProvider : BaseNewsProvider
                     Title = x.Title ?? "Нет заголовка",
                     Content = x.Text,
                     Type = NewsListenerType.VK,
-                    Date = DateTimeOffset.Now,
+                    Date = DateTimeOffset.FromUnixTimeSeconds(x.Date),
                 }).ToList() ?? [];
             }
 
