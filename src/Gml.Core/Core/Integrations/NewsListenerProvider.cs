@@ -61,11 +61,13 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
                 foreach (var newsItem in providerNews)
                 {
                     _newsCache.AddLast(newsItem);
+                }
 
-                    if (_newsCache.Count > MaxCacheSize)
-                    {
-                        _newsCache.RemoveFirst();
-                    }
+                var sortedCache = _newsCache.OrderByDescending(n => n.Date).Take(MaxCacheSize).ToList();
+                _newsCache.Clear();
+                foreach (var sortedNews in sortedCache)
+                {
+                    _newsCache.AddLast(sortedNews);
                 }
             }
         }
