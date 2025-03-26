@@ -17,7 +17,7 @@ namespace Gml.Core.Integrations;
 public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDisposable
 {
     private List<INewsProvider> _providers = [];
-    private readonly LinkedList<INewsData> _newsCache = [];
+    private readonly List<INewsData> _newsCache = [];
     private readonly IDisposable _timer;
     private readonly IStorageService _storage;
     private readonly IBugTrackerProcedures _bugTracker;
@@ -64,16 +64,19 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
             {
                 var providerNews = await provider.GetNews();
 
-                foreach (var newsItem in providerNews)
+                foreach (var news in providerNews)
                 {
-                    _newsCache.AddLast(newsItem);
+                    if (_newsCache.All(cachedNews => cachedNews.Date != news.Date))
+                    {
+                        _newsCache.Add(news);
+                    }
                 }
 
-                var sortedCache = _newsCache.OrderByDescending(n => n.Date).Take(MaxCacheSize).ToList();
-                _newsCache.Clear();
-                foreach (var sortedNews in sortedCache)
+                _newsCache.Sort((a, b) => b.Date.CompareTo(a.Date));
+
+                if (_newsCache.Count > MaxCacheSize)
                 {
-                    _newsCache.AddLast(sortedNews);
+                    _newsCache.RemoveRange(MaxCacheSize, _newsCache.Count - MaxCacheSize);
                 }
             }
         }
@@ -88,7 +91,7 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
         _providers.Remove(newsProvider);
         _providers.Add(newsProvider);
 
-        return Task.WhenAll([_storage.SetAsync(StorageConstants.NewsProviders, _providers), RefreshAsync()]);
+        return Task.WhenAll(_storage.SetAsync(StorageConstants.NewsProviders, _providers), RefreshAsync());
     }
 
     public Task RemoveListener(INewsProvider newsProvider)
@@ -107,7 +110,7 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
             new JsonSerializerOptions
             {
                 Converters = { new NewsProviderConverter(_gmlManager) }
-            }) ?? [];
+            }) ?? new List<INewsProvider>();
 
         await RefreshAsync();
     }
@@ -116,8 +119,7 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
     {
         _providers.RemoveAll(x => x.Type == type);
 
-        foreach (var news in _newsCache.Where(c => c.Type == type).ToArray())
-            _newsCache.Remove(news);
+        _newsCache.RemoveAll(c => c.Type == type);
 
         return _storage.SetAsync(StorageConstants.NewsProviders, _providers);
     }
