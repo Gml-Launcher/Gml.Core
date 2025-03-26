@@ -17,6 +17,7 @@ namespace Gml.Core.Launcher
     public class AccessTokenTokens
     {
         public const string CurseForgeKey = "CurseForgeKey";
+        public const string VkKey = "VkKey";
     }
 
     public class LauncherInfo : ILauncherInfo
@@ -43,7 +44,8 @@ namespace Gml.Core.Launcher
             string storageLogin,
             string storagePassword,
             TextureProtocol textureProtocol,
-            string curseForgeKey)
+            string curseForgeKey,
+            string vkKey)
         {
             StorageSettings.StoragePassword = storagePassword;
             StorageSettings.StorageLogin = storageLogin;
@@ -51,6 +53,7 @@ namespace Gml.Core.Launcher
             StorageSettings.StorageHost = storageHost;
             StorageSettings.TextureProtocol = textureProtocol;
             AccessTokens[AccessTokenTokens.CurseForgeKey] = curseForgeKey;
+            AccessTokens[AccessTokenTokens.VkKey] = vkKey;
 
             _settingsUpdated.OnNext(StorageSettings);
         }

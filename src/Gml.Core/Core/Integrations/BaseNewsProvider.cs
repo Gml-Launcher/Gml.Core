@@ -13,6 +13,7 @@ public abstract class BaseNewsProvider : INewsProvider
 {
     public abstract Task<IReadOnlyCollection<INewsData>> GetNews(int count = 20);
     public NewsListenerType Type { get; set; }
+    public virtual string Name => GetType().Name;
     public string Url { get; set; }
 
     public override bool Equals(object? obj)

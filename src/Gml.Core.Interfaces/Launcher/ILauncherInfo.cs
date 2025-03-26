@@ -19,7 +19,7 @@ namespace GmlCore.Interfaces.Launcher
         IDictionary<string, string> AccessTokens { get; set; }
 
         void UpdateSettings(StorageType storageType, string storageHost, string storageLogin, string storagePassword,
-            TextureProtocol textureProtocol, string curseForgeKey);
+            TextureProtocol textureProtocol, string curseForgeKey, string vkKey);
         Task<IEnumerable<ILauncherBuild>> GetBuilds();
         Task<ILauncherBuild?> GetBuild(string name);
     }

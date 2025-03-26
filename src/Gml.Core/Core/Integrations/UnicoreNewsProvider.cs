@@ -16,6 +16,7 @@ namespace Gml.Core.Integrations;
 [JsonDerivedType(typeof(UnicoreNewsProvider), typeDiscriminator: "unicore")]
 public class UnicoreNewsProvider : BaseNewsProvider
 {
+    public override string Name => "UniCoreCMS";
 
     public UnicoreNewsProvider(string url, NewsListenerType type)
     {
