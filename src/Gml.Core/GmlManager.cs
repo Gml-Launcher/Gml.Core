@@ -36,7 +36,7 @@ namespace Gml
             Notifications = new NotificationProcedures(Storage);
             Profiles = new ProfileProcedures(LauncherInfo, Storage, Notifications, BugTracker, this);
             Files = new FileStorageProcedures(LauncherInfo, Storage, BugTracker);
-            Mods = new ModsProcedures(settings, Storage, BugTracker);
+            Mods = new ModsProcedures(LauncherInfo, settings, Storage, BugTracker);
             Integrations = new ServicesIntegrationProcedures(settings, Storage, BugTracker);
             Users = new UserProcedures(settings, Storage, this);
             Launcher = new LauncherProcedures(LauncherInfo, Storage, Files, this);

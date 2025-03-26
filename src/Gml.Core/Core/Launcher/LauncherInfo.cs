@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,11 @@ using GmlCore.Interfaces.Storage;
 
 namespace Gml.Core.Launcher
 {
+    public class AccessTokenTokens
+    {
+        public const string CurseForgeKey = "CurseForgeKey";
+    }
+
     public class LauncherInfo : ILauncherInfo
     {
         private readonly IGmlSettings _settings;
@@ -24,6 +30,7 @@ namespace Gml.Core.Launcher
         public IGmlSettings Settings => _settings;
         public IStorageSettings StorageSettings { get; set; } = new StorageSettings();
         public IObservable<IStorageSettings> SettingsUpdated => _settingsUpdated;
+        public IDictionary<string, string> AccessTokens { get; set; } = new ConcurrentDictionary<string, string>();
         public Dictionary<string, IVersionFile?> ActualLauncherVersion { get; set; } = new();
 
         public LauncherInfo(IGmlSettings settings)
@@ -35,13 +42,15 @@ namespace Gml.Core.Launcher
             string storageHost,
             string storageLogin,
             string storagePassword,
-            TextureProtocol textureProtocol)
+            TextureProtocol textureProtocol,
+            string curseForgeKey)
         {
             StorageSettings.StoragePassword = storagePassword;
             StorageSettings.StorageLogin = storageLogin;
             StorageSettings.StorageType = storageType;
             StorageSettings.StorageHost = storageHost;
             StorageSettings.TextureProtocol = textureProtocol;
+            AccessTokens[AccessTokenTokens.CurseForgeKey] = curseForgeKey;
 
             _settingsUpdated.OnNext(StorageSettings);
         }
