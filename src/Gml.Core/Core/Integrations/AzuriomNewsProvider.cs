@@ -15,9 +15,8 @@ public class AzuriomNewsProvider : BaseNewsProvider
     public override string Name => "Azuriom";
     public NewsListenerType Type { get; }
 
-    public AzuriomNewsProvider(string url, NewsListenerType type)
+    public AzuriomNewsProvider(string url)
     {
-        Type = type;
         Url = url;
     }
 

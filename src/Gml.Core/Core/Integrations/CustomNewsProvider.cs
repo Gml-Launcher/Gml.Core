@@ -14,12 +14,11 @@ namespace Gml.Core.Integrations;
 
 public class CustomNewsProvider : BaseNewsProvider
 {
-    public NewsListenerType Type { get; }
     private readonly string _url;
 
-    public CustomNewsProvider(string url, NewsListenerType type)
+    public CustomNewsProvider(string url)
     {
-        Type = type;
+        Type = NewsListenerType.Custom;
         _url = url;
     }
 
@@ -44,6 +43,7 @@ public class CustomNewsProvider : BaseNewsProvider
             {
                 Title = x.Title ?? "Нет заголовка",
                 Content = x.Description ?? "Нет описания",
+                Type = Type,
                 Date = x.CreatedAt
             }).ToList();
         }

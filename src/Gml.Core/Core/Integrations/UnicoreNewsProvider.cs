@@ -18,9 +18,9 @@ public class UnicoreNewsProvider : BaseNewsProvider
 {
     public override string Name => "UniCoreCMS";
 
-    public UnicoreNewsProvider(string url, NewsListenerType type)
+    public UnicoreNewsProvider(string url)
     {
-        Type = type;
+        Type = NewsListenerType.UnicoreCMS;
         Url = url;
     }
 
