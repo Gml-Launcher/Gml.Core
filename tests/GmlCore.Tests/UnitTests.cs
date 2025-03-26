@@ -757,11 +757,11 @@ public class Tests
     [Order(93)]
     public async Task GetNewsForVk()
     {
-        var vkProvider = new VkNewsProvider("", "");
+        var vkProvider = new VkNewsProvider("", GmlManager);
 
         await GmlManager.Integrations.NewsProvider.AddListener(vkProvider);
 
-        GmlManager.Integrations.NewsProvider.RefreshAsync();
+        await GmlManager.Integrations.NewsProvider.RefreshAsync();
 
         await Task.Delay(5000);
 

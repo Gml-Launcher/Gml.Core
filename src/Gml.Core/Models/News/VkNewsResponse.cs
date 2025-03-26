@@ -136,7 +136,7 @@ public class Response
 
 public class VkNewsResponse
 {
-    [JsonProperty("response")] public Response Response;
+    [JsonProperty("response")] public Response? Response;
 }
 
 public class Title

@@ -12,6 +12,7 @@ namespace Gml.Core.Integrations;
 
 public class AzuriomNewsProvider : BaseNewsProvider
 {
+    public override string Name => "Azuriom";
     public NewsListenerType Type { get; }
 
     public AzuriomNewsProvider(string url, NewsListenerType type)
