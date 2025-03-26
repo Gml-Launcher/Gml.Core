@@ -13,19 +13,18 @@ namespace Gml.Core.Integrations;
 public class AzuriomNewsProvider : BaseNewsProvider
 {
     public NewsListenerType Type { get; }
-    private readonly string _url;
 
     public AzuriomNewsProvider(string url, NewsListenerType type)
     {
         Type = type;
-        _url = url;
+        Url = url;
     }
 
     public override async Task<IReadOnlyCollection<INewsData>> GetNews(int count = 20)
     {
         using var httpClient = new HttpClient();
 
-        var response = await httpClient.GetAsync(_url);
+        var response = await httpClient.GetAsync(Url);
 
         if (response.IsSuccessStatusCode)
         {

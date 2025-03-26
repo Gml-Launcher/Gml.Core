@@ -100,6 +100,8 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
             {
                 Converters = { new NewsProviderConverter() }
             }) ?? [];
+
+        await RefreshAsync();
     }
 
     public Task RemoveListenerByType(NewsListenerType type)
