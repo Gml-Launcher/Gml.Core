@@ -21,6 +21,10 @@ public class VkNewsProvider : BaseNewsProvider
     private readonly IGmlManager _gmlManager;
     private string _accessToken;
 
+    public VkNewsProvider()
+    {
+    }
+
     public VkNewsProvider(string groupId, IGmlManager gmlManager)
     {
         Type = NewsListenerType.VK;
@@ -47,6 +51,11 @@ public class VkNewsProvider : BaseNewsProvider
     {
         try
         {
+            if (string.IsNullOrEmpty(_accessToken))
+            {
+                return [];
+            }
+
             var url = "https://api.vk.com/method/wall.get";
             using var client = new HttpClient();
 
@@ -88,5 +97,15 @@ public class VkNewsProvider : BaseNewsProvider
 
             return [];
         }
+    }
+
+    public override void SetManager(IGmlManager gmlManager)
+    {
+        base.SetManager(gmlManager);
+
+        SaveToken(gmlManager.LauncherInfo);
+
+        gmlManager.LauncherInfo.SettingsUpdated.Subscribe(_ => SaveToken(gmlManager.LauncherInfo));
+
     }
 }

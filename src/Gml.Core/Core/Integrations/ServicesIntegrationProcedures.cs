@@ -17,11 +17,12 @@ namespace Gml.Core.Integrations;
 public class ServicesIntegrationProcedures(
     IGmlSettings settings,
     IStorageService storage,
-    IBugTrackerProcedures bugTracker)
+    IBugTrackerProcedures bugTracker,
+    GmlManager gmlManager)
     : IServicesIntegrationProcedures
 {
     public ITextureProvider TextureProvider { get; set; } = new TextureProvider(settings.TextureServiceEndpoint, bugTracker);
-    public INewsListenerProvider NewsProvider { get; set; } = new NewsListenerProvider(TimeSpan.FromMinutes(1), storage, bugTracker);
+    public INewsListenerProvider NewsProvider { get; set; } = new NewsListenerProvider(TimeSpan.FromMinutes(1), storage, bugTracker, gmlManager);
 
     private IEnumerable<IAuthServiceInfo>? _authServices;
 

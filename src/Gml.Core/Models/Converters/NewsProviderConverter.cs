@@ -8,7 +8,7 @@ using GmlCore.Interfaces.Integrations;
 
 namespace Gml.Models.Converters;
 
-public class NewsProviderConverter : JsonConverter<INewsProvider>
+public class NewsProviderConverter(GmlManager gmlManager) : JsonConverter<INewsProvider>
 {
     private static readonly Dictionary<NewsListenerType, Type> _typeMapping = new()
     {
@@ -27,6 +27,10 @@ public class NewsProviderConverter : JsonConverter<INewsProvider>
     public override INewsProvider Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using var document = JsonDocument.ParseValue(ref reader);
+        var optionsWithFields = new JsonSerializerOptions(options)
+        {
+            IncludeFields = true
+        };
         var root = document.RootElement;
 
         if (!root.TryGetProperty("Type", out var typeProperty))
@@ -37,7 +41,13 @@ public class NewsProviderConverter : JsonConverter<INewsProvider>
             throw new JsonException($"Неизвестный тип {typeProperty} для десериализации {nameof(INewsProvider)}.");
         }
 
-        return (INewsProvider)JsonSerializer.Deserialize(root.GetRawText(), _typeMapping[listenerType], options)!;
+        var targetType = _typeMapping[listenerType];
+
+        var provider = (INewsProvider)JsonSerializer.Deserialize(root.GetRawText(), targetType, optionsWithFields)!;
+
+        provider.SetManager(gmlManager);
+
+        return provider;
     }
 
     private static NewsListenerType GetDiscriminatorByType(Type type)

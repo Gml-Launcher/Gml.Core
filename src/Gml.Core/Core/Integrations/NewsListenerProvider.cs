@@ -21,15 +21,21 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
     private readonly IDisposable _timer;
     private readonly IStorageService _storage;
     private readonly IBugTrackerProcedures _bugTracker;
+    private readonly GmlManager _gmlManager;
 
     public IReadOnlyCollection<INewsProvider> Providers => _providers;
 
     private const int MaxCacheSize = 20;
 
-    public NewsListenerProvider(TimeSpan timespan, IStorageService storage, IBugTrackerProcedures bugTracker)
+    public NewsListenerProvider(
+        TimeSpan timespan,
+        IStorageService storage,
+        IBugTrackerProcedures bugTracker,
+        GmlManager gmlManager)
     {
         _storage = storage;
         _bugTracker = bugTracker;
+        _gmlManager = gmlManager;
         _timer = Observable.Timer(TimeSpan.Zero, timespan).Subscribe(OnProvide);
     }
 
@@ -100,7 +106,7 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
         _providers = await _storage.GetAsync<List<INewsProvider>>(StorageConstants.NewsProviders,
             new JsonSerializerOptions
             {
-                Converters = { new NewsProviderConverter() }
+                Converters = { new NewsProviderConverter(_gmlManager) }
             }) ?? [];
 
         await RefreshAsync();
