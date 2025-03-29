@@ -223,10 +223,42 @@ namespace GmlCore.Interfaces.Launcher
         /// <returns>A task that represents the asynchronous operation. The task result contains a collection of optional mods.</returns>
         Task<IEnumerable<IMod>> GetOptionalsModsAsync();
 
+        /// <summary>
+        /// Adds a mod to the game profile using the provided file name and stream data.
+        /// </summary>
+        /// <param name="fileName">The name of the mod file to be added.</param>
+        /// <param name="streamData">The stream containing the data of the mod file.</param>
+        /// <returns>An instance of <see cref="IMod"/> representing the added mod.</returns>
         Task<IMod> AddMod(string fileName, Stream streamData);
+
+        /// <summary>
+        /// Adds an optional mod to the game profile. This allows the user
+        /// to include a mod that is not required for the core functionality
+        /// of the game but can enhance or expand the game's experience.
+        /// </summary>
+        /// <param name="fileName">The name of the mod file.</param>
+        /// <param name="streamData">The stream containing the mod file's data.</param>
+        /// <returns>Returns the added optional mod as an <see cref="IMod"/> instance.</returns>
         Task<IMod> AddOptionalMod(string fileName, Stream streamData);
+
+        /// <summary>
+        /// Removes a specified mod from the game profile.
+        /// </summary>
+        /// <param name="modName">The name of the mod to be removed.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a boolean indicating whether the mod was successfully removed.</returns>
         Task<bool> RemoveMod(string modName);
+
+        /// <summary>
+        /// Sets the state of the game profile.
+        /// </summary>
+        /// <param name="state">The desired state to set for the game profile. Refer to <see cref="ProfileState"/> for possible values.</param>
+        /// <returns>A task that represents the asynchronous operation of setting the state.</returns>
         Task SetState(ProfileState state);
+
+        /// <summary>
+        /// Determines whether mods can be loaded for the game profile.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation. The task result contains a boolean value indicating whether mods can be loaded.</returns>
         Task<bool> CanLoadMods();
     }
 }
