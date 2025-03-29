@@ -47,7 +47,7 @@ namespace GmlCore.Interfaces.Procedures
         Task UpdateProfile(IGameProfile profile, string newProfileName, string displayName, Stream? icon,
             Stream? backgroundImage,
             string updateDtoDescription, bool isEnabled,
-            string jvmArguments, string gameArguments);
+            string jvmArguments, string gameArguments, int priority);
         Task<string[]> InstallAuthLib(IGameProfile profile);
         Task<IGameProfileInfo?> GetCacheProfile(IGameProfile baseProfile);
         Task SetCacheProfile(IGameProfileInfo profile);

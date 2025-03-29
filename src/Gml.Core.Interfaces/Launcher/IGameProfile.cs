@@ -136,6 +136,7 @@ namespace GmlCore.Interfaces.Launcher
         /// Indicates whether the profile can be modified.
         /// </summary>
         bool CanEdit { get; }
+        int Priority { get; set; }
 
         /// <summary>
         /// Validates the game profile.
