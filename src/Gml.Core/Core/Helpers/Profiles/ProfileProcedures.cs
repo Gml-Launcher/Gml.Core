@@ -120,8 +120,15 @@ namespace Gml.Core.Helpers.Profiles
                 Description = description,
                 IconBase64 = icon
             };
-
             await AddProfile(profile);
+
+            await AddFolderToWhiteList(profile, [
+                new LocalFolderInfo("saves"),
+                new LocalFolderInfo("logs"),
+                new LocalFolderInfo("resourcepacks"),
+                new LocalFolderInfo("crash-reports"),
+                new LocalFolderInfo("config")
+            ]);
 
             return profile;
         }
