@@ -326,11 +326,9 @@ namespace Gml.Core.Helpers.Game
                 }
                 else
                 {
-                    using (var algorithm = new SHA256Managed())
-                    {
-                        hash = SystemHelper.CalculateFileHash(c, algorithm);
-                        _fileHashCache[c] = hash;
-                    }
+                    using var algorithm = SHA1.Create();
+                    hash = SystemHelper.CalculateFileHash(c, algorithm);
+                    _fileHashCache[c] = hash;
                 }
 
                 var path = additionalPath.Aggregate(string.Empty, Path.Combine);

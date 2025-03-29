@@ -275,7 +275,7 @@ namespace Gml.Core.Helpers.Profiles
                 }
                 else
                 {
-                    using (var algorithm = new SHA256Managed())
+                    using (var algorithm = SHA1.Create())
                     {
                         hash = SystemHelper.CalculateFileHash(c.FullName, algorithm);
                         _fileHashCache[c.FullName] = hash;
