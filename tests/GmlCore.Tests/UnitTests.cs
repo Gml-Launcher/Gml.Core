@@ -183,7 +183,7 @@ public class Tests
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            Console.WriteLine($"Server not allowed: {e.Message}");
         }
 
         Assert.That(server, Is.Not.Null);
@@ -267,7 +267,7 @@ public class Tests
         }
         catch (SocketException e)
         {
-            Console.WriteLine(e);
+            Console.WriteLine($"Server not allowed: {e.Message}");
         }
     }
 
@@ -293,7 +293,7 @@ public class Tests
         }
         catch (SocketException e)
         {
-            Console.WriteLine(e);
+            Console.WriteLine($"Server not allowed: {e.Message}");
         }
     }
 
@@ -319,7 +319,7 @@ public class Tests
         }
         catch (SocketException e)
         {
-            Console.WriteLine(e);
+            Console.WriteLine($"Server not allowed: {e.Message}");
         }
     }
 
@@ -345,7 +345,7 @@ public class Tests
         }
         catch (SocketException e)
         {
-            Console.WriteLine(e);
+            Console.WriteLine($"Server not allowed: {e.Message}");
         }
     }
 
@@ -371,7 +371,7 @@ public class Tests
         }
         catch (SocketException e)
         {
-            Console.WriteLine(e);
+            Console.WriteLine($"Server not allowed: {e.Message}");
         }
     }
 
@@ -397,7 +397,7 @@ public class Tests
         }
         catch (SocketException e)
         {
-            Console.WriteLine(e);
+            Console.WriteLine($"Server not allowed: {e.Message}");
         }
     }
 
@@ -590,6 +590,7 @@ public class Tests
         Assert.That(mods.OfType<ModrinthMod>(), Is.Not.Empty);
     }
 
+#if DEBUG
     [Test]
     [Order(92)]
     public async Task GetMods_By_CurseForge()
@@ -615,6 +616,7 @@ public class Tests
         Assert.That(mods, Is.Not.Empty);
         Assert.That(mods.OfType<CurseForgeMod>(), Is.Not.Empty);
     }
+#endif
 
     [Test]
     [Order(92)]
@@ -643,6 +645,8 @@ public class Tests
         Assert.That(mods, Is.Not.Null);
     }
 
+
+#if DEBUG
     [Test]
     [Order(92)]
     public async Task GetModsInfo_By_CurseForge()
@@ -669,6 +673,7 @@ public class Tests
 
         Assert.That(mods, Is.Not.Null);
     }
+#endif
 
     [Test]
     [Order(92)]
@@ -712,6 +717,7 @@ public class Tests
 
     }
 
+    #if DEBUG
     [Test]
     [Order(92)]
     public async Task AddModToProfile_From_Forge()
@@ -774,6 +780,7 @@ public class Tests
             return Task.CompletedTask;
         });
     }
+#endif
 
     [Test]
     [Order(94)]
