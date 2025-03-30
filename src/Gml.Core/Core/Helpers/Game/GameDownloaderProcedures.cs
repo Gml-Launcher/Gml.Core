@@ -65,8 +65,12 @@ namespace Gml.Core.Helpers.Game
             return _gameLoader.DownloadGame(loader, version, launchVersion, bootstrapProgram);
         }
 
-        public async Task<Process> CreateProcess(IStartupOptions startupOptions, IUser user, bool needDownload,
-            string[] jvmArguments, string[] gameArguments)
+        public async Task<Process> CreateProcess(
+            IStartupOptions startupOptions,
+            IUser user,
+            bool needDownload,
+            string[] jvmArguments,
+            string[] gameArguments)
         {
             var process = await _gameLoader.GetProcessAsync(startupOptions, user, needDownload, jvmArguments, gameArguments);
 
@@ -84,6 +88,8 @@ namespace Gml.Core.Helpers.Game
                 SearchOption.AllDirectories));
             directoryFiles.AddRange(Directory.GetFiles(Path.Combine(anyLauncher.MinecraftPath.BasePath), "*.*",
                 SearchOption.AllDirectories));
+
+            AddNatives(anyLauncher, directoryFiles);
 
             var basePath = Path.Combine(anyLauncher.MinecraftPath.BasePath);
             var excludedDirectories = new[] { "client", "libraries", "resources" }
@@ -110,6 +116,24 @@ namespace Gml.Core.Helpers.Game
                 .ToArray();
 
             return localFilesInfo;
+        }
+
+        private void AddNatives(MinecraftLauncher anyLauncher, List<string> directoryFiles)
+        {
+            var clientDirectory = Path.Combine(anyLauncher.MinecraftPath.BasePath, "client");
+
+            if (Directory.Exists(clientDirectory))
+            {
+                foreach (var directory in Directory.GetDirectories(clientDirectory))
+                {
+                    var nativesDirectory = Path.Combine(directory, "natives");
+                    if (Directory.Exists(nativesDirectory))
+                    {
+                        var natives = Directory.GetFiles(nativesDirectory, "*.*", SearchOption.AllDirectories);
+                        directoryFiles.AddRange(natives);
+                    }
+                }
+            }
         }
 
         private async Task<IFileInfo[]> GetModsFromDirectory(string pattern)
