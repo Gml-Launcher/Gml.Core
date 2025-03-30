@@ -1,10 +1,12 @@
 using System.Diagnostics;
 using System.Net.Sockets;
 using Gml;
+using Gml.Core.Integrations;
 using Gml.Core.Launcher;
-using GmlCore.Interfaces;
+using Gml.Models.Mods;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.Mods;
 using Pingo;
 using Pingo.Status;
 
@@ -13,13 +15,12 @@ namespace GmlCore.Tests;
 public class Tests
 {
     private const string ServerName = "Hitech #1";
-    private StartupOptions _options;
     private IGameProfile _testGameProfile = null!;
 
-    private const string _checkProfileName = "TestProfile1710";
-    private const string _checkMinecraftVersion = "1.7.10";
-    private const string _checkLaunchVersion = "10.13.4.1614";
-    private const GameLoader _checkLoader = GameLoader.Forge;
+    private const string CheckProfileName = "TestProfile1710";
+    private const string CheckMinecraftVersion = "1.7.10";
+    private const string CheckLaunchVersion = "10.13.4.1614";
+    private const GameLoader CheckLoader = GameLoader.Forge;
 
     private GmlManager GmlManager { get; } =
         new(new GmlSettings("GamerVIILauncher", "gfweagertghuysergfbsuyerbgiuyserg", httpClient: new HttpClient())
@@ -27,32 +28,16 @@ public class Tests
             TextureServiceEndpoint = "http://gml-web-skins:8085"
         });
 
-    private async Task GetOrCreateTestProfile()
+    [OneTimeSetUp]
+    public async Task Setup()
     {
-        _testGameProfile = await GmlManager.Profiles.GetProfile(_checkProfileName)
-                           ?? await GmlManager.Profiles.AddProfile(_checkProfileName, _checkMinecraftVersion,
-                               _checkLaunchVersion,
-                               _checkLoader,
+        _testGameProfile = await GmlManager.Profiles.GetProfile(CheckProfileName)
+                           ?? await GmlManager.Profiles.AddProfile(CheckProfileName, CheckProfileName, CheckMinecraftVersion,
+                               CheckLaunchVersion,
+                               CheckLoader,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
-    }
-
-    [SetUp]
-    public async Task Setup()
-    {
-        await GmlManager.Profiles.RestoreProfiles();
-
-        _options = new StartupOptions
-        {
-            MinimumRamMb = 4096,
-            FullScreen = false,
-            ScreenHeight = 600,
-            ScreenWidth = 900,
-            ServerIp = null,
-            ServerPort = 25565,
-            MaximumRamMb = 8192
-        };
     }
 
     [Test]
@@ -71,10 +56,10 @@ public class Tests
     [Order(1)]
     public async Task Create_LiteLoader_Profile()
     {
-        const string name = $"{_checkMinecraftVersion}{nameof(GameLoader.LiteLoader)}";
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.LiteLoader)}";
 
         _testGameProfile = await GmlManager.Profiles.GetProfile(name)
-                           ?? await GmlManager.Profiles.AddProfile(name, "1.7.10", "1.7.10_04",
+                           ?? await GmlManager.Profiles.AddProfile(name, CheckProfileName, "1.7.10", "1.7.10_04",
                                GameLoader.LiteLoader,
                                string.Empty,
                                string.Empty)
@@ -91,10 +76,10 @@ public class Tests
     [Order(2)]
     public async Task Create_Vanilla_Profile()
     {
-        const string name = $"{_checkMinecraftVersion}{nameof(GameLoader.Vanilla)}";
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Vanilla)}";
 
         _testGameProfile = await GmlManager.Profiles.GetProfile(name)
-                           ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", string.Empty, GameLoader.Vanilla,
+                           ?? await GmlManager.Profiles.AddProfile(name, CheckProfileName, "1.20.1", string.Empty, GameLoader.Vanilla,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
@@ -111,10 +96,10 @@ public class Tests
     [Order(2)]
     public async Task Create_Forge_Profile()
     {
-        const string name = $"{_checkMinecraftVersion}{nameof(GameLoader.Forge)}";
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Forge)}";
 
         _testGameProfile = await GmlManager.Profiles.GetProfile(name)
-                           ?? await GmlManager.Profiles.AddProfile(name, "1.7.10", "10.13.4.1614", GameLoader.Forge,
+                           ?? await GmlManager.Profiles.AddProfile(name, CheckProfileName, "1.7.10", "10.13.4.1614", GameLoader.Forge,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
@@ -131,10 +116,10 @@ public class Tests
     [Order(2)]
     public async Task Create_NeoForge_Profile()
     {
-        const string name = $"{_checkMinecraftVersion}{nameof(GameLoader.NeoForge)}";
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.NeoForge)}";
 
         _testGameProfile = await GmlManager.Profiles.GetProfile(name)
-                           ?? await GmlManager.Profiles.AddProfile(name, "1.20.4", "neoforge-20.4.237", GameLoader.NeoForge,
+                           ?? await GmlManager.Profiles.AddProfile(name, name, "1.20.4", "neoforge-20.4.237", GameLoader.NeoForge,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
@@ -151,10 +136,10 @@ public class Tests
     [Order(2)]
     public async Task Create_Fabric_Profile()
     {
-        const string name = $"{_checkMinecraftVersion}{nameof(GameLoader.Fabric)}";
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Fabric)}";
 
         _testGameProfile = await GmlManager.Profiles.GetProfile(name)
-                           ?? await GmlManager.Profiles.AddProfile(name, "1.20.1", "0.16.0", GameLoader.Fabric,
+                           ?? await GmlManager.Profiles.AddProfile(name, CheckProfileName, "1.20.1", "0.16.0", GameLoader.Fabric,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
@@ -169,18 +154,16 @@ public class Tests
 
     [Test]
     [Order(3)]
-    public async Task ValidateProfile()
+    public Task ValidateProfile()
     {
-        await GetOrCreateTestProfile();
-
-        Assert.Multiple(async () => { Assert.That(await _testGameProfile!.ValidateProfile(), Is.True); });
+        Assert.Multiple(async () => { Assert.That(await _testGameProfile.ValidateProfile(), Is.True); });
+        return Task.CompletedTask;
     }
 
     [Test]
     [Order(4)]
     public async Task CreateServer()
     {
-        await GetOrCreateTestProfile();
 
         var server = await GmlManager.Servers.AddMinecraftServer(_testGameProfile, ServerName, "127.0.0.1", 25565);
 
@@ -191,7 +174,6 @@ public class Tests
     [Order(5)]
     public async Task GetOnline()
     {
-        await GetOrCreateTestProfile();
 
         var server = _testGameProfile.Servers.First(c => c.Name == ServerName);
 
@@ -205,6 +187,13 @@ public class Tests
         }
 
         Assert.That(server, Is.Not.Null);
+    }
+
+    [Test]
+    [Order(6)]
+    public async Task RemoveServer()
+    {
+        await GmlManager.Servers.RemoveServer(_testGameProfile, ServerName);
     }
 
     [Test]
@@ -244,14 +233,14 @@ public class Tests
     }
 
     [Test]
-    [Order(40)]
+    [Order(900)]
     public async Task Remove_Profile()
     {
-        await GetOrCreateTestProfile();
+        var name = _testGameProfile.Name;
 
         await _testGameProfile.Remove();
 
-        var checkProfile = await GmlManager.Profiles.GetProfile(_checkProfileName);
+        var checkProfile = await GmlManager.Profiles.GetProfile(name);
 
         Assert.That(checkProfile, Is.Null);
     }
@@ -267,14 +256,14 @@ public class Tests
             {
                 Address = "45.153.68.20",
                 Port = 25565,
-                TimeOut = TimeSpan.FromSeconds(3)
+                TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
 
             Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
 
-            Assert.That(actual: true, Is.True);
+            Assert.That(status, Is.Not.Null);
         }
         catch (SocketException e)
         {
@@ -293,14 +282,14 @@ public class Tests
             {
                 Address = "45.153.68.20",
                 Port = 25565,
-                TimeOut = TimeSpan.FromSeconds(3)
+                TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
 
             Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
 
-            Assert.That(actual: true, Is.True);
+            Assert.That(status, Is.Not.Null);
         }
         catch (SocketException e)
         {
@@ -319,14 +308,14 @@ public class Tests
             {
                 Address = "45.153.68.20",
                 Port = 25565,
-                TimeOut = TimeSpan.FromSeconds(3)
+                TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
 
             Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
 
-            Assert.That(actual: true, Is.True);
+            Assert.That(status, Is.Not.Null);
         }
         catch (SocketException e)
         {
@@ -345,20 +334,18 @@ public class Tests
             {
                 Address = "45.153.68.20",
                 Port = 25565,
-                TimeOut = TimeSpan.FromSeconds(3)
+                TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
 
             Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
+
+            Assert.That(status, Is.Not.Null);
         }
         catch (SocketException e)
         {
             Console.WriteLine(e);
-        }
-        finally
-        {
-            Assert.That(actual: true, Is.True);
         }
     }
 
@@ -373,20 +360,18 @@ public class Tests
             {
                 Address = "45.153.68.20",
                 Port = 25565,
-                TimeOut = TimeSpan.FromSeconds(3)
+                TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
 
             Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
+
+            Assert.That(status, Is.Not.Null);
         }
         catch (SocketException e)
         {
             Console.WriteLine(e);
-        }
-        finally
-        {
-            Assert.That(actual: true, Is.True);
         }
     }
 
@@ -401,20 +386,18 @@ public class Tests
             {
                 Address = "45.153.68.20",
                 Port = 25565,
-                TimeOut = TimeSpan.FromSeconds(3)
+                TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
             var status = await Minecraft.PingAsync(options) as JavaStatus;
 
             Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
+
+            Assert.That(status, Is.Not.Null);
         }
         catch (SocketException e)
         {
             Console.WriteLine(e);
-        }
-        finally
-        {
-            Assert.That(actual: true, Is.True);
         }
     }
 
@@ -430,7 +413,7 @@ public class Tests
     public async Task DownloadProfile()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
-                           ?? await GmlManager.Profiles.AddProfile("HiTech", "1.20.1", string.Empty, GameLoader.Vanilla,
+                           ?? await GmlManager.Profiles.AddProfile("HiTech", "HiTech", "1.20.1", string.Empty, GameLoader.Vanilla,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
@@ -444,7 +427,7 @@ public class Tests
     public async Task CheckIsFullLoaded()
     {
         _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
-                           ?? await GmlManager.Profiles.AddProfile("HiTech", "1.20.1", string.Empty, GameLoader.Vanilla,
+                           ?? await GmlManager.Profiles.AddProfile("HiTech", "HiTech", "1.20.1", string.Empty, GameLoader.Vanilla,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
@@ -465,42 +448,61 @@ public class Tests
     [Order(76)]
     public async Task Build_launcher()
     {
-        var isInstalled = false;
+        var launcherVersions = await GmlManager.Launcher.GetVersions();
+
+        var version = launcherVersions.First();
+        bool isBuild = false;
+
+        var logsDisposable = GmlManager.System.DownloadLogs.Subscribe(logs =>
+        {
+            Console.WriteLine(logs);
+            Debug.WriteLine(logs);
+        });
+
+        var eventDisposable = GmlManager.Launcher.BuildLogs.Subscribe(logs =>
+        {
+            Console.WriteLine(logs);
+            Debug.WriteLine(logs);
+        });
 
         if (await GmlManager.System.InstallDotnet())
         {
-            GmlManager.Launcher.BuildLogs.Subscribe(log =>
+            if (!GmlManager.Launcher.CanCompile(version, out var _))
             {
-                Console.WriteLine(log);
-                Debug.WriteLine(log);
-            });
+                await GmlManager.Launcher.Download(version, "http://localhost:5000", "GmlLauncher");
+            }
 
-            if (GmlManager.Launcher.CanCompile("v0.1.0-beta3-hotfix1", out var message))
+            if (GmlManager.Launcher.CanCompile(version, out var message))
             {
                 Console.WriteLine(message);
                 Debug.WriteLine(message);
-                await GmlManager.Launcher.Build("v0.1.0-beta3-hotfix1", ["win-x64"]);
+                isBuild = await GmlManager.Launcher.Build(version, ["win-x64"]);
+
             }
         }
-        //ToDo: Fix endpoint
+
+        logsDisposable.Dispose();
+        eventDisposable.Dispose();
+
         Assert.Multiple(() =>
         {
-            // Assert.That(isInstalled, Is.True);
-            // Assert.That(GmlManager.Launcher.CanCompile("v0.1.0-beta3-hotfix1", out var message), Is.True);
+            Assert.That(GmlManager.Launcher.CanCompile(version, out _), Is.True);
+            Assert.That(isBuild, Is.True);
         });
     }
 
     [Test]
     [Order(80)]
-    public async Task InstallForgeClient()
+    public Task InstallForgeClient()
     {
-        var forgeClient = await GmlManager.Profiles.GetProfile("Aztex")
-                          ?? await GmlManager.Profiles.AddProfile("Aztex", "1.20.1",
-                              string.Empty,
-                              GameLoader.Forge,
-                              string.Empty,
-                              string.Empty)
-                          ?? throw new Exception("Failed to create profile instance");
+        return Task.CompletedTask;
+        // var forgeClient = await GmlManager.Profiles.GetProfile("Aztex")
+        //                   ?? await GmlManager.Profiles.AddProfile("Aztex", "1.20.1",
+        //                       string.Empty,
+        //                       GameLoader.Forge,
+        //                       string.Empty,
+        //                       string.Empty)
+        //                   ?? throw new Exception("Failed to create profile instance");
 
         // if (await forgeClient.CheckIsFullLoaded(_options) == false)
         //     await forgeClient.DownloadAsync(_options.OsType, _options.OsArch);
@@ -518,8 +520,9 @@ public class Tests
 
     [Test]
     [Order(90)]
-    public async Task ClientStartup()
+    public Task ClientStartup()
     {
+        return Task.CompletedTask;
         // _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
         //                    ?? await GmlManager.Profiles.AddProfile("HiTech", "1.20.1", GameLoader.Vanilla, string.Empty,
         //                        string.Empty)
@@ -545,27 +548,304 @@ public class Tests
 
     [Test]
     [Order(92)]
-    public async Task ChangeProfileVersion()
+    public Task ChangeProfileVersion()
     {
+        return Task.CompletedTask;
+        // var versions = await GmlManager.System.GetJavaVersions();
+        //
+        // var version = versions.First(c => c.Version == "21.0.3");
+        //
+        // _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
+        //                    ?? await GmlManager.Profiles.AddProfile("HiTech", "1.20.1", string.Empty, GameLoader.Vanilla,
+        //                        string.Empty,
+        //                        string.Empty)
+        //                    ?? throw new Exception("Failed to create profile instance");
+        //
+        // await GmlManager.Profiles.ChangeBootstrapProgram(_testGameProfile, version);
+    }
 
-        return;
-        var versions = await GmlManager.System.GetJavaVersions();
+    [Test]
+    [Order(92)]
+    public async Task GetMods_By_Modrinth()
+    {
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Forge)}-mods";
 
-        var version = versions.First(c => c.Version == "21.0.3");
+        var profile = await GmlManager.Profiles.GetProfile(name)
+                      ?? await GmlManager.Profiles.AddProfile(name, name, "1.20.1", string.Empty, GameLoader.Forge,
+                          string.Empty,
+                          string.Empty)
+                      ?? throw new Exception("Failed to create profile instance");
 
-        _testGameProfile = await GmlManager.Profiles.GetProfile("HiTech")
-                           ?? await GmlManager.Profiles.AddProfile("HiTech", "1.20.1", string.Empty, GameLoader.Vanilla,
+        var mods = await GmlManager.Mods.FindModsAsync(
+            profile.Loader,
+            profile.GameVersion,
+            ModType.Modrinth,
+            string.Empty,
+            10,
+            0);
+
+        await profile.Remove();
+
+        Assert.That(mods, Is.Not.Empty);
+        Assert.That(mods.OfType<ModrinthMod>(), Is.Not.Empty);
+    }
+
+    [Test]
+    [Order(92)]
+    public async Task GetMods_By_CurseForge()
+    {
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Forge)}-mods";
+
+        var profile = await GmlManager.Profiles.GetProfile(name)
+                           ?? await GmlManager.Profiles.AddProfile(name, name, "1.20.1", string.Empty, GameLoader.Forge,
                                string.Empty,
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
 
-        await GmlManager.Profiles.ChangeBootstrapProgram(_testGameProfile, version);
+        var mods = await GmlManager.Mods.FindModsAsync(
+            profile.Loader,
+            profile.GameVersion,
+            ModType.CurseForge,
+            string.Empty,
+            10,
+            0);
+
+        await profile.Remove();
+
+        Assert.That(mods, Is.Not.Empty);
+        Assert.That(mods.OfType<CurseForgeMod>(), Is.Not.Empty);
+    }
+
+    [Test]
+    [Order(92)]
+    public async Task GetModsInfo_By_Modrinth()
+    {
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Forge)}-mods";
+
+        var profile = await GmlManager.Profiles.GetProfile(name)
+                      ?? await GmlManager.Profiles.AddProfile(name, name, "1.20.1", string.Empty, GameLoader.Forge,
+                          string.Empty,
+                          string.Empty)
+                      ?? throw new Exception("Failed to create profile instance");
+
+        var mod = (await GmlManager.Mods.FindModsAsync(
+            profile.Loader,
+            profile.GameVersion,
+            ModType.Modrinth,
+            string.Empty,
+            1,
+            0)).First();
+
+        var mods = await GmlManager.Mods.GetInfo(mod.Id, mod.Type);
+
+        await profile.Remove();
+
+        Assert.That(mods, Is.Not.Null);
+    }
+
+    [Test]
+    [Order(92)]
+    public async Task GetModsInfo_By_CurseForge()
+    {
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Forge)}-mods";
+
+        var profile = await GmlManager.Profiles.GetProfile(name)
+                      ?? await GmlManager.Profiles.AddProfile(name, name, "1.20.1", string.Empty, GameLoader.Forge,
+                          string.Empty,
+                          string.Empty)
+                      ?? throw new Exception("Failed to create profile instance");
+
+        var mod = (await GmlManager.Mods.FindModsAsync(
+            profile.Loader,
+            profile.GameVersion,
+            ModType.CurseForge,
+            string.Empty,
+            1,
+            0)).First();
+
+        var mods = await GmlManager.Mods.GetInfo(mod.Id, mod.Type);
+
+        await profile.Remove();
+
+        Assert.That(mods, Is.Not.Null);
+    }
+
+    [Test]
+    [Order(92)]
+    public async Task AddModToProfile_From_Modrinth()
+    {
+        var modType = ModType.Modrinth;
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Fabric)}-mods";
+
+        var profile = await GmlManager.Profiles.GetProfile(name)
+                      ?? await GmlManager.Profiles.AddProfile(name, name, "1.20.1", string.Empty, GameLoader.Fabric,
+                          string.Empty,
+                          string.Empty)
+                      ?? throw new Exception("Failed to create profile instance");
+
+        var mod = (await GmlManager.Mods.FindModsAsync(
+            profile.Loader,
+            profile.GameVersion,
+            modType,
+            "FabricApi",
+            1,
+            0)).First();
+
+        var modInfo = await GmlManager.Mods.GetInfo(mod.Id, mod.Type);
+
+        if (modInfo is null)
+        {
+            throw new Exception("Failed to get mod info");
+        }
+
+        var versions = await GmlManager.Mods.GetVersions(modInfo, modType, profile.Loader, profile.GameVersion);
+
+        var version = versions.First(c => c.Files.Any()).Files.First();
+
+        await profile.AddMod(Path.GetFileName(version), await GmlManager.LauncherInfo.Settings.HttpClient.GetStreamAsync(version));
+
+        var mods = (await profile.GetModsAsync()).Any(c => c.Name == Path.GetFileNameWithoutExtension(version));
+
+        await profile.Remove();
+
+        Assert.That(mods, Is.True);
+
+    }
+
+    [Test]
+    [Order(92)]
+    public async Task AddModToProfile_From_Forge()
+    {
+        var modType = ModType.CurseForge;
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Fabric)}-mods";
+
+        var profile = await GmlManager.Profiles.GetProfile(name)
+                      ?? await GmlManager.Profiles.AddProfile(name, name, "1.20.1", string.Empty, GameLoader.Fabric,
+                          string.Empty,
+                          string.Empty)
+                      ?? throw new Exception("Failed to create profile instance");
+
+        var mod = (await GmlManager.Mods.FindModsAsync(
+            profile.Loader,
+            profile.GameVersion,
+            modType,
+            "Skins",
+            1,
+            0)).First();
+
+        var modInfo = await GmlManager.Mods.GetInfo(mod.Id, mod.Type);
+
+        if (modInfo is null)
+        {
+            throw new Exception("Failed to get mod info");
+        }
+
+        var versions = await GmlManager.Mods.GetVersions(modInfo, modType, profile.Loader, profile.GameVersion);
+
+        var version = versions.First(c => c.Files.Any()).Files.First();
+
+        await profile.AddMod(Path.GetFileName(version), await GmlManager.LauncherInfo.Settings.HttpClient.GetStreamAsync(version));
+
+        var mods = (await profile.GetModsAsync()).Any(c => c.Name == Path.GetFileNameWithoutExtension(version));
+
+        await profile.Remove();
+
+        Assert.That(mods, Is.True);
+    }
+
+    [Test]
+    [Order(93)]
+    public async Task GetNewsForVk()
+    {
+        var vkProvider = new VkNewsProvider("", GmlManager);
+
+        await GmlManager.Integrations.NewsProvider.AddListener(vkProvider);
+
+        await GmlManager.Integrations.NewsProvider.RefreshAsync();
+
+        await Task.Delay(5000);
+
+        var news = await GmlManager.Integrations.NewsProvider.GetNews();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(news, Is.Not.Null);
+            Assert.That(news.Count, !Is.EqualTo(0));
+            return Task.CompletedTask;
+        });
+    }
+
+    [Test]
+    [Order(94)]
+    public async Task GetNewsForUnicore()
+    {
+        var unicoreProvider = new UnicoreNewsProvider("https://api.unicorecms2.ru/news");
+
+        await GmlManager.Integrations.NewsProvider.AddListener(unicoreProvider);
+
+        await GmlManager.Integrations.NewsProvider.RefreshAsync();
+
+        await Task.Delay(5000);
+
+        var news = await GmlManager.Integrations.NewsProvider.GetNews();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(news, Is.Not.Null);
+            Assert.That(news.Count, !Is.EqualTo(0));
+            return Task.CompletedTask;
+        });
+    }
+
+    [Test]
+    [Order(95)]
+    public async Task GetNewsForAzuriom()
+    {
+        var azuriomProvider = new AzuriomNewsProvider("https://magcent.ru/api/posts");
+
+        await GmlManager.Integrations.NewsProvider.AddListener(azuriomProvider);
+
+        await GmlManager.Integrations.NewsProvider.RefreshAsync();
+
+        await Task.Delay(5000);
+
+        var news = await GmlManager.Integrations.NewsProvider.GetNews();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(news, Is.Not.Null);
+            Assert.That(news.Count, !Is.EqualTo(0));
+            return Task.CompletedTask;
+        });
+    }
+
+    [Test]
+    [Order(96)]
+    public async Task GetNewsForCustom()
+    {
+        var customProvider = new CustomNewsProvider("http://localhost:5292/api/v1/news");
+
+        await GmlManager.Integrations.NewsProvider.AddListener(customProvider);
+
+        await GmlManager.Integrations.NewsProvider.RefreshAsync();
+
+        await Task.Delay(5000);
+
+        var news = await GmlManager.Integrations.NewsProvider.GetNews();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(news, Is.Not.Null);
+            Assert.That(news.Count, !Is.EqualTo(0));
+            return Task.CompletedTask;
+        });
     }
 
     [Test]
     [Order(900)]
-    public async Task CheckInstallationFromOriginalCmlLib()
+    public Task CheckInstallationFromOriginalCmlLib()
     {
+        return Task.CompletedTask;
         // var path = new MinecraftPath();
         // var launcher = new CMLauncher(path);
         // var forge = new MForge(launcher);

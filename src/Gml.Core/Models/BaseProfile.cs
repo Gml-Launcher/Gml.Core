@@ -30,11 +30,12 @@ namespace Gml.Models
         {
         }
 
-        internal BaseProfile(string name, string gameVersion, GameLoader loader)
+        internal BaseProfile(string name, string displayName, string gameVersion, GameLoader loader)
         {
             Loader = loader;
             GameVersion = gameVersion;
             Name = name;
+            DisplayName = displayName;
 
             IsValidProfile = NullableBool.Undefined;
         }
@@ -48,6 +49,9 @@ namespace Gml.Models
         [JsonIgnore] public IGameDownloaderProcedures GameLoader { get; set; }
 
         public string Name { get; set; }
+        public string DisplayName { get; set; }
+        public bool CanEdit => State != ProfileState.Loading && State != ProfileState.Packing;
+        public int Priority { get; set; }
         public bool IsEnabled { get; set; }
         public string GameVersion { get; set; }
         public string? LaunchVersion { get; set; }
@@ -275,6 +279,12 @@ namespace Gml.Models
 
 
             return ProfileProcedures.SaveProfiles();
+        }
+
+        public Task<bool> CanLoadMods()
+        {
+            return Task.FromResult(Loader != GmlCore.Interfaces.Enums.GameLoader.Undefined &&
+                                   Loader != GmlCore.Interfaces.Enums.GameLoader.Vanilla);
         }
     }
 }
