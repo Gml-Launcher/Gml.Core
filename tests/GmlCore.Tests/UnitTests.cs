@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net.Sockets;
 using Gml;
+using Gml.Core.Integrations;
 using Gml.Core.Launcher;
 using Gml.Models.Mods;
 using GmlCore.Interfaces.Enums;
@@ -750,6 +751,94 @@ public class Tests
         await profile.Remove();
 
         Assert.That(mods, Is.True);
+    }
+
+    [Test]
+    [Order(93)]
+    public async Task GetNewsForVk()
+    {
+        var vkProvider = new VkNewsProvider("", GmlManager);
+
+        await GmlManager.Integrations.NewsProvider.AddListener(vkProvider);
+
+        await GmlManager.Integrations.NewsProvider.RefreshAsync();
+
+        await Task.Delay(5000);
+
+        var news = await GmlManager.Integrations.NewsProvider.GetNews();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(news, Is.Not.Null);
+            Assert.That(news.Count, !Is.EqualTo(0));
+            return Task.CompletedTask;
+        });
+    }
+
+    [Test]
+    [Order(94)]
+    public async Task GetNewsForUnicore()
+    {
+        var unicoreProvider = new UnicoreNewsProvider("https://api.unicorecms2.ru/news");
+
+        await GmlManager.Integrations.NewsProvider.AddListener(unicoreProvider);
+
+        await GmlManager.Integrations.NewsProvider.RefreshAsync();
+
+        await Task.Delay(5000);
+
+        var news = await GmlManager.Integrations.NewsProvider.GetNews();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(news, Is.Not.Null);
+            Assert.That(news.Count, !Is.EqualTo(0));
+            return Task.CompletedTask;
+        });
+    }
+
+    [Test]
+    [Order(95)]
+    public async Task GetNewsForAzuriom()
+    {
+        var azuriomProvider = new AzuriomNewsProvider("https://magcent.ru/api/posts");
+
+        await GmlManager.Integrations.NewsProvider.AddListener(azuriomProvider);
+
+        await GmlManager.Integrations.NewsProvider.RefreshAsync();
+
+        await Task.Delay(5000);
+
+        var news = await GmlManager.Integrations.NewsProvider.GetNews();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(news, Is.Not.Null);
+            Assert.That(news.Count, !Is.EqualTo(0));
+            return Task.CompletedTask;
+        });
+    }
+
+    [Test]
+    [Order(96)]
+    public async Task GetNewsForCustom()
+    {
+        var customProvider = new CustomNewsProvider("http://localhost:5292/api/v1/news");
+
+        await GmlManager.Integrations.NewsProvider.AddListener(customProvider);
+
+        await GmlManager.Integrations.NewsProvider.RefreshAsync();
+
+        await Task.Delay(5000);
+
+        var news = await GmlManager.Integrations.NewsProvider.GetNews();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(news, Is.Not.Null);
+            Assert.That(news.Count, !Is.EqualTo(0));
+            return Task.CompletedTask;
+        });
     }
 
     [Test]

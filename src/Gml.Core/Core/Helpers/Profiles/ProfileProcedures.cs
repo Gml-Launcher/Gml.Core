@@ -120,8 +120,15 @@ namespace Gml.Core.Helpers.Profiles
                 Description = description,
                 IconBase64 = icon
             };
-
             await AddProfile(profile);
+
+            await AddFolderToWhiteList(profile, [
+                new LocalFolderInfo("saves"),
+                new LocalFolderInfo("logs"),
+                new LocalFolderInfo("resourcepacks"),
+                new LocalFolderInfo("crash-reports"),
+                new LocalFolderInfo("config")
+            ]);
 
             return profile;
         }
@@ -275,7 +282,7 @@ namespace Gml.Core.Helpers.Profiles
                 }
                 else
                 {
-                    using (var algorithm = new SHA256Managed())
+                    using (var algorithm = SHA1.Create())
                     {
                         hash = SystemHelper.CalculateFileHash(c.FullName, algorithm);
                         _fileHashCache[c.FullName] = hash;
@@ -659,7 +666,8 @@ namespace Gml.Core.Helpers.Profiles
             string updateDtoDescription,
             bool isEnabled,
             string jvmArguments,
-            string gameArguments)
+            string gameArguments,
+            int priority)
         {
             var directory =
                 new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "clients", profile.Name));
@@ -680,7 +688,7 @@ namespace Gml.Core.Helpers.Profiles
                 : await _gmlManager.Files.LoadFile(backgroundImage, "profile-backgrounds");
 
             await UpdateProfile(profile, newProfileName, displayName, iconBase64, backgroundKey, updateDtoDescription,
-                needRenameFolder, directory, newDirectory, isEnabled, jvmArguments, gameArguments);
+                needRenameFolder, directory, newDirectory, isEnabled, jvmArguments, gameArguments, priority);
         }
 
         private async Task<string> ConvertStreamToBase64Async(Stream stream)
@@ -693,12 +701,14 @@ namespace Gml.Core.Helpers.Profiles
             }
         }
 
-        private async Task UpdateProfile(IGameProfile profile, string newProfileName, string displayName, string newIcon,
+        private async Task UpdateProfile(IGameProfile profile, string newProfileName, string displayName,
+            string newIcon,
             string backgroundImageKey,
             string newDescription, bool needRenameFolder, DirectoryInfo directory, DirectoryInfo newDirectory,
             bool isEnabled,
             string jvmArguments,
-            string gameArguments)
+            string gameArguments,
+            int priority)
         {
             profile.Name = newProfileName;
             profile.DisplayName = displayName;
@@ -708,9 +718,10 @@ namespace Gml.Core.Helpers.Profiles
             profile.IsEnabled = isEnabled;
             profile.JvmArguments = jvmArguments;
             profile.GameArguments = gameArguments;
+            profile.Priority = priority;
 
             profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications, _gmlManager.BugTracker);
-            profile.State = ProfileState.NeedCompile;
+            profile.State = profile.State == ProfileState.Created ? profile.State : ProfileState.NeedCompile;
             await SaveProfiles();
             await RestoreProfiles();
 

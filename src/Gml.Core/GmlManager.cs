@@ -36,8 +36,8 @@ namespace Gml
             Notifications = new NotificationProcedures(Storage);
             Profiles = new ProfileProcedures(LauncherInfo, Storage, Notifications, BugTracker, this);
             Files = new FileStorageProcedures(LauncherInfo, Storage, BugTracker);
-            Mods = new ModsProcedures(settings, Storage, BugTracker);
-            Integrations = new ServicesIntegrationProcedures(settings, Storage, BugTracker);
+            Mods = new ModsProcedures(LauncherInfo, settings, Storage, BugTracker);
+            Integrations = new ServicesIntegrationProcedures(settings, Storage, BugTracker, this);
             Users = new UserProcedures(settings, Storage, this);
             Launcher = new LauncherProcedures(LauncherInfo, Storage, Files, this);
             Servers = (IProfileServersProcedures)Profiles;
@@ -61,6 +61,7 @@ namespace Gml
             {
                 Profiles.RestoreProfiles().Wait();
                 Notifications.Retore().Wait();
+                Integrations.NewsProvider.Restore().Wait();
                 Mods.Retore().Wait();
 
                 var versionReleases = Storage.GetAsync<Dictionary<string, T?>>(StorageConstants.ActualVersionInfo).Result;

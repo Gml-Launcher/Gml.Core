@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
+using GmlCore.Interfaces.News;
 using GmlCore.Interfaces.Sentry;
 using GmlCore.Interfaces.User;
 
@@ -29,8 +30,9 @@ namespace Gml.Core.Services.Storage
         /// </summary>
         /// <typeparam name="T">The type of the value to retrieve.</typeparam>
         /// <param name="key">The key associated with the item.</param>
+        /// <param name="jsonSerializerOptions"></param>
         /// <returns>An asynchronous operation that yields the retrieved value.</returns>
-        Task<T?> GetAsync<T>(string key);
+        Task<T?> GetAsync<T>(string key, JsonSerializerOptions? jsonSerializerOptions = null);
 
         Task<T?> GetUserAsync<T>(string login, JsonSerializerOptions jsonSerializerOptions);
 

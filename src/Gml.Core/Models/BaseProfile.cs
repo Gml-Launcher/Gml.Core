@@ -50,6 +50,8 @@ namespace Gml.Models
 
         public string Name { get; set; }
         public string DisplayName { get; set; }
+        public bool CanEdit => State != ProfileState.Loading && State != ProfileState.Packing;
+        public int Priority { get; set; }
         public bool IsEnabled { get; set; }
         public string GameVersion { get; set; }
         public string? LaunchVersion { get; set; }
@@ -277,6 +279,12 @@ namespace Gml.Models
 
 
             return ProfileProcedures.SaveProfiles();
+        }
+
+        public Task<bool> CanLoadMods()
+        {
+            return Task.FromResult(Loader != GmlCore.Interfaces.Enums.GameLoader.Undefined &&
+                                   Loader != GmlCore.Interfaces.Enums.GameLoader.Vanilla);
         }
     }
 }

@@ -8,6 +8,7 @@ using CurseForge.APIClient;
 using CurseForge.APIClient.Models.Files;
 using Gml.Core.Constants;
 using Gml.Core.Extensions;
+using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
 using Gml.Models.Mods;
 using GmlCore.Interfaces.Enums;
@@ -20,12 +21,39 @@ using Modrinth.Api.Models.Projects;
 
 namespace Gml.Core.Helpers.Mods;
 
-public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBugTrackerProcedures bugTracker) : IModsProcedures
+public class ModsProcedures : IModsProcedures
 {
-    private readonly ModrinthApi _modrinthApi = new(Environment.CurrentDirectory, settings.HttpClient);
-    private readonly ApiClient _curseForgeApi = new("$2a$10$sKe17GC2.HMeU7E7OC3osOLcTCxhAqiR8Dups8GRE4uSRevbGQrWK"); // TODO: нужно сделать реальзаци сохранение в панель ключа апи для курса фордж
+    private readonly ModrinthApi _modrinthApi;
+    private ApiClient? _curseForgeApi;
     private readonly int _curseForgeGameId = 432;
     private ConcurrentDictionary<string, ModInfo> _modsInfo = [];
+    private readonly IStorageService _storage;
+    private readonly IBugTrackerProcedures _bugTracker;
+
+    public ModsProcedures(ILauncherInfo launcherInfo,
+        IGmlSettings settings,
+        IStorageService storage,
+        IBugTrackerProcedures bugTracker)
+    {
+        _storage = storage;
+        _bugTracker = bugTracker;
+        _modrinthApi = new ModrinthApi(Environment.CurrentDirectory, settings.HttpClient);
+
+        UpdateCurseForgeToken(launcherInfo.AccessTokens);
+        launcherInfo.SettingsUpdated.Subscribe(newSettings =>
+        {
+            UpdateCurseForgeToken(launcherInfo.AccessTokens);
+        });
+    }
+
+    private void UpdateCurseForgeToken(IDictionary<string, string> tokens)
+    {
+        if (tokens.TryGetValue(AccessTokenTokens.CurseForgeKey, out var token) && string.IsNullOrEmpty(token) == false)
+        {
+            _curseForgeApi = new ApiClient(token);
+        }
+    }
+
     public ICollection<IModInfo> ModsDetails => _modsInfo.Values.OfType<IModInfo>().ToArray();
 
     public Task<IEnumerable<IMod>> GetModsAsync(IGameProfile profile)
@@ -39,9 +67,9 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
         throw new NotImplementedException();
     }
 
-    public async Task<IExternalMod?> GetInfo(string identify, ModType modrinth)
+    public async Task<IExternalMod?> GetInfo(string identify, ModType modType)
     {
-        switch (modrinth)
+        switch (modType)
         {
             case ModType.Modrinth:
                 return await GetInfoModByModrinth(identify);
@@ -49,7 +77,7 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
                 return await GetInfoModByCurseForge(identify);
             case ModType.Local:
             default:
-                throw new ArgumentOutOfRangeException(nameof(modrinth), modrinth, null);
+                throw new ArgumentOutOfRangeException(nameof(modType), modType, null);
         }
 
     }
@@ -75,6 +103,11 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
 
     private async Task<IExternalMod?> GetInfoModByCurseForge(string identify)
     {
+        if (_curseForgeApi is null)
+        {
+            return null;
+        }
+
         var mod = await _curseForgeApi
             .GetModAsync(int.Parse(identify))
             .ConfigureAwait(false);
@@ -131,6 +164,11 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
     private async Task<IReadOnlyCollection<IModVersion>> GetCurseForgeModVersions(IExternalMod modInfo,
         GameLoader profileLoader, string gameVersion)
     {
+        if (_curseForgeApi is null)
+        {
+            return [];
+        }
+
         var versions = await _curseForgeApi.GetModFilesAsync(
                 modId: Int32.Parse(modInfo.Id),
                 gameVersion: gameVersion,
@@ -205,6 +243,11 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
     private async Task<IReadOnlyCollection<IExternalMod>> FindByCurseForgeMods(GameLoader profileLoader, string gameVersion, string modName, short take,
         short offset)
     {
+        if (_curseForgeApi is null)
+        {
+            return [];
+        }
+
         var mods = await _curseForgeApi.SearchModsAsync(
                 gameId: _curseForgeGameId,
                 gameVersion: gameVersion,
@@ -248,7 +291,7 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
                 return existing;
             });
 
-        return storage.SetAsync(StorageConstants.ModsInfo, _modsInfo);
+        return _storage.SetAsync(StorageConstants.ModsInfo, _modsInfo);
     }
 
     public async Task Retore()
@@ -256,12 +299,12 @@ public class ModsProcedures(IGmlSettings settings, IStorageService storage, IBug
         try
         {
 
-            _modsInfo = await storage.GetAsync<ConcurrentDictionary<string, ModInfo>>(StorageConstants.ModsInfo) ?? [];
+            _modsInfo = await _storage.GetAsync<ConcurrentDictionary<string, ModInfo>>(StorageConstants.ModsInfo) ?? [];
 
         }
         catch (Exception exception)
         {
-            bugTracker.CaptureException(exception);
+            _bugTracker.CaptureException(exception);
             _modsInfo = [];
         }
     }
