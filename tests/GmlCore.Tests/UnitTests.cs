@@ -170,11 +170,11 @@ public class Tests
         Assert.That(server, Is.Not.Null);
     }
 
+#if DEBUG
     [Test]
     [Order(5)]
     public async Task GetOnline()
     {
-
         var server = _testGameProfile.Servers.First(c => c.Name == ServerName);
 
         try
@@ -188,6 +188,7 @@ public class Tests
 
         Assert.That(server, Is.Not.Null);
     }
+#endif
 
     [Test]
     [Order(6)]
