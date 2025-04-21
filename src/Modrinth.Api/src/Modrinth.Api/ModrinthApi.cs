@@ -8,7 +8,6 @@ namespace Modrinth.Api
     public class ModrinthApi
     {
         private readonly string _installationDirectory;
-        private HttpClientFactory HttpClientFactory { get; }
         public Projects Projects { get; }
         public Mods Mods { get; }
         public Settings Settings { get; }

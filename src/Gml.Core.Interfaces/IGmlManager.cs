@@ -1,6 +1,7 @@
 using GmlCore.Interfaces.Integrations;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
+using GmlCore.Interfaces.Storage;
 
 namespace GmlCore.Interfaces
 {
@@ -16,5 +17,6 @@ namespace GmlCore.Interfaces
         IProfileServersProcedures Servers { get; }
         INotificationProcedures Notifications { get; }
         IModsProcedures Mods { get; }
+        void RestoreSettings<T>() where T : IVersionFile;
     }
 }
