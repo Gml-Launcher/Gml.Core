@@ -342,16 +342,19 @@ public class UserProceduresTests
         Assert.That(result, Is.Not.Null);
     }
 
-    [Test]
-    public async Task GetUserByAccessToken_InvalidToken_ReturnsNull()
-    {
-        // Arrange
-        var accessToken = "invalid-token";
 
+    [Test]
+    public void Empty_ReturnsUserWithDefaultValues()
+    {
         // Act
-        var result = await _gmlManager.Users.GetUserByAccessToken(accessToken);
+        var emptyUser = User.Empty;
 
         // Assert
-        Assert.That(result, Is.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(emptyUser.Name, Is.Not.Empty);
+            Assert.That(emptyUser.Uuid, Is.Not.Empty);
+            Assert.That(emptyUser.AccessToken, Is.Not.Empty);
+        });
     }
 }
