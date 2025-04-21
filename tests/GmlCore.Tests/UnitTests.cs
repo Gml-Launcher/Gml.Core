@@ -31,6 +31,26 @@ public class Tests
     [OneTimeSetUp]
     public async Task Setup()
     {
+        var token = Environment.GetEnvironmentVariable("FORGE_TOKEN") ??
+            (!File.Exists(".env") ? throw new Exception("Forge token not found") :
+            (await File.ReadAllLinesAsync(".env"))
+                .FirstOrDefault(x => x.StartsWith("FORGE_TOKEN="))
+                ?.Split('=', 2)[1] ??
+            throw new Exception("Forge token not found"));
+
+        GmlManager.RestoreSettings<LauncherVersion>();
+
+        var settings = GmlManager.LauncherInfo.Settings;
+
+        GmlManager.LauncherInfo.UpdateSettings(
+            settings.StorageSettings?.StorageType ?? StorageType.LocalStorage,
+            settings.StorageSettings?.StorageHost ?? string.Empty,
+            settings.StorageSettings?.StorageLogin ?? string.Empty,
+            settings.StorageSettings?.StoragePassword ?? string.Empty,
+            settings.StorageSettings?.TextureProtocol ?? TextureProtocol.Http,
+            token,
+            string.Empty);
+
         _testGameProfile = await GmlManager.Profiles.GetProfile(CheckProfileName)
                            ?? await GmlManager.Profiles.AddProfile(CheckProfileName, CheckProfileName, CheckMinecraftVersion,
                                CheckLaunchVersion,
