@@ -27,4 +27,4 @@ jobs:
         run: dotnet build --configuration Release
 
       - name: Tests Gml Web Api
-        run: dotnet test --configuration Release tests/Gml.WebApi.Tests/Gml.WebApi.Tests.csproj
+        run: dotnet test --configuration Release ./tests/GmlCore.Tests/GmlCore.Tests.csproj
