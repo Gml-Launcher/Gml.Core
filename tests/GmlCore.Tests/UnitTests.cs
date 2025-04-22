@@ -272,6 +272,9 @@ public class Tests
     {
         try
         {
+            var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.CancelAfter(1000);
+
             // 1.20.6
             var options = new MinecraftPingOptions
             {
@@ -280,7 +283,7 @@ public class Tests
                 TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
-            var status = await Minecraft.PingAsync(options) as JavaStatus;
+            var status = await Minecraft.PingAsync(options, cancellationTokenSource.Token) as JavaStatus;
 
             Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
 
@@ -289,6 +292,10 @@ public class Tests
         catch (SocketException e)
         {
             Console.WriteLine($"Server not allowed: {e.Message}");
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Ping operation was cancelled");
         }
     }
 
@@ -298,6 +305,9 @@ public class Tests
     {
         try
         {
+            var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.CancelAfter(1000);
+
             // 1.7.10
             var options = new MinecraftPingOptions
             {
@@ -306,7 +316,7 @@ public class Tests
                 TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
-            var status = await Minecraft.PingAsync(options) as JavaStatus;
+            var status = await Minecraft.PingAsync(options, cancellationTokenSource.Token) as JavaStatus;
 
             Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
 
@@ -315,6 +325,10 @@ public class Tests
         catch (SocketException e)
         {
             Console.WriteLine($"Server not allowed: {e.Message}");
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Ping operation was cancelled");
         }
     }
 
@@ -324,6 +338,9 @@ public class Tests
     {
         try
         {
+            var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.CancelAfter(1000);
+
             // 1.5.2
             var options = new MinecraftPingOptions
             {
@@ -332,7 +349,7 @@ public class Tests
                 TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
-            var status = await Minecraft.PingAsync(options) as JavaStatus;
+            var status = await Minecraft.PingAsync(options, cancellationTokenSource.Token) as JavaStatus;
 
             Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
 
@@ -341,6 +358,10 @@ public class Tests
         catch (SocketException e)
         {
             Console.WriteLine($"Server not allowed: {e.Message}");
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Ping operation was cancelled");
         }
     }
 
@@ -350,6 +371,9 @@ public class Tests
     {
         try
         {
+            var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.CancelAfter(1000);
+
             // 1.12.2
             var options = new MinecraftPingOptions
             {
@@ -358,7 +382,7 @@ public class Tests
                 TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
-            var status = await Minecraft.PingAsync(options) as JavaStatus;
+            var status = await Minecraft.PingAsync(options, cancellationTokenSource.Token) as JavaStatus;
 
             Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
 
@@ -367,6 +391,10 @@ public class Tests
         catch (SocketException e)
         {
             Console.WriteLine($"Server not allowed: {e.Message}");
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Ping operation was cancelled");
         }
     }
 
@@ -376,6 +404,9 @@ public class Tests
     {
         try
         {
+            var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.CancelAfter(1000);
+
             // 1.16.5
             var options = new MinecraftPingOptions
             {
@@ -384,7 +415,7 @@ public class Tests
                 TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
-            var status = await Minecraft.PingAsync(options) as JavaStatus;
+            var status = await Minecraft.PingAsync(options, cancellationTokenSource.Token) as JavaStatus;
 
             Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
 
@@ -393,6 +424,10 @@ public class Tests
         catch (SocketException e)
         {
             Console.WriteLine($"Server not allowed: {e.Message}");
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Ping operation was cancelled");
         }
     }
 
@@ -402,6 +437,9 @@ public class Tests
     {
         try
         {
+            var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.CancelAfter(1000);
+
             // 1.20.1
             var options = new MinecraftPingOptions
             {
@@ -410,7 +448,7 @@ public class Tests
                 TimeOut = TimeSpan.FromMilliseconds(300)
             };
 
-            var status = await Minecraft.PingAsync(options) as JavaStatus;
+            var status = await Minecraft.PingAsync(options, cancellationTokenSource.Token) as JavaStatus;
 
             Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
 
@@ -419,6 +457,10 @@ public class Tests
         catch (SocketException e)
         {
             Console.WriteLine($"Server not allowed: {e.Message}");
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Ping operation was cancelled");
         }
     }
 
