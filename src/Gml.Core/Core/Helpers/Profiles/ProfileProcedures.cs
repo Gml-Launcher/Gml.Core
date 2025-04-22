@@ -1044,14 +1044,13 @@ namespace Gml.Core.Helpers.Profiles
             return profile.GameLoader.RemoveMod(modName);
         }
 
-
         private void RemoveWhiteListFolderIfNotExists(IGameProfile profile, IFolderInfo folder)
         {
             profile.FolderWhiteList ??= [];
 
-            if (profile.FolderWhiteList.Any(c => c.Path == folder.Path))
+            if (profile.FolderWhiteList.Contains(folder))
             {
-                profile.FolderWhiteList.FirstOrDefault(f => profile.FolderWhiteList.Remove(f));
+                profile.FolderWhiteList.Remove(folder);
             }
         }
 
