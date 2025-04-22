@@ -28,3 +28,5 @@ jobs:
 
       - name: Tests Gml Web Api
         run: dotnet test --configuration Release ./tests/GmlCore.Tests/GmlCore.Tests.csproj
+        env:
+          FORGE_TOKEN: ${{ secrets.FORGE_TOKEN }}
