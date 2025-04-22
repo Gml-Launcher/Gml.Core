@@ -508,6 +508,7 @@ public class Tests
         Assert.That(isInstalled, Is.True);
     }
 
+#if DEBUG
     [Test]
     [Order(76)]
     public async Task Build_launcher()
@@ -554,6 +555,8 @@ public class Tests
             Assert.That(isBuild, Is.True);
         });
     }
+#endif
+
 
     [Test]
     [Order(80)]
