@@ -8,7 +8,7 @@ namespace GmlCore.Tests;
 
 public class AuthTests
 {
-    private const string LauncherName = "GamerVIILauncher";
+    private const string LauncherName = "GmlServer";
     private const string SecurityKey = "gfweagertghuysergfbsuyerbgiuyserg";
 
     private IGmlManager _gmlManager;

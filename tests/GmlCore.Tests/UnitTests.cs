@@ -23,7 +23,7 @@ public class Tests
     private const GameLoader CheckLoader = GameLoader.Forge;
 
     private GmlManager GmlManager { get; } =
-        new(new GmlSettings("GamerVIILauncher", "gfweagertghuysergfbsuyerbgiuyserg", httpClient: new HttpClient())
+        new(new GmlSettings("GmlServer", "gfweagertghuysergfbsuyerbgiuyserg", httpClient: new HttpClient())
         {
             TextureServiceEndpoint = "http://gml-web-skins:8085"
         });
@@ -502,8 +502,9 @@ public class Tests
     [Order(75)]
     public async Task CheckInstallDotnet()
     {
+        var logDisposable = GmlManager.System.DownloadLogs.Subscribe(Console.WriteLine);
         var isInstalled = await GmlManager.System.InstallDotnet();
-
+        logDisposable.Dispose();
         Assert.That(isInstalled, Is.True);
     }
 

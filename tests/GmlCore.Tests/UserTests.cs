@@ -8,7 +8,7 @@ namespace GmlCore.Tests;
 
 public class UserProceduresTests
 {
-    private const string LauncherName = "GamerVIILauncher";
+    private const string LauncherName = "GmlServer";
     private const string SecurityKey = "gfweagertghuysergfbsuyerbgiuyserg";
     private const string TestUserName = "testUser";
     private const string TestUserUuid = "F8766986-42F6-3344-B8B4-3AF65B24FA64";
