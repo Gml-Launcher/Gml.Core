@@ -249,6 +249,8 @@ namespace Gml.Core.Helpers.Profiles
                     await gameProfile.GameLoader.DownloadGame(baseProfile.GameVersion, baseProfile.LaunchVersion, gameProfile.Loader, version);
         }
 
+
+
         public async Task<IGameProfile?> GetProfile(string profileName)
         {
             await RestoreProfiles();
@@ -265,6 +267,30 @@ namespace Gml.Core.Helpers.Profiles
             return _gameProfiles.AsEnumerable();
         }
 
+        public Task<IFileInfo?> GetProfileFiles(IGameProfile baseProfile, string directory)
+        {
+            var profileDirectoryInfo = new DirectoryInfo(baseProfile.ClientPath);
+
+            var absolutePath = Path.Combine(profileDirectoryInfo.FullName.Replace(Path.Combine("clients", baseProfile.Name), string.Empty), directory.TrimStart('\\').TrimStart('/'));
+
+            var fileInfo = new FileInfo(absolutePath);
+
+            if (!fileInfo.Exists)
+                return Task.FromResult<IFileInfo?>(null);
+
+            using var algorithm = SHA1.Create();
+            var hash = SystemHelper.CalculateFileHash(fileInfo.FullName, algorithm);
+
+            return Task.FromResult<IFileInfo?>(new LocalFileInfo
+            {
+                Name = Path.GetFileName(absolutePath),
+                Directory = directory,
+                FullPath = fileInfo.FullName,
+                Size = fileInfo.Length,
+                Hash = hash
+            });
+
+        }
 
         public async Task<IEnumerable<IFileInfo>> GetProfileFiles(IGameProfile baseProfile)
         {
@@ -282,11 +308,9 @@ namespace Gml.Core.Helpers.Profiles
                 }
                 else
                 {
-                    using (var algorithm = SHA1.Create())
-                    {
-                        hash = SystemHelper.CalculateFileHash(c.FullName, algorithm);
-                        _fileHashCache[c.FullName] = hash;
-                    }
+                    using var algorithm = SHA1.Create();
+                    hash = SystemHelper.CalculateFileHash(c.FullName, algorithm);
+                    _fileHashCache[c.FullName] = hash;
                 }
 
                 return Task.FromResult(new LocalFileInfo
@@ -639,7 +663,7 @@ namespace Gml.Core.Helpers.Profiles
         {
             profile.FileWhiteList ??= [];
 
-            if (!profile.FileWhiteList.Any(c => c.Hash == file.Hash))
+            if (!profile.FileWhiteList.Contains(file))
             {
                 profile.FileWhiteList.Add(file);
             }
@@ -649,10 +673,10 @@ namespace Gml.Core.Helpers.Profiles
         {
             profile.FileWhiteList ??= [];
 
-            if (profile.FileWhiteList.FirstOrDefault(c => c.Hash == file.Hash) is not { } fileInfo)
+            if (!profile.FileWhiteList.Contains(file))
                 return Task.CompletedTask;
 
-            profile.FileWhiteList.Remove(fileInfo);
+            profile.FileWhiteList.Remove(file);
 
             return SaveProfiles();
 

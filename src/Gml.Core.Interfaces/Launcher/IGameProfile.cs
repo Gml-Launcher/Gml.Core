@@ -204,6 +204,13 @@ namespace GmlCore.Interfaces.Launcher
         Task<ICollection<IFileInfo>> GetProfileFiles(string osName, string osArchitecture);
 
         /// <summary>
+        /// Retrieves information about a specific profile file within the specified directory.
+        /// </summary>
+        /// <param name="directory">The directory where the profile file is located.</param>
+        /// <returns>An object representing the file information of the requested profile file, or null if the file does not exist.</returns>
+        Task<IFileInfo?> GetProfileFiles(string directory);
+
+        /// <summary>
         /// Retrieves all profile files, optionally restoring from cache.
         /// </summary>
         Task<IFileInfo[]> GetAllProfileFiles(bool needRestoreCache);

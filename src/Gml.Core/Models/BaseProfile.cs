@@ -224,6 +224,11 @@ namespace Gml.Models
             }
         }
 
+        public Task<IFileInfo?> GetProfileFiles(string directory)
+        {
+            return ProfileProcedures.GetProfileFiles(this, directory);
+        }
+
         public Task<IFileInfo[]> GetAllProfileFiles(bool needRestoreCache = false)
         {
             return ProfileProcedures.GetAllProfileFiles(this, needRestoreCache);
