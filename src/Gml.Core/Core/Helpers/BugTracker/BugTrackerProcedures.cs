@@ -138,4 +138,9 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
     {
         return _storage.GetFilteredBugsAsync(filter);
     }
+
+    public Task SolveAllAsync()
+    {
+        return _storage.ClearBugsAsync();
+    }
 }
