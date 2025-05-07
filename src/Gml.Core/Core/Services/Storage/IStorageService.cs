@@ -126,7 +126,7 @@ namespace Gml.Core.Services.Storage
         /// <param name="offset">The number of users to skip for pagination purposes.</param>
         /// <param name="findName">The name or partial name to search for.</param>
         /// <returns>An asynchronous operation that returns a collection of users.</returns>
-        Task<IEnumerable<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions, int take, int offset,
+        Task<ICollection<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions, int take, int offset,
             string findName);
 
         /// <summary>

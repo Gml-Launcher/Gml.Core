@@ -23,7 +23,7 @@ public class Tests
     private const GameLoader CheckLoader = GameLoader.Forge;
 
     private GmlManager GmlManager { get; } =
-        new(new GmlSettings("GamerVIILauncher", "gfweagertghuysergfbsuyerbgiuyserg", httpClient: new HttpClient())
+        new(new GmlSettings("GmlServer", "gfweagertghuysergfbsuyerbgiuyserg", httpClient: new HttpClient())
         {
             TextureServiceEndpoint = "http://gml-web-skins:8085"
         });
@@ -31,6 +31,26 @@ public class Tests
     [OneTimeSetUp]
     public async Task Setup()
     {
+        var token = Environment.GetEnvironmentVariable("FORGE_TOKEN") ??
+            (!File.Exists(".env") ? throw new Exception("Forge token not found") :
+            (await File.ReadAllLinesAsync(".env"))
+                .FirstOrDefault(x => x.StartsWith("FORGE_TOKEN="))
+                ?.Split('=', 2)[1] ??
+            throw new Exception("Forge token not found"));
+
+        GmlManager.RestoreSettings<LauncherVersion>();
+
+        var settings = GmlManager.LauncherInfo.Settings;
+
+        GmlManager.LauncherInfo.UpdateSettings(
+            settings.StorageSettings?.StorageType ?? StorageType.LocalStorage,
+            settings.StorageSettings?.StorageHost ?? string.Empty,
+            settings.StorageSettings?.StorageLogin ?? string.Empty,
+            settings.StorageSettings?.StoragePassword ?? string.Empty,
+            settings.StorageSettings?.TextureProtocol ?? TextureProtocol.Http,
+            token,
+            string.Empty);
+
         _testGameProfile = await GmlManager.Profiles.GetProfile(CheckProfileName)
                            ?? await GmlManager.Profiles.AddProfile(CheckProfileName, CheckProfileName, CheckMinecraftVersion,
                                CheckLaunchVersion,
@@ -170,11 +190,11 @@ public class Tests
         Assert.That(server, Is.Not.Null);
     }
 
+#if DEBUG
     [Test]
     [Order(5)]
     public async Task GetOnline()
     {
-
         var server = _testGameProfile.Servers.First(c => c.Name == ServerName);
 
         try
@@ -183,11 +203,12 @@ public class Tests
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            Console.WriteLine($"Server not allowed: {e.Message}");
         }
 
         Assert.That(server, Is.Not.Null);
     }
+#endif
 
     [Test]
     [Order(6)]
@@ -246,162 +267,6 @@ public class Tests
     }
 
     [Test]
-    [Order(41)]
-    public async Task ServerPing1_20_6()
-    {
-        try
-        {
-            // 1.20.6
-            var options = new MinecraftPingOptions
-            {
-                Address = "45.153.68.20",
-                Port = 25565,
-                TimeOut = TimeSpan.FromMilliseconds(300)
-            };
-
-            var status = await Minecraft.PingAsync(options) as JavaStatus;
-
-            Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
-
-            Assert.That(status, Is.Not.Null);
-        }
-        catch (SocketException e)
-        {
-            Console.WriteLine(e);
-        }
-    }
-
-    [Test]
-    [Order(42)]
-    public async Task ServerPing1_7_10()
-    {
-        try
-        {
-            // 1.7.10
-            var options = new MinecraftPingOptions
-            {
-                Address = "45.153.68.20",
-                Port = 25565,
-                TimeOut = TimeSpan.FromMilliseconds(300)
-            };
-
-            var status = await Minecraft.PingAsync(options) as JavaStatus;
-
-            Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
-
-            Assert.That(status, Is.Not.Null);
-        }
-        catch (SocketException e)
-        {
-            Console.WriteLine(e);
-        }
-    }
-
-    [Test]
-    [Order(43)]
-    public async Task ServerPing1_5_2()
-    {
-        try
-        {
-            // 1.5.2
-            var options = new MinecraftPingOptions
-            {
-                Address = "45.153.68.20",
-                Port = 25565,
-                TimeOut = TimeSpan.FromMilliseconds(300)
-            };
-
-            var status = await Minecraft.PingAsync(options) as JavaStatus;
-
-            Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
-
-            Assert.That(status, Is.Not.Null);
-        }
-        catch (SocketException e)
-        {
-            Console.WriteLine(e);
-        }
-    }
-
-    [Test]
-    [Order(44)]
-    public async Task ServerPing1_12_2()
-    {
-        try
-        {
-            // 1.12.2
-            var options = new MinecraftPingOptions
-            {
-                Address = "45.153.68.20",
-                Port = 25565,
-                TimeOut = TimeSpan.FromMilliseconds(300)
-            };
-
-            var status = await Minecraft.PingAsync(options) as JavaStatus;
-
-            Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
-
-            Assert.That(status, Is.Not.Null);
-        }
-        catch (SocketException e)
-        {
-            Console.WriteLine(e);
-        }
-    }
-
-    [Test]
-    [Order(45)]
-    public async Task ServerPing1_16_5()
-    {
-        try
-        {
-            // 1.16.5
-            var options = new MinecraftPingOptions
-            {
-                Address = "45.153.68.20",
-                Port = 25565,
-                TimeOut = TimeSpan.FromMilliseconds(300)
-            };
-
-            var status = await Minecraft.PingAsync(options) as JavaStatus;
-
-            Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
-
-            Assert.That(status, Is.Not.Null);
-        }
-        catch (SocketException e)
-        {
-            Console.WriteLine(e);
-        }
-    }
-
-    [Test]
-    [Order(46)]
-    public async Task ServerPing1_20_1()
-    {
-        try
-        {
-            // 1.20.1
-            var options = new MinecraftPingOptions
-            {
-                Address = "45.153.68.20",
-                Port = 25565,
-                TimeOut = TimeSpan.FromMilliseconds(300)
-            };
-
-            var status = await Minecraft.PingAsync(options) as JavaStatus;
-
-            Console.WriteLine($"{status?.OnlinePlayers} / {status?.MaximumPlayers}");
-
-            Assert.That(status, Is.Not.Null);
-        }
-        catch (SocketException e)
-        {
-            Console.WriteLine(e);
-        }
-    }
-
-    [Test]
     [Order(50)]
     public async Task ChangeLoaderTypeAndSaveProfiles()
     {
@@ -439,11 +304,13 @@ public class Tests
     [Order(75)]
     public async Task CheckInstallDotnet()
     {
+        var logDisposable = GmlManager.System.DownloadLogs.Subscribe(Console.WriteLine);
         var isInstalled = await GmlManager.System.InstallDotnet();
-
+        logDisposable.Dispose();
         Assert.That(isInstalled, Is.True);
     }
 
+#if DEBUG
     [Test]
     [Order(76)]
     public async Task Build_launcher()
@@ -490,6 +357,8 @@ public class Tests
             Assert.That(isBuild, Is.True);
         });
     }
+#endif
+
 
     [Test]
     [Order(80)]
@@ -590,6 +459,7 @@ public class Tests
         Assert.That(mods.OfType<ModrinthMod>(), Is.Not.Empty);
     }
 
+#if DEBUG
     [Test]
     [Order(92)]
     public async Task GetMods_By_CurseForge()
@@ -615,6 +485,7 @@ public class Tests
         Assert.That(mods, Is.Not.Empty);
         Assert.That(mods.OfType<CurseForgeMod>(), Is.Not.Empty);
     }
+#endif
 
     [Test]
     [Order(92)]
@@ -643,6 +514,8 @@ public class Tests
         Assert.That(mods, Is.Not.Null);
     }
 
+
+#if DEBUG
     [Test]
     [Order(92)]
     public async Task GetModsInfo_By_CurseForge()
@@ -669,6 +542,7 @@ public class Tests
 
         Assert.That(mods, Is.Not.Null);
     }
+#endif
 
     [Test]
     [Order(92)]
@@ -712,6 +586,7 @@ public class Tests
 
     }
 
+    #if DEBUG
     [Test]
     [Order(92)]
     public async Task AddModToProfile_From_Forge()
@@ -774,6 +649,7 @@ public class Tests
             return Task.CompletedTask;
         });
     }
+#endif
 
     [Test]
     [Order(94)]

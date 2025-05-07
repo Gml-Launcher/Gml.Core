@@ -24,12 +24,15 @@ public class CustomNewsProvider : BaseNewsProvider
 
     public override async Task<IReadOnlyCollection<INewsData>> GetNews(int count = 20)
     {
-        using var httpClient = new HttpClient();
-
-        var response = await httpClient.GetAsync(_url);
-
-        if (response.IsSuccessStatusCode)
+        try
         {
+            using var httpClient = new HttpClient();
+
+            var response = await httpClient.GetAsync(_url);
+
+            if (!response.IsSuccessStatusCode)
+                return [];
+
             var content = await response.Content.ReadAsStringAsync();
 
             var decoded = WebUtility.HtmlDecode(content);
@@ -46,8 +49,13 @@ public class CustomNewsProvider : BaseNewsProvider
                 Type = Type,
                 Date = x.CreatedAt
             }).ToList();
-        }
 
-        return Array.Empty<INewsData>();
+        }
+        catch (Exception e)
+        {
+            GmlManager.BugTracker.CaptureException(e);
+
+            return [];
+        }
     }
 }

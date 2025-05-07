@@ -37,6 +37,7 @@ namespace GmlCore.Interfaces.Procedures
         Task SaveProfiles();
         Task DownloadProfileAsync(IGameProfile baseProfile, IBootstrapProgram? version = default);
         Task<IEnumerable<IFileInfo>> GetProfileFiles(IGameProfile baseProfile);
+        Task<IFileInfo?> GetProfileFiles(IGameProfile baseProfile, string directory);
         Task<IGameProfile?> GetProfile(string profileName);
         Task<IEnumerable<IGameProfile>> GetProfiles();
         Task<IGameProfileInfo?> GetProfileInfo(string profileName, IStartupOptions startupOptions, IUser user);

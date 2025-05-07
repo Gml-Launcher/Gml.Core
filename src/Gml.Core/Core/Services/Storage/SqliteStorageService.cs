@@ -137,18 +137,19 @@ namespace Gml.Core.Services.Storage
             return users.OfType<T>();
         }
 
-        public async Task<IEnumerable<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions, int take,
+        public async Task<ICollection<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions, int take,
             int offset, string findName)
         {
-            var users = (await _database
+            IEnumerable<T> users = (await _database
                     .Table<UserStorageItem>()
-                    .Where(c => c.Login.Contains(findName))
+                    .Where(c => c.Login.ToLower().Contains(findName.ToLower()))
                     .Take(take)
                     .Skip(offset)
                     .ToListAsync())
-                .Select(x => JsonSerializer.Deserialize<T>(x.Value, jsonSerializerOptions));
+                .Select(x => JsonSerializer.Deserialize<T>(x.Value, jsonSerializerOptions))
+                .Where(x => x != null)!;
 
-            return users!;
+            return users.ToArray();
         }
 
         public async Task AddBugAsync(IBugInfo bugInfo)

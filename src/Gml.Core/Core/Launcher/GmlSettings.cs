@@ -31,7 +31,7 @@ namespace Gml.Core.Launcher
         public string InstallationDirectory { get; }
         public HttpClient HttpClient { get; }
 
-        public IStorageSettings StorageSettings { get; set; }
+        public IStorageSettings? StorageSettings { get; set; }
         public string SecurityKey { get; set; }
         public string TextureServiceEndpoint { get; set; }
     }

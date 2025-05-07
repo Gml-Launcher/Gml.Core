@@ -22,4 +22,10 @@
     <ProjectReference Include="..\..\src\Pingo\Pingo\Pingo.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update=".env">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
