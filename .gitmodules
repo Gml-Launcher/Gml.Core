@@ -12,4 +12,4 @@
 	url = https://github.com/Gml-Launcher/CmlLib.Core.Installer.NeoForge
 [submodule "src/Modrinth.Api"]
 	path = src/Modrinth.Api
-	url = https://github.com/GamerVII-NET/Modrinth.Api.git
+	url = git@github.com:Gml-Launcher/Modrinth.Api.git

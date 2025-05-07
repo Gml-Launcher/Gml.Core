@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using System.Web;
 using Modrinth.Api.Core.Endpoints;
 using Modrinth.Api.Core.System;
-using NotImplementedException = System.NotImplementedException;
 using Version = Modrinth.Api.Models.Dto.Version;
 
 namespace Modrinth.Api.Core.Projects
