@@ -1,3 +1,5 @@
+![Frame 39265](https://github.com/user-attachments/assets/62877114-9fc9-4675-b7ba-0b302005f594)
+
 # Gml.Core
 
 Gml.Core is a core library for the Gml-Launcher project, providing essential functionality for the Minecraft launcher
