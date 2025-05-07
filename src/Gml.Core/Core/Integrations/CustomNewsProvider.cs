@@ -48,6 +48,6 @@ public class CustomNewsProvider : BaseNewsProvider
             }).ToList();
         }
 
-        return Array.Empty<INewsData>();
+        return [];
     }
 }
