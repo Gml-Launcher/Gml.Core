@@ -50,6 +50,11 @@ public class TextureProvider(string textureServiceEndpoint, IBugTrackerProcedure
 
             return model?.ClockUrl!;
         }
+        catch (HttpRequestException exception) when (exception.Message.Contains("404"))
+        {
+            Debug.WriteLine(exception);
+            return string.Empty;
+        }
         catch (Exception exception)
         {
             bugTracker.CaptureException(exception);
