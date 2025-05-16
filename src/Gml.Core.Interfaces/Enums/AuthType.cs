@@ -10,5 +10,6 @@ public enum AuthType
     UnicoreCMS = 5,
     CustomEndpoint = 6,
     NamelessMC = 7,
-    WebMCR = 8,
+    WebMCRReloaded = 8,
+    WordPress = 9,
 }
