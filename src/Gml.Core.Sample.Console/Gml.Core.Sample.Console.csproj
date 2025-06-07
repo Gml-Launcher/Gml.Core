@@ -8,9 +8,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\src\Gml.Core.Interfaces\Gml.Core.Interfaces.csproj" />
-      <ProjectReference Include="..\src\Gml.Core\Gml.Core.csproj" />
-      <ProjectReference Include="..\tests\GmlCore.Tests\GmlCore.Tests.csproj" />
+      <ProjectReference Include="..\..\tests\GmlCore.Tests\GmlCore.Tests.csproj" />
+      <ProjectReference Include="..\Gml.Core.Interfaces\Gml.Core.Interfaces.csproj" />
+      <ProjectReference Include="..\Gml.Core\Gml.Core.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,0 +1,75 @@
+{
+  "format": 1,
+  "restore": {
+    "D:\\Projects\\RiderProjects\\Gml.Backend\\src\\Gml.Web.Api\\src\\Gml.Core\\src\\Modrinth.Api\\src\\Modrinth.Api.Domains\\Modrinth.Api.Domains.csproj": {}
+  },
+  "projects": {
+    "D:\\Projects\\RiderProjects\\Gml.Backend\\src\\Gml.Web.Api\\src\\Gml.Core\\src\\Modrinth.Api\\src\\Modrinth.Api.Domains\\Modrinth.Api.Domains.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Projects\\RiderProjects\\Gml.Backend\\src\\Gml.Web.Api\\src\\Gml.Core\\src\\Modrinth.Api\\src\\Modrinth.Api.Domains\\Modrinth.Api.Domains.csproj",
+        "projectName": "Modrinth.Api.Domains",
+        "projectPath": "D:\\Projects\\RiderProjects\\Gml.Backend\\src\\Gml.Web.Api\\src\\Gml.Core\\src\\Modrinth.Api\\src\\Modrinth.Api.Domains\\Modrinth.Api.Domains.csproj",
+        "packagesPath": "C:\\Users\\a.a.terentiev\\.nuget\\packages\\",
+        "outputPath": "D:\\Projects\\RiderProjects\\Gml.Backend\\src\\Gml.Web.Api\\src\\Gml.Core\\src\\Modrinth.Api\\src\\Modrinth.Api.Domains\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "D:\\Programs\\DotNET\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\a.a.terentiev\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netstandard2.1"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {},
+          "https://nuget.recloud.tech/repository/nuget-hosted": {}
+        },
+        "frameworks": {
+          "netstandard2.1": {
+            "targetAlias": "netstandard2.1",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.200"
+      },
+      "frameworks": {
+        "netstandard2.1": {
+          "targetAlias": "netstandard2.1",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "NETStandard.Library": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.202\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

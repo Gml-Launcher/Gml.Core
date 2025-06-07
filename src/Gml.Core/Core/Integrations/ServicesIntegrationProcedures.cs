@@ -43,7 +43,8 @@ public class ServicesIntegrationProcedures(
             new AuthServiceInfo("UnicoreCMS", AuthType.UnicoreCMS),
             new AuthServiceInfo("CustomEndpoint", AuthType.CustomEndpoint),
             new AuthServiceInfo("NamelessMC", AuthType.NamelessMC),
-            new AuthServiceInfo("WebMCR", AuthType.WebMCR)
+            new AuthServiceInfo("WebMCR Reloaded", AuthType.WebMCRReloaded),
+            new AuthServiceInfo("WordPress ", AuthType.WordPress)
         }.AsEnumerable());
     }
 

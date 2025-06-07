@@ -1,3 +1,4 @@
+using System.IO;
 using GmlCore.Interfaces.System;
 
 namespace Gml.Models.System;
@@ -9,6 +10,17 @@ public class LocalFileInfo : IFileInfo
     public long Size { get; set; }
     public string Hash { get; set; }
     public string FullPath { get; set; }
+
+    public LocalFileInfo()
+    {
+
+    }
+
+    public LocalFileInfo(string directory)
+    {
+        Directory = directory;
+        Name = Path.GetFileName(directory);
+    }
 
     public override string ToString()
     {
