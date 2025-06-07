@@ -11,7 +11,7 @@ namespace Gml.Core.Launcher
             ScreenHeight = 500,
             ScreenWidth = 500,
             MaximumRamMb = 1024,
-            MinimumRamMb = 1024,
+            MinimumRamMb = 512,
             OsName = "windows",
             OsArch = "64"
         };
