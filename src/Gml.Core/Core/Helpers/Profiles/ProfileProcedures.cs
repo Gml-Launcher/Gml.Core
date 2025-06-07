@@ -123,7 +123,7 @@ namespace Gml.Core.Helpers.Profiles
             await AddProfile(profile);
 
             await AddFileToWhiteList(profile, [
-                new LocalFileInfo("options.txt"),
+                new LocalFileInfo(Path.Combine("clients", profile.Name, "options.txt")),
             ]);
 
             await AddFolderToWhiteList(profile, [
