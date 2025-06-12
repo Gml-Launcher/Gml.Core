@@ -33,6 +33,7 @@ using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Mods;
 using GmlCore.Interfaces.Procedures;
+using GmlCore.Interfaces.Storage;
 using GmlCore.Interfaces.System;
 using GmlCore.Interfaces.User;
 

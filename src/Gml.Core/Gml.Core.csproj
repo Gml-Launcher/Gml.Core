@@ -34,9 +34,6 @@
     <Compile Update="Models\GameProfile.cs">
       <DependentUpon>BaseProfile.cs</DependentUpon>
     </Compile>
-    <Compile Update="Core\Services\Storage\SqliteStorageService.cs">
-      <DependentUpon>IStorageService.cs</DependentUpon>
-    </Compile>
   </ItemGroup>
 
 </Project>

@@ -42,6 +42,7 @@ namespace Gml
             Launcher = new LauncherProcedures(LauncherInfo, Storage, Files, this);
             Servers = (IProfileServersProcedures)Profiles;
         }
+
         public IStorageService Storage { get; }
         public ILauncherInfo LauncherInfo { get; }
         public IBugTrackerProcedures BugTracker { get; }

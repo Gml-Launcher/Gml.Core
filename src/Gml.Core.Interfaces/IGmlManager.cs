@@ -17,6 +17,7 @@ namespace GmlCore.Interfaces
         IProfileServersProcedures Servers { get; }
         INotificationProcedures Notifications { get; }
         IModsProcedures Mods { get; }
+        IStorageService Storage { get; }
         void RestoreSettings<T>() where T : IVersionFile;
     }
 }

@@ -11,6 +11,7 @@ using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Integrations;
 using GmlCore.Interfaces.News;
 using GmlCore.Interfaces.Procedures;
+using GmlCore.Interfaces.Storage;
 
 namespace Gml.Core.Integrations;
 

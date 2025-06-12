@@ -13,6 +13,7 @@ using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.News;
 using GmlCore.Interfaces.Sentry;
+using GmlCore.Interfaces.Storage;
 using GmlCore.Interfaces.User;
 using Newtonsoft.Json;
 using SQLite;
