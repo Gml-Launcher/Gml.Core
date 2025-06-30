@@ -64,12 +64,12 @@ namespace GmlCore.Interfaces.Launcher
         /// <summary>
         /// Base64 encoded icon for the profile.
         /// </summary>
-        string IconBase64 { get; set; }
+        string? IconBase64 { get; set; }
 
         /// <summary>
         /// Key for the background image.
         /// </summary>
-        string BackgroundImageKey { get; set; }
+        string? BackgroundImageKey { get; set; }
 
         /// <summary>
         /// Description of the game profile.
