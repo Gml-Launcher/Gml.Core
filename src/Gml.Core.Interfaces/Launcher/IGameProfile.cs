@@ -136,7 +136,17 @@ namespace GmlCore.Interfaces.Launcher
         /// Indicates whether the profile can be modified.
         /// </summary>
         bool CanEdit { get; }
+
+        /// <summary>
+        /// Represents the execution priority of the game profile, which determines its order or importance
+        /// when being processed or invoked within the application.
+        /// </summary>
         int Priority { get; set; }
+
+        /// <summary>
+        /// Represents the recommended amount of RAM, in megabytes, for optimal performance within the profile configuration.
+        /// </summary>
+        int RecommendedRam { get; set; }
 
         /// <summary>
         /// Validates the game profile.

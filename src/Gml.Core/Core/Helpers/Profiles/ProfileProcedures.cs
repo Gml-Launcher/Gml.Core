@@ -706,7 +706,8 @@ namespace Gml.Core.Helpers.Profiles
             bool isEnabled,
             string jvmArguments,
             string gameArguments,
-            int priority)
+            int priority,
+            int recommendedRam)
         {
             var directory =
                 new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "clients", profile.Name));
@@ -727,7 +728,7 @@ namespace Gml.Core.Helpers.Profiles
                 : await _gmlManager.Files.LoadFile(backgroundImage, "profile-backgrounds");
 
             await UpdateProfile(profile, newProfileName, displayName, iconBase64, backgroundKey, updateDtoDescription,
-                needRenameFolder, directory, newDirectory, isEnabled, jvmArguments, gameArguments, priority);
+                needRenameFolder, directory, newDirectory, isEnabled, jvmArguments, gameArguments, priority, recommendedRam);
         }
 
         private async Task<string> ConvertStreamToBase64Async(Stream stream)
@@ -747,7 +748,8 @@ namespace Gml.Core.Helpers.Profiles
             bool isEnabled,
             string jvmArguments,
             string gameArguments,
-            int priority)
+            int priority,
+            int recommendedRam)
         {
             profile.Name = newProfileName;
             profile.DisplayName = displayName;
@@ -758,6 +760,7 @@ namespace Gml.Core.Helpers.Profiles
             profile.JvmArguments = jvmArguments;
             profile.GameArguments = gameArguments;
             profile.Priority = priority;
+            profile.RecommendedRam = recommendedRam;
 
             profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications, _gmlManager.BugTracker);
             profile.State = profile.State == ProfileState.Created ? profile.State : ProfileState.NeedCompile;
