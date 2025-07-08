@@ -41,7 +41,8 @@ namespace Gml.Core.Helpers.User
             string protocol,
             IPAddress? address,
             string? customUuid,
-            string? hwid)
+            string? hwid,
+            bool isSlim)
         {
             var authUser = await _storage.GetUserAsync<AuthUser>(login, new JsonSerializerOptions
             {
@@ -56,6 +57,7 @@ namespace Gml.Core.Helpers.User
             authUser.Uuid = customUuid ?? UsernameToUuid(login);
             authUser.ExpiredDate = DateTime.Now + TimeSpan.FromDays(30);
             authUser.Manager = _gmlManager;
+            authUser.IsSlim = isSlim;
 
             await _storage.SetUserAsync(login, authUser.Uuid, authUser);
 
