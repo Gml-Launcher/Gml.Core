@@ -31,6 +31,7 @@ namespace Gml.Core.User
         public string? AccessToken { get; set; }
         public string? Uuid { get; set; }
         public DateTime ExpiredDate { get; set; }
+        public bool IsSlim { get; set; }
         public List<ISession> Sessions { get; set; } = [];
         [JsonIgnore]
         public IGmlManager Manager { get; set; }
