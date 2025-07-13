@@ -158,7 +158,7 @@ public class ModsProcedures : IModsProcedures
             DatePublished = version.DatePublished,
             Downloads = version.Downloads,
             Dependencies = version.Dependencies,
-            Files = version.Files.Select(c => c.Url).ToList()
+            Files = version.Files.Where(c => !c.Filename.StartsWith("sources_")).Select(c => c.Url).ToList()
         }).ToArray();
     }
 
