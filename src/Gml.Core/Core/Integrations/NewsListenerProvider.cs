@@ -57,7 +57,7 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
         return Task.FromResult<ICollection<INewsData>>(_newsCache);
     }
 
-    public async Task RefreshAsync(long number = 0)
+    public async Task RefreshAsync(long count = 0)
     {
         try
         {
