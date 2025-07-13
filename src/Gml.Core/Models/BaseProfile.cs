@@ -52,6 +52,7 @@ namespace Gml.Models
         public string DisplayName { get; set; }
         public bool CanEdit => State != ProfileState.Loading && State != ProfileState.Packing;
         public int Priority { get; set; }
+        public int RecommendedRam { get; set; }
         public bool IsEnabled { get; set; }
         public string GameVersion { get; set; }
         public string? LaunchVersion { get; set; }
