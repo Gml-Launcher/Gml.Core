@@ -719,11 +719,11 @@ namespace Gml.Core.Helpers.Profiles
                 return;
 
             var iconBase64 = icon is null
-                ? profile.IconBase64
+                ? null
                 : await ConvertStreamToBase64Async(icon);
 
             var backgroundKey = backgroundImage is null
-                ? profile.BackgroundImageKey
+                ? null
                 : await _gmlManager.Files.LoadFile(backgroundImage, "profile-backgrounds");
 
             await UpdateProfile(profile, newProfileName, displayName, iconBase64, backgroundKey, updateDtoDescription,
@@ -741,8 +741,8 @@ namespace Gml.Core.Helpers.Profiles
         }
 
         private async Task UpdateProfile(IGameProfile profile, string newProfileName, string displayName,
-            string newIcon,
-            string backgroundImageKey,
+            string? newIcon,
+            string? backgroundImageKey,
             string newDescription, bool needRenameFolder, DirectoryInfo directory, DirectoryInfo newDirectory,
             bool isEnabled,
             string jvmArguments,
