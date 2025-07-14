@@ -13,3 +13,6 @@
 [submodule "src/Modrinth.Api"]
 	path = src/Modrinth.Api
 	url = git@github.com:Gml-Launcher/Modrinth.Api.git
+[submodule "src/src/Modrinth.Api"]
+	path = src/src/Modrinth.Api
+	url = git@github.com:Gml-Launcher/Modrinth.Api.git
