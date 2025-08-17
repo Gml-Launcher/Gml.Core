@@ -19,6 +19,7 @@ using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.Sentry;
+using GmlCore.Interfaces.Storage;
 using GmlCore.Interfaces.System;
 using GmlCore.Interfaces.User;
 

@@ -3,13 +3,10 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
-using GmlCore.Interfaces.News;
 using GmlCore.Interfaces.Sentry;
-using GmlCore.Interfaces.User;
 
-namespace Gml.Core.Services.Storage
+namespace GmlCore.Interfaces.Storage
 {
     /// <summary>
     ///     Represents a service for managing local storage.

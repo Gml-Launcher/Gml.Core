@@ -33,6 +33,7 @@ using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Mods;
 using GmlCore.Interfaces.Procedures;
+using GmlCore.Interfaces.Storage;
 using GmlCore.Interfaces.System;
 using GmlCore.Interfaces.User;
 
@@ -705,7 +706,8 @@ namespace Gml.Core.Helpers.Profiles
             bool isEnabled,
             string jvmArguments,
             string gameArguments,
-            int priority)
+            int priority,
+            int recommendedRam)
         {
             var directory =
                 new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "clients", profile.Name));
@@ -718,15 +720,15 @@ namespace Gml.Core.Helpers.Profiles
                 return;
 
             var iconBase64 = icon is null
-                ? profile.IconBase64
+                ? null
                 : await ConvertStreamToBase64Async(icon);
 
             var backgroundKey = backgroundImage is null
-                ? profile.BackgroundImageKey
+                ? null
                 : await _gmlManager.Files.LoadFile(backgroundImage, "profile-backgrounds");
 
             await UpdateProfile(profile, newProfileName, displayName, iconBase64, backgroundKey, updateDtoDescription,
-                needRenameFolder, directory, newDirectory, isEnabled, jvmArguments, gameArguments, priority);
+                needRenameFolder, directory, newDirectory, isEnabled, jvmArguments, gameArguments, priority, recommendedRam);
         }
 
         private async Task<string> ConvertStreamToBase64Async(Stream stream)
@@ -740,13 +742,14 @@ namespace Gml.Core.Helpers.Profiles
         }
 
         private async Task UpdateProfile(IGameProfile profile, string newProfileName, string displayName,
-            string newIcon,
-            string backgroundImageKey,
+            string? newIcon,
+            string? backgroundImageKey,
             string newDescription, bool needRenameFolder, DirectoryInfo directory, DirectoryInfo newDirectory,
             bool isEnabled,
             string jvmArguments,
             string gameArguments,
-            int priority)
+            int priority,
+            int recommendedRam)
         {
             profile.Name = newProfileName;
             profile.DisplayName = displayName;
@@ -757,6 +760,7 @@ namespace Gml.Core.Helpers.Profiles
             profile.JvmArguments = jvmArguments;
             profile.GameArguments = gameArguments;
             profile.Priority = priority;
+            profile.RecommendedRam = recommendedRam;
 
             profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications, _gmlManager.BugTracker);
             profile.State = profile.State == ProfileState.Created ? profile.State : ProfileState.NeedCompile;

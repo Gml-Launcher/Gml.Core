@@ -1,9 +1,9 @@
 [submodule "src/CmlLib.Core.Installer.Forge"]
 	path = src/CmlLib.Core.Installer.Forge
-	url = https://github.com/GamerVII-NET/CmlLib.Core.Installer.Forge
+	url = https://github.com/Gml-Launcher/CmlLib.Core.Installer.Forge.git
 [submodule "src/CmlLib.ExtendedCore"]
 	path = src/CmlLib.ExtendedCore
-	url = https://github.com/GamerVII-NET/CmlLib.Core.git
+	url = https://github.com/Gml-Launcher/CmlLib.Core.git
 [submodule "src/Pingo"]
 	path = src/Pingo
 	url = https://github.com/GamerVII-NET/Pingo.git
@@ -12,4 +12,4 @@
 	url = https://github.com/Gml-Launcher/CmlLib.Core.Installer.NeoForge
 [submodule "src/Modrinth.Api"]
 	path = src/Modrinth.Api
-	url = git@github.com:Gml-Launcher/Modrinth.Api.git
+	url = https://github.com/Gml-Launcher/Modrinth.Api.git

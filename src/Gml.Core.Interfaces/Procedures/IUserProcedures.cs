@@ -16,7 +16,8 @@ namespace GmlCore.Interfaces.Procedures
             string protocol,
             IPAddress? address,
             string? customUuid,
-            string? hwid);
+            string? hwid,
+            bool isSlim);
         Task<IUser?> GetUserByUuid(string uuid);
         Task<IUser?> GetUserByName(string userName);
         Task<IUser?> GetUserBySkinGuid(string guid);

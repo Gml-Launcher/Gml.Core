@@ -31,7 +31,7 @@ public class UserProceduresTests
 
         if (user is null)
         {
-            await _gmlManager.Users.GetAuthData(TestUserName, TestUserName, "Desktop", "1.0", IPAddress.Parse("127.0.0.1"), null, null);
+            await _gmlManager.Users.GetAuthData(TestUserName, TestUserName, "Desktop", "1.0", IPAddress.Parse("127.0.0.1"), null, null, false);
         }
     }
 
@@ -46,7 +46,7 @@ public class UserProceduresTests
         IPAddress address = IPAddress.Parse("127.0.0.1");
 
         // Act
-        var result = await _gmlManager.Users.GetAuthData(login, password, device, protocol, address, null, null);
+        var result = await _gmlManager.Users.GetAuthData(login, password, device, protocol, address, null, null, false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -65,7 +65,7 @@ public class UserProceduresTests
         string customUuid = "custom-uuid";
 
         // Act
-        var result = await _gmlManager.Users.GetAuthData(login, password, device, protocol, null, customUuid, null);
+        var result = await _gmlManager.Users.GetAuthData(login, password, device, protocol, null, customUuid, null, false);
 
         // Assert
         Assert.That(result, Is.Not.Null);

@@ -468,7 +468,8 @@ namespace Gml.Core.Sample.Console
                         "1.0",
                         IPAddress.Parse("127.0.0.1"),
                         null,
-                        null);
+                        null,
+                        false);
 
                     if (user != null)
                     {

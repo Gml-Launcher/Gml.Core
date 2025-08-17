@@ -11,6 +11,7 @@ using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Integrations;
 using GmlCore.Interfaces.News;
 using GmlCore.Interfaces.Procedures;
+using GmlCore.Interfaces.Storage;
 
 namespace Gml.Core.Integrations;
 
@@ -56,7 +57,7 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
         return Task.FromResult<ICollection<INewsData>>(_newsCache);
     }
 
-    public async Task RefreshAsync(long number = 0)
+    public async Task RefreshAsync(long count = 0)
     {
         try
         {

@@ -15,6 +15,7 @@ using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Mods;
 using GmlCore.Interfaces.Procedures;
+using GmlCore.Interfaces.Storage;
 using Modrinth.Api;
 using Modrinth.Api.Core.Filter;
 using Modrinth.Api.Models.Projects;
@@ -157,7 +158,7 @@ public class ModsProcedures : IModsProcedures
             DatePublished = version.DatePublished,
             Downloads = version.Downloads,
             Dependencies = version.Dependencies,
-            Files = version.Files.Select(c => c.Url).ToList()
+            Files = version.Files.Where(c => !c.Filename.StartsWith("sources_")).Select(c => c.Url).ToList()
         }).ToArray();
     }
 
