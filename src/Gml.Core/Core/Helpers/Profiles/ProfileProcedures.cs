@@ -707,7 +707,8 @@ namespace Gml.Core.Helpers.Profiles
             string jvmArguments,
             string gameArguments,
             int priority,
-            int recommendedRam)
+            int recommendedRam,
+            bool needUpdateImages)
         {
             var directory =
                 new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "clients", profile.Name));
@@ -719,16 +720,29 @@ namespace Gml.Core.Helpers.Profiles
             if (newDirectory.Exists && profile.Name != newProfileName)
                 return;
 
-            var iconBase64 = icon is null
+            var iconBase64 = icon is null || !needUpdateImages
                 ? null
                 : await ConvertStreamToBase64Async(icon);
 
-            var backgroundKey = backgroundImage is null
+            var backgroundKey = backgroundImage is null || !needUpdateImages
                 ? null
                 : await _gmlManager.Files.LoadFile(backgroundImage, "profile-backgrounds");
 
-            await UpdateProfile(profile, newProfileName, displayName, iconBase64, backgroundKey, updateDtoDescription,
-                needRenameFolder, directory, newDirectory, isEnabled, jvmArguments, gameArguments, priority, recommendedRam);
+            await UpdateProfile(
+                profile,
+                newProfileName,
+                displayName,
+                needUpdateImages ? iconBase64 : profile.IconBase64,
+                needUpdateImages ? backgroundKey : profile.BackgroundImageKey,
+                updateDtoDescription,
+                needRenameFolder,
+                directory,
+                newDirectory,
+                isEnabled,
+                jvmArguments,
+                gameArguments,
+                priority,
+                recommendedRam);
         }
 
         private async Task<string> ConvertStreamToBase64Async(Stream stream)
