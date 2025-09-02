@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2"/>
     <PackageReference Include="CurseForge.APIClient" Version="3.0.0" />
+    <PackageReference Include="Gml.Web.Api.Domains" Version="2025.1.1" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.1.2" />
     <PackageReference Include="Minio" Version="6.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

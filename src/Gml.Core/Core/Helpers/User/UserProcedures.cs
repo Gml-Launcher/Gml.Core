@@ -250,6 +250,36 @@ namespace Gml.Core.Helpers.User
             return tokenHandler.WriteToken(token);
         }
 
+        public bool ValidateAccessToken(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+                return false;
+
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes(_settings.SecurityKey);
+
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                tokenHandler.ValidateToken(token, validationParameters, out _);
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         private string UsernameToUuid(string username)
         {
             return GetOfflinePlayerUuid(username);
