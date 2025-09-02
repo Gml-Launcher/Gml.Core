@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using CurseForge.APIClient.Models.Files;
 using GmlCore.Interfaces.Mods;
-using Modrinth.Api.Models.Dto.Entities;
 
 namespace Gml.Models.Mods;
 
