@@ -17,7 +17,6 @@ using CmlLib.Core.ModLoaders.FabricMC;
 using CmlLib.Core.ModLoaders.LiteLoader;
 using CmlLib.Core.ModLoaders.QuiltMC;
 using CmlLib.Core.VersionMetadata;
-using CommunityToolkit.Diagnostics;
 using Gml.Common;
 using Gml.Core.Constants;
 using Gml.Core.Exceptions;
@@ -106,10 +105,10 @@ namespace Gml.Core.Helpers.Profiles
             string description)
         {
             if (string.IsNullOrEmpty(name))
-                ThrowHelper.ThrowArgumentNullException<string>(name);
+                throw new ArgumentNullException(nameof(name));
 
             if (string.IsNullOrEmpty(version))
-                ThrowHelper.ThrowArgumentNullException<string>(version);
+                throw new ArgumentNullException(nameof(name));
 
             var profile = new GameProfile(name, displayName, version, loader)
             {
