@@ -18,7 +18,7 @@
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116"/>
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.1.2" />
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0"/>
-     <PackageReference Include="System.Text.Json" Version="8.0.6" />
+     <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,6 +34,12 @@
     <Compile Update="Models\GameProfile.cs">
       <DependentUpon>BaseProfile.cs</DependentUpon>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Http.Features">
+      <HintPath>C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\8.0.14\Microsoft.AspNetCore.Http.Features.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
