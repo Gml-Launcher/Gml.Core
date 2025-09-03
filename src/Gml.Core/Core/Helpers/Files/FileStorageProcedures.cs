@@ -62,8 +62,7 @@ namespace Gml.Core.Helpers.Files
 
         public async Task<IFileInfo?> DownloadFileStream(
             string fileHash,
-            Stream outputStream,
-            IHeaderDictionary headers)
+            Stream outputStream)
         {
             LocalFileInfo? localFileInfo = default;
 
@@ -115,7 +114,7 @@ namespace Gml.Core.Helpers.Files
 
                         if (metadata is not null)
                         {
-                            headers.Add("Content-Disposition", $"attachment; filename={metadata.Tags["file-name"]}");
+                            // headers.Add("Content-Disposition", $"attachment; filename={metadata.Tags["file-name"]}");
                             await MinioClient.GetObjectAsync(getObjectArgs);
                         }
                         else
@@ -126,7 +125,7 @@ namespace Gml.Core.Helpers.Files
                                 .WithCallbackStream(async (stream, token) =>
                                     await stream.CopyToAsync(outputStream, token));
 
-                            headers.Add("Content-Disposition", $"attachment; filename={fileHash}");
+                            // headers.Add("Content-Disposition", $"attachment; filename={fileHash}");
                             await MinioClient.GetObjectAsync(getObjectArgs);
                         }
 
