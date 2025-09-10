@@ -234,8 +234,19 @@ namespace Gml.Core.Services.Storage
             }
         }
 
-        public Task AddLockedHwid(IHardware hardware)
+        public async Task AddLockedHwid(IHardware hardware)
         {
+            var exists = await _database.Table<BannedHardwareItem>()
+                .Where(x => x.CpuIdentifier == hardware.CpuIdentifier)
+                .Where(x => x.MotherboardIdentifier == hardware.MotherboardIdentifier)
+                .Where(x => x.DiskIdentifiers == hardware.DiskIdentifiers)
+                .FirstOrDefaultAsync();
+
+            if (exists != null)
+            {
+                return;
+            }
+
             var storageItem = new BannedHardwareItem
             {
                 CpuIdentifier = hardware.CpuIdentifier,
@@ -243,7 +254,22 @@ namespace Gml.Core.Services.Storage
                 MotherboardIdentifier = hardware.MotherboardIdentifier
             };
 
-            return _database.InsertAsync(storageItem);
+            await _database.InsertAsync(storageItem);
+        }
+
+        public async Task RemoveLockedHwid(IHardware hardware)
+        {
+            var query = _database.Table<BannedHardwareItem>()
+                .Where(x => x.CpuIdentifier == hardware.CpuIdentifier)
+                .Where(x => x.MotherboardIdentifier == hardware.MotherboardIdentifier)
+                .Where(x => x.DiskIdentifiers == hardware.DiskIdentifiers);
+
+            var items = await query.ToListAsync();
+
+            foreach (var item in items)
+            {
+                await _database.DeleteAsync(item);
+            }
         }
 
         public async Task AddNewsListenerAsync(INews newsListener)

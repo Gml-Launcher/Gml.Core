@@ -20,5 +20,16 @@ namespace Gml.Core.User
 
             await base.Block(isPermanent);
         }
+
+        public override async Task Unblock(bool isPermanent)
+        {
+            if (isPermanent)
+            {
+                var hwids = AuthHistory.Select(c => c.Hwid).Distinct();
+                await Manager.Users.UnblockHardware(hwids);
+            }
+
+            await base.Unblock(isPermanent);
+        }
     }
 }

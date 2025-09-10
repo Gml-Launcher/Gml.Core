@@ -37,5 +37,6 @@ namespace GmlCore.Interfaces.Procedures
         Task<IUser?> GetUserByAccessToken(string accessToken);
         bool ValidateAccessToken(string token);
         Task BlockHardware(IEnumerable<string?> hwids);
+        Task UnblockHardware(IEnumerable<string?> hwids);
     }
 }

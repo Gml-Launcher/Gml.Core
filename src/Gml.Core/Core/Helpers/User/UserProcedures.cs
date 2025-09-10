@@ -296,6 +296,14 @@ namespace Gml.Core.Helpers.User
             }
         }
 
+        public async Task UnblockHardware(IEnumerable<string?> hwids)
+        {
+            foreach (var hwid in hwids)
+            {
+                await _storage.RemoveLockedHwid(new Hardware(hwid));
+            }
+        }
+
         private string UsernameToUuid(string username)
         {
             return GetOfflinePlayerUuid(username);

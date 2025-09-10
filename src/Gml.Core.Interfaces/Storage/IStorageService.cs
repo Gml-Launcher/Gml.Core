@@ -174,5 +174,12 @@ namespace GmlCore.Interfaces.Storage
         /// <param name="hardware">The hardware information, including identifiers to be locked.</param>
         /// <returns>An asynchronous operation representing the completion of the add operation.</returns>
         Task AddLockedHwid(IHardware hardware);
+
+        /// <summary>
+        /// Removes a hardware identifier (HWID) from the locked list in storage if it matches the given hardware properties.
+        /// </summary>
+        /// <param name="hardware">The hardware object containing identifier properties to be removed from the locked list.</param>
+        /// <returns>An asynchronous operation representing the completion of the removal process.</returns>
+        Task RemoveLockedHwid(IHardware hardware);
     }
 }
