@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
 using Gml.Core.User;
 using Gml.Models.Converters;
@@ -66,10 +67,17 @@ namespace Gml.Core.Helpers.User
 
         public async Task<IUser?> GetUserByUuid(string uuid)
         {
-            return await _storage.GetUserByUuidAsync<AuthUser>(uuid, new JsonSerializerOptions
+            var user = await _storage.GetUserByUuidAsync<AuthUser>(uuid, new JsonSerializerOptions
             {
                 Converters = { new SessionConverter() }
             });
+
+            if (user is not null)
+            {
+                user.Manager = _gmlManager;
+            }
+
+            return user;
         }
 
         public async Task<IUser?> GetUserByName(string userName)
@@ -277,6 +285,14 @@ namespace Gml.Core.Helpers.User
             catch (Exception)
             {
                 return false;
+            }
+        }
+
+        public async Task BlockHardware(IEnumerable<string?> hwids)
+        {
+            foreach (var hwid in hwids)
+            {
+                await _storage.AddLockedHwid(new Hardware(hwid));
             }
         }
 

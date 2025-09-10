@@ -234,6 +234,18 @@ namespace Gml.Core.Services.Storage
             }
         }
 
+        public Task AddLockedHwid(IHardware hardware)
+        {
+            var storageItem = new BannedHardwareItem
+            {
+                CpuIdentifier = hardware.CpuIdentifier,
+                DiskIdentifiers = hardware.DiskIdentifiers,
+                MotherboardIdentifier = hardware.MotherboardIdentifier
+            };
+
+            return _database.InsertAsync(storageItem);
+        }
+
         public async Task AddNewsListenerAsync(INews newsListener)
         {
             var storageNews = await _database.Table<StorageItem>()
@@ -335,6 +347,7 @@ namespace Gml.Core.Services.Storage
             _database.CreateTableAsync<StorageItem>().Wait();
             _database.CreateTableAsync<UserStorageItem>().Wait();
             _database.CreateTableAsync<BugItem>().Wait();
+            _database.CreateTableAsync<BannedHardwareItem>().Wait();
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using GmlCore.Interfaces;
@@ -35,6 +36,13 @@ namespace Gml.Core.User
         public List<ISession> Sessions { get; set; } = [];
         [JsonIgnore]
         public IGmlManager Manager { get; set; }
+
+        public virtual async Task Block(bool isPermanent)
+        {
+            IsBanned = true;
+
+            await Manager.Users.UpdateUser(this);
+        }
 
         public async Task DownloadAndInstallSkinAsync(string skinUrl)
         {

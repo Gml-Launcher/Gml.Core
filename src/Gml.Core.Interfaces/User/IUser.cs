@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace GmlCore.Interfaces.User
 {
@@ -19,5 +20,6 @@ namespace GmlCore.Interfaces.User
         public DateTime ExpiredDate { get; set; }
         List<ISession> Sessions { get; set; }
         IGmlManager Manager { get; set; }
+        Task Block(bool isPermanent);
     }
 }
