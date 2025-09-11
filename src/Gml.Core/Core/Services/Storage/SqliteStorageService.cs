@@ -272,6 +272,17 @@ namespace Gml.Core.Services.Storage
             }
         }
 
+        public async Task<bool> ContainsLockedHwid(IHardware hardware)
+        {
+            var exists = await _database.Table<BannedHardwareItem>()
+                .Where(x => x.CpuIdentifier == hardware.CpuIdentifier)
+                .Where(x => x.MotherboardIdentifier == hardware.MotherboardIdentifier)
+                .Where(x => x.DiskIdentifiers == hardware.DiskIdentifiers)
+                .FirstOrDefaultAsync();
+
+            return exists != null;
+        }
+
         public async Task AddNewsListenerAsync(INews newsListener)
         {
             var storageNews = await _database.Table<StorageItem>()

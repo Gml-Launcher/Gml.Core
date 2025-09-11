@@ -38,5 +38,12 @@ namespace GmlCore.Interfaces.Procedures
         bool ValidateAccessToken(string token);
         Task BlockHardware(IEnumerable<string?> hwids);
         Task UnblockHardware(IEnumerable<string?> hwids);
+
+        /// <summary>
+        /// Checks whether the specified hardware is blocked.
+        /// </summary>
+        /// <param name="hardware">Hardware identifiers to check.</param>
+        /// <returns>True if blocked; otherwise, false.</returns>
+        Task<bool> CheckContainsHardware(IHardware hardware);
     }
 }

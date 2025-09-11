@@ -304,6 +304,11 @@ namespace Gml.Core.Helpers.User
             }
         }
 
+        public Task<bool> CheckContainsHardware(IHardware hardware)
+        {
+            return _storage.ContainsLockedHwid(hardware);
+        }
+
         private string UsernameToUuid(string username)
         {
             return GetOfflinePlayerUuid(username);
