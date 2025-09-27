@@ -35,7 +35,6 @@ namespace GmlCore.Interfaces.Procedures
         Task<Stream> GetCloak(IUser user);
         Task<Stream> GetHead(IUser user);
         Task<IUser?> GetUserByAccessToken(string accessToken);
-        bool ValidateAccessToken(string token);
         Task BlockHardware(IEnumerable<string?> hwids);
         Task UnblockHardware(IEnumerable<string?> hwids);
 

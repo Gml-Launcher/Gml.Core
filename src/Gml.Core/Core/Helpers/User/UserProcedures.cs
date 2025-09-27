@@ -54,7 +54,6 @@ namespace Gml.Core.Helpers.User
             };
 
             authUser.AuthHistory.Add(AuthUserHistory.Create(device, protocol, hwid, address?.ToString()));
-            authUser.AccessToken = GenerateJwtToken(login);
             authUser.Uuid = customUuid ?? UsernameToUuid(login);
             authUser.ExpiredDate = DateTime.Now + TimeSpan.FromDays(30);
             authUser.Manager = _gmlManager;
@@ -230,62 +229,6 @@ namespace Gml.Core.Helpers.User
             }
 
             return user;
-        }
-
-        private string GenerateJwtToken(string login)
-        {
-            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.SecurityKey));
-            var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Jti, DateTime.Now.Ticks.ToString()),
-                new Claim(JwtRegisteredClaimNames.UniqueName, login),
-                new Claim(ClaimTypes.Role, "Player"),
-                new Claim(JwtRegisteredClaimNames.Name, login)
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: _settings.Name,
-                audience: _settings.Name,
-                expires: DateTime.Now.AddDays(10),
-                claims: claims,
-                signingCredentials: signingCredentials
-            );
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            return tokenHandler.WriteToken(token);
-        }
-
-        public bool ValidateAccessToken(string token)
-        {
-            if (string.IsNullOrEmpty(token))
-                return false;
-
-            try
-            {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(_settings.SecurityKey);
-
-                var validationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                };
-
-                tokenHandler.ValidateToken(token, validationParameters, out _);
-
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
         }
 
         public async Task BlockHardware(IEnumerable<string?> hwids)
