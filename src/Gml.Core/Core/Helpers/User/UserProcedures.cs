@@ -120,7 +120,7 @@ namespace Gml.Core.Helpers.User
 
             var jwtToken = handler.ReadJwtToken(user.AccessToken);
 
-            var claims = jwtToken.Claims.FirstOrDefault(c => c.Type == "name");
+            var claims = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
 
             if (claims?.Value != user.Name)
                 return false;
