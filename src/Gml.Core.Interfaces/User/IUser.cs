@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace GmlCore.Interfaces.User
 {
@@ -14,10 +15,13 @@ namespace GmlCore.Interfaces.User
         string? TextureCloakGuid { get; set; }
         public string ServerUuid { get; set; }
         bool IsBanned { get; set; }
+        bool IsBannedPermanent { get; set; }
         bool IsSlim { get; set; }
         public DateTime ServerExpiredDate { get; set; }
         public DateTime ExpiredDate { get; set; }
         List<ISession> Sessions { get; set; }
         IGmlManager Manager { get; set; }
+        Task Block(bool isPermanent);
+        Task Unblock(bool isPermanent);
     }
 }

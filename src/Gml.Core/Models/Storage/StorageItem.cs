@@ -31,4 +31,12 @@ namespace Gml.Models.Storage
         public string? Attachment { get; set; }
         public string Value { get; set; } = null!;
     }
+
+    public class BannedHardwareItem
+    {
+        [PrimaryKey, AutoIncrement] public int Id { get; set; }
+        public string? CpuIdentifier { get; set; }
+        public string? MotherboardIdentifier { get; set; }
+        public string? DiskIdentifiers { get; set; }
+    }
 }

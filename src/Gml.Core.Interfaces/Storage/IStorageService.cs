@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Sentry;
+using GmlCore.Interfaces.User;
 
 namespace GmlCore.Interfaces.Storage
 {
@@ -166,5 +167,26 @@ namespace GmlCore.Interfaces.Storage
         /// <param name="userUuid">The UUID of the user to remove.</param>
         /// <returns>An asynchronous operation representing the completion of the removal process.</returns>
         Task RemoveUserByUuidAsync(string userUuid);
+
+        /// <summary>
+        /// Adds a locked hardware identifier (HWID) to the local storage asynchronously.
+        /// </summary>
+        /// <param name="hardware">The hardware information, including identifiers to be locked.</param>
+        /// <returns>An asynchronous operation representing the completion of the add operation.</returns>
+        Task AddLockedHwid(IHardware hardware);
+
+        /// <summary>
+        /// Removes a hardware identifier (HWID) from the locked list in storage if it matches the given hardware properties.
+        /// </summary>
+        /// <param name="hardware">The hardware object containing identifier properties to be removed from the locked list.</param>
+        /// <returns>An asynchronous operation representing the completion of the removal process.</returns>
+        Task RemoveLockedHwid(IHardware hardware);
+
+        /// <summary>
+        /// Checks whether the provided hardware identifiers are present in the locked HWIDs list.
+        /// </summary>
+        /// <param name="hardware">The hardware object containing identifiers to check.</param>
+        /// <returns>True if a matching locked HWID entry exists; otherwise, false.</returns>
+        Task<bool> ContainsLockedHwid(IHardware hardware);
     }
 }

@@ -26,7 +26,7 @@ namespace GmlCore.Interfaces.Procedures
         Task<bool> CanJoinToServer(IUser user, string serverId);
         Task<IEnumerable<IUser>> GetUsers();
         Task<IEnumerable<IUser>> GetUsers(int take, int offset, string findName);
-        Task<IEnumerable<IUser>> GetUsers(IEnumerable<string> userUuids);
+        Task<IReadOnlyCollection<IUser>> GetUsers(IEnumerable<string> userUuids);
         Task UpdateUser(IUser user);
         Task RemoveUser(IUser user);
         Task StartSession(IUser user);
@@ -35,6 +35,14 @@ namespace GmlCore.Interfaces.Procedures
         Task<Stream> GetCloak(IUser user);
         Task<Stream> GetHead(IUser user);
         Task<IUser?> GetUserByAccessToken(string accessToken);
-        bool ValidateAccessToken(string token);
+        Task BlockHardware(IEnumerable<string?> hwids);
+        Task UnblockHardware(IEnumerable<string?> hwids);
+
+        /// <summary>
+        /// Checks whether the specified hardware is blocked.
+        /// </summary>
+        /// <param name="hardware">Hardware identifiers to check.</param>
+        /// <returns>True if blocked; otherwise, false.</returns>
+        Task<bool> CheckContainsHardware(IHardware hardware);
     }
 }

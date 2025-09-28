@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Gml.Core.Launcher;
 using Gml.Core.Services.Storage;
 using Gml.Core.User;
 using Gml.Models.Converters;
@@ -53,7 +54,6 @@ namespace Gml.Core.Helpers.User
             };
 
             authUser.AuthHistory.Add(AuthUserHistory.Create(device, protocol, hwid, address?.ToString()));
-            authUser.AccessToken = GenerateJwtToken(login);
             authUser.Uuid = customUuid ?? UsernameToUuid(login);
             authUser.ExpiredDate = DateTime.Now + TimeSpan.FromDays(30);
             authUser.Manager = _gmlManager;
@@ -66,10 +66,17 @@ namespace Gml.Core.Helpers.User
 
         public async Task<IUser?> GetUserByUuid(string uuid)
         {
-            return await _storage.GetUserByUuidAsync<AuthUser>(uuid, new JsonSerializerOptions
+            var user = await _storage.GetUserByUuidAsync<AuthUser>(uuid, new JsonSerializerOptions
             {
                 Converters = { new SessionConverter() }
             });
+
+            if (user is not null)
+            {
+                user.Manager = _gmlManager;
+            }
+
+            return user;
         }
 
         public async Task<IUser?> GetUserByName(string userName)
@@ -113,7 +120,7 @@ namespace Gml.Core.Helpers.User
 
             var jwtToken = handler.ReadJwtToken(user.AccessToken);
 
-            var claims = jwtToken.Claims.FirstOrDefault(c => c.Type == "name");
+            var claims = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
 
             if (claims?.Value != user.Name)
                 return false;
@@ -159,14 +166,14 @@ namespace Gml.Core.Helpers.User
             return authUsers;
         }
 
-        public async Task<IEnumerable<IUser>> GetUsers(IEnumerable<string> userUuids)
+        public async Task<IReadOnlyCollection<IUser>> GetUsers(IEnumerable<string> userUuids)
         {
             var users = await _storage.GetUsersAsync<AuthUser>(new JsonSerializerOptions
             {
                 Converters = { new SessionConverter() }
             }, userUuids).ConfigureAwait(false);
 
-            return users;
+            return users.ToArray();
         }
 
         public Task UpdateUser(IUser user)
@@ -224,60 +231,25 @@ namespace Gml.Core.Helpers.User
             return user;
         }
 
-        private string GenerateJwtToken(string login)
+        public async Task BlockHardware(IEnumerable<string?> hwids)
         {
-            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.SecurityKey));
-            var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
+            foreach (var hwid in hwids)
             {
-                new Claim(JwtRegisteredClaimNames.Sub, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Jti, DateTime.Now.Ticks.ToString()),
-                new Claim(JwtRegisteredClaimNames.UniqueName, login),
-                new Claim(ClaimTypes.Role, "Player"),
-                new Claim(JwtRegisteredClaimNames.Name, login)
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: _settings.Name,
-                audience: _settings.Name,
-                expires: DateTime.Now.AddDays(10),
-                claims: claims,
-                signingCredentials: signingCredentials
-            );
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            return tokenHandler.WriteToken(token);
+                await _storage.AddLockedHwid(new Hardware(hwid));
+            }
         }
 
-        public bool ValidateAccessToken(string token)
+        public async Task UnblockHardware(IEnumerable<string?> hwids)
         {
-            if (string.IsNullOrEmpty(token))
-                return false;
-
-            try
+            foreach (var hwid in hwids)
             {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(_settings.SecurityKey);
-
-                var validationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                };
-
-                tokenHandler.ValidateToken(token, validationParameters, out _);
-
-                return true;
+                await _storage.RemoveLockedHwid(new Hardware(hwid));
             }
-            catch (Exception)
-            {
-                return false;
-            }
+        }
+
+        public Task<bool> CheckContainsHardware(IHardware hardware)
+        {
+            return _storage.ContainsLockedHwid(hardware);
         }
 
         private string UsernameToUuid(string username)

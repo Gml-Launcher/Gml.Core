@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using GmlCore.Interfaces;
@@ -27,6 +28,7 @@ namespace Gml.Core.User
         public string? TextureSkinGuid { get; set; }
         public string? TextureCloakGuid { get; set; }
         public bool IsBanned { get; set; }
+        public bool IsBannedPermanent { get; set; }
         public DateTime ServerExpiredDate { get; set; }
         public string? AccessToken { get; set; }
         public string? Uuid { get; set; }
@@ -35,6 +37,26 @@ namespace Gml.Core.User
         public List<ISession> Sessions { get; set; } = [];
         [JsonIgnore]
         public IGmlManager Manager { get; set; }
+
+        public virtual async Task Block(bool isPermanent)
+        {
+            IsBanned = true;
+            IsBannedPermanent = isPermanent;
+
+            await Manager.Users.UpdateUser(this);
+        }
+
+        public virtual async Task Unblock(bool isPermanent)
+        {
+            IsBanned = false;
+
+            if (isPermanent)
+            {
+                IsBannedPermanent = false;
+            }
+
+            await Manager.Users.UpdateUser(this);
+        }
 
         public async Task DownloadAndInstallSkinAsync(string skinUrl)
         {
