@@ -10,9 +10,10 @@ public class UserProceduresTests
 {
     private const string LauncherName = "GmlServer";
     private const string SecurityKey = "gfweagertghuysergfbsuyerbgiuyserg";
-    private const string TestUserName = "testUser";
-    private const string TestUserUuid = "F8766986-42F6-3344-B8B4-3AF65B24FA64";
+    private const string TestUserName = "GamerVII";
+    private const string TestUserUuid = "28823C6E-1C50-3FA9-B051-FEC15E9C5986";
     private const string TestServerUuid = "8D4E6F2A-1B3C-4D5E-9F8A-7C6B5D4E3F2A";
+    private const string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyODgyM0M2RS0xQzUwLTNGQTktQjA1MS1GRUMxNUU5QzU5ODYiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjI4ODIzQzZFLTFDNTAtM0ZBOS1CMDUxLUZFQzE1RTlDNTk4NiIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJHYW1lclZJSSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6IkdhbWVyVklJIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiUGxheWVyIiwicGVybSI6InByb2ZpbGVzLnZpZXciLCJuYmYiOjE3NTkwNDgxOTMsImV4cCI6MTc1OTkxMjE5MywiaXNzIjoiZ21sLWFwaSIsImF1ZCI6ImdtbC1jbGllbnRzIn0.vSPyjO1i--pv6louwyIXpZ3ycW42kOg8OxLTvMhMpUc";
 
     private IGmlManager _gmlManager;
 
@@ -31,7 +32,11 @@ public class UserProceduresTests
 
         if (user is null)
         {
-            await _gmlManager.Users.GetAuthData(TestUserName, TestUserName, "Desktop", "1.0", IPAddress.Parse("127.0.0.1"), null, null, false);
+            var userData = await _gmlManager.Users.GetAuthData(TestUserName, TestUserName, "Desktop", "1.0", IPAddress.Parse("127.0.0.1"), null, "empty", false);
+
+            userData.AccessToken = token;
+
+            await _gmlManager.Users.UpdateUser(userData);
         }
     }
 
@@ -209,10 +214,9 @@ public class UserProceduresTests
         // Arrange
         var take = 2;
         var offset = 0;
-        var findName = "user";
 
         // Act
-        var result = await _gmlManager.Users.GetUsers(take, offset, findName);
+        var result = await _gmlManager.Users.GetUsers(take, offset, TestUserName);
 
         // Assert
         Assert.NotNull(result);
