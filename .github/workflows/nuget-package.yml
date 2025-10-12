@@ -1,0 +1,35 @@
+name: Publish NuGet Package
+
+on:
+  push:
+    tags:
+      - 'v*' # Публикуем только при пуше тега, например v1.2.3
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+          source-url: https://api.nuget.org/v3/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Pack NuGet package
+        run: dotnet pack src/Gml.Core.Interfaces/Gml.Core.Interfaces.csproj --configuration Release --output ./nupkgs
+
+      # Публикуем в nuget.org
+      - name: Publish to NuGet.org
+        run: dotnet nuget push "./nupkgs/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+
+      # Публикуем в GitHub Packages
+      - name: Publish to GitHub Packages
+        run: dotnet nuget push "./nupkgs/*.nupkg" --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
