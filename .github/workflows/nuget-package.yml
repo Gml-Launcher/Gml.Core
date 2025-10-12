@@ -24,8 +24,11 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
+      - name: Build project
+        run: dotnet build src/Gml.Core.Interfaces/Gml.Core.Interfaces.csproj --configuration Release
+
       - name: Pack NuGet package
-        run: dotnet pack src/Gml.Core.Interfaces/Gml.Core.Interfaces.csproj --configuration Release --output ./nupkgs
+        run: dotnet pack src/Gml.Core.Interfaces/Gml.Core.Interfaces.csproj --configuration Release --no-build --output ./nupkgs
 
       - name: Publish to NuGet.org
         run: dotnet nuget push "./nupkgs/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
