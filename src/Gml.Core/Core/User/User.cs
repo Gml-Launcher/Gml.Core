@@ -74,6 +74,7 @@ namespace Gml.Core.User
             else
             {
                 builder.Host = hostValue;
+                builder.Port = 80;
             }
 
             return builder;
