@@ -63,7 +63,7 @@ namespace GmlCore.Interfaces.Procedures
         Task RemoveFolderFromWhiteList(IGameProfile profile, IFolderInfo folder);
         Task RemoveFolderFromWhiteList(IGameProfile profile, IEnumerable<IFolderInfo> folders);
         Task AddFolderToWhiteList(IGameProfile profile, IEnumerable<IFolderInfo> folders);
-        Task CreateUserSessionAsync(IGameProfile profile, IUser user);
+        Task CreateUserSessionAsync(IGameProfile profile, IUser user, string? hostValue = null);
         Task<IMod> AddMod(IGameProfile profile, string fileName, Stream streamData);
         Task<IMod> AddOptionalMod(IGameProfile profile, string fileName, Stream streamData);
         Task<bool> RemoveMod(IGameProfile profile, string modName);
