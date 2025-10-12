@@ -1034,7 +1034,7 @@ namespace Gml.Core.Helpers.Profiles
             return SaveProfiles();
         }
 
-        public async Task CreateUserSessionAsync(IGameProfile profile, IUser user)
+        public async Task CreateUserSessionAsync(IGameProfile profile, IUser user, string? hostValue = null)
         {
             try
             {
@@ -1048,8 +1048,8 @@ namespace Gml.Core.Helpers.Profiles
                 {
                     Task[] tasks =
                     [
-                        player.DownloadAndInstallCloakAsync(cloakUrl),
-                        player.DownloadAndInstallSkinAsync(skinUrl),
+                        player.DownloadAndInstallCloakAsync(cloakUrl, hostValue),
+                        player.DownloadAndInstallSkinAsync(skinUrl, hostValue),
                     ];
 
                     Task.WaitAll(tasks);

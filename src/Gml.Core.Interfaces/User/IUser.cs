@@ -21,6 +21,8 @@ namespace GmlCore.Interfaces.User
         public DateTime ExpiredDate { get; set; }
         List<ISession> Sessions { get; set; }
         IGmlManager Manager { get; set; }
+        string? ExternalTextureSkinUrl { get; set; }
+        string? ExternalTextureCloakUrl { get; set; }
         Task Block(bool isPermanent);
         Task Unblock(bool isPermanent);
     }

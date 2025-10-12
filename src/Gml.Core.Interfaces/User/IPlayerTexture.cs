@@ -6,5 +6,7 @@ public interface IPlayerTexture
     string TextureCloakUrl { get; set; }
     string TextureSkinGuid { get; set; }
     string TextureCloakGuid { get; set; }
+    string ExternalTextureSkinUrl { get; set; }
+    string ExternalTextureCloakUrl { get; set; }
     string? FullSkinUrl { get; set; }
 }
