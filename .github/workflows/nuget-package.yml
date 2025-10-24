@@ -24,14 +24,26 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build project
-        run: dotnet build src/Gml.Core.Interfaces/Gml.Core.Interfaces.csproj --configuration Release
+      - name: Build Gml.Interfaces
+        run: dotnet build src/Gml.Interfaces/Gml.Interfaces.csproj --configuration Release
 
-      - name: Pack NuGet package
-        run: dotnet pack src/Gml.Core.Interfaces/Gml.Core.Interfaces.csproj --configuration Release --no-build --output ./nupkgs
+      - name: Pack Gml.Interfaces
+        run: dotnet pack src/Gml.Interfaces/Gml.Interfaces.csproj --configuration Release --no-build --output ./nupkgs
+
+      - name: Build Gml.Domains
+        run: dotnet build src/Gml.Domains/Gml.Domains.csproj --configuration Release
+
+      - name: Pack Gml.Domains
+        run: dotnet pack src/Gml.Domains/Gml.Domains.csproj --configuration Release --no-build --output ./nupkgs
+
+      - name: Build Gml.Dto
+        run: dotnet build src/Gml.Dto/Gml.Dto.csproj --configuration Release
+
+      - name: Pack Gml.Dto
+        run: dotnet pack src/Gml.Dto/Gml.Dto.csproj --configuration Release --no-build --output ./nupkgs
 
       - name: Publish to NuGet.org
-        run: dotnet nuget push "./nupkgs/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push "./nupkgs/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
       - name: Publish to GitHub Packages
-        run: dotnet nuget push "./nupkgs/*.nupkg" --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+        run: dotnet nuget push "./nupkgs/*.nupkg" --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --skip-duplicate
