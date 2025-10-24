@@ -5,8 +5,8 @@
     <LangVersion>latest</LangVersion>
     <RootNamespace>GmlCore.Interfaces</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.1</TargetFrameworks>
-    <Version>2025.2.3.1</Version>
-    <Title>Gml.Core.Interfaces</Title>
+    <Version>2025.2.3.2</Version>
+    <Title>Gml.Interfaces</Title>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
