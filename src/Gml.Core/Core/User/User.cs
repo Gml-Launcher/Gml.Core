@@ -22,7 +22,9 @@ namespace Gml.Core.User
 
         public string Name { get; set; } = null!;
         public string? TextureSkinUrl { get; set; }
+        public string? ExternalTextureSkinUrl { get; set; }
         public string? TextureCloakUrl { get; set; }
+        public string? ExternalTextureCloakUrl { get; set; }
         public string ServerUuid { get; set; }
 
         public string? TextureSkinGuid { get; set; }
@@ -58,18 +60,46 @@ namespace Gml.Core.User
             await Manager.Users.UpdateUser(this);
         }
 
-        public async Task DownloadAndInstallSkinAsync(string skinUrl)
+        private UriBuilder ReplaceHost(string url, string hostValue)
+        {
+            var originalUri = new Uri(url);
+            var builder = new UriBuilder(originalUri);
+
+            if (hostValue.Contains(':'))
+            {
+                var parts = hostValue.Split(':');
+                builder.Host = parts[0];
+                builder.Port = int.Parse(parts[1]);
+            }
+            else
+            {
+                builder.Host = hostValue;
+                builder.Port = 80;
+            }
+
+            return builder;
+        }
+
+        public async Task DownloadAndInstallSkinAsync(string skinUrl, string? hostValue = null)
         {
             Debug.WriteLine($"Get skin: {skinUrl}");
             TextureSkinUrl = await Manager.Integrations.TextureProvider.SetSkin(this, skinUrl);
-
             TextureSkinGuid = !string.IsNullOrEmpty(TextureSkinUrl)
                 ? Guid.NewGuid().ToString()
                 : string.Empty;
+
+            if (hostValue is not null && !string.IsNullOrEmpty(TextureSkinUrl))
+            {
+                var host = ReplaceHost(TextureSkinUrl, hostValue);
+
+                host.Path = $"/api/v1/integrations/texture/skins/{TextureSkinGuid}";
+
+                ExternalTextureSkinUrl = host.Uri.AbsoluteUri;
+            }
         }
 
 
-        public async Task DownloadAndInstallCloakAsync(string cloakUrl)
+        public async Task DownloadAndInstallCloakAsync(string cloakUrl, string? hostValue = null)
         {
             Debug.WriteLine($"Get cloak: {cloakUrl}");
             TextureCloakUrl = await Manager.Integrations.TextureProvider.SetCloak(this, cloakUrl);
@@ -77,6 +107,15 @@ namespace Gml.Core.User
             TextureCloakGuid = !string.IsNullOrEmpty(TextureCloakUrl)
                 ? Guid.NewGuid().ToString()
                 : string.Empty;
+
+            if (hostValue is not null && !string.IsNullOrEmpty(TextureCloakUrl))
+            {
+                var host = ReplaceHost(TextureCloakUrl, hostValue);
+
+                host.Path = $"/api/v1/integrations/texture/capes/{TextureCloakGuid}";
+
+                ExternalTextureCloakUrl = host.Uri.AbsoluteUri;
+            }
         }
 
         public Task SaveUserAsync()

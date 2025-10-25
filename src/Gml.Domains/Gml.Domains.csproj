@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <TargetFrameworks>net8.0;netstandard2.1</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <Version>2025.2.3.2</Version>
+    <Title>Gml.Domains</Title>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gml.Core\src\Gml.Interfaces\Gml.Interfaces.csproj" />
+    <ProjectReference Include="..\Gml.Interfaces\Gml.Interfaces.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Integrations\AzuriomAuthResult.cs">
+      <DependentUpon>AuthResult.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Integrations\UnicoreAuthResult.cs">
+      <DependentUpon>AuthResult.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+</Project>
