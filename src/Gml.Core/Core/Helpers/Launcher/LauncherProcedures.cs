@@ -91,31 +91,17 @@ public class LauncherProcedures : ILauncherProcedures
 
             if (executeFile != null)
             {
-                localVersion!.Guid = await _files.LoadFile(File.OpenRead(executeFile.FullName),
-                    Path.Combine("launcher", osName, osArch), $"{versionInfo.Name}-{executeFile.Name}");
+                await using var stream = File.OpenRead(executeFile.FullName);
+                localVersion!.Guid = await _files.LoadFile(
+                    stream,
+                    Path.Combine("launcher", osName, osArch),
+                    $"{versionInfo.Name}-{executeFile.Name}");
             }
 
             _launcherInfo.ActualLauncherVersion[versionInfo.Name] = localVersion;
             await _storage.SetAsync(StorageConstants.ActualVersion, version.Version);
             await _storage.SetAsync(StorageConstants.ActualVersionInfo, _launcherInfo.ActualLauncherVersion);
         }
-
-        Console.WriteLine();
-
-        // if (version.File is null)
-        // {
-        //     throw new ArgumentNullException(nameof(version.File));
-        // }
-        //
-        // version.Guid = await _files.LoadFile(version.File, "launcher");
-        //
-        // _launcherInfo.ActualLauncherVersion[osTypeEnum] = version;
-        //
-        // await _storage.SetAsync(StorageConstants.ActualVersion, version.Guid);
-        // await _storage.SetAsync(StorageConstants.ActualVersionInfo, _launcherInfo.ActualLauncherVersion);
-        //
-        // await version.File.DisposeAsync();
-        // version.File = null;
 
         return version.Guid;
     }
