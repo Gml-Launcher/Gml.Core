@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="CurseForge.APIClient" Version="3.0.0" />
-    <PackageReference Include="Gml.Domains" Version="2025.3.0" />
+    <PackageReference Include="Gml.Domains" Version="2025.3.2" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Spectre.Console" Version="0.50.0" />

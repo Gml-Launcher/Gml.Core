@@ -4,13 +4,12 @@
     <LangVersion>latest</LangVersion>
     <TargetFrameworks>net8.0;netstandard2.1</TargetFrameworks>
     <Nullable>enable</Nullable>
-    <Version>2025.3</Version>
+    <Version>2025.3.2</Version>
     <Title>Gml.Domains</Title>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Gml.Core\src\Gml.Interfaces\Gml.Interfaces.csproj" />
     <ProjectReference Include="..\Gml.Interfaces\Gml.Interfaces.csproj" />
   </ItemGroup>
 
