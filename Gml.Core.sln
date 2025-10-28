@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{94BDAC
 		README.md = README.md
 		LICENSE = LICENSE
 		.github\workflows\nuget-package.yml = .github\workflows\nuget-package.yml
+		NuGet.config = NuGet.config
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gml.Core", "src\Gml.Core\Gml.Core.csproj", "{21CA74E3-F9EA-4640-B5EF-EA3428FEECE8}"
