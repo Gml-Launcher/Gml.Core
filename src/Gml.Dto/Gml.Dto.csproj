@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <Version>2025.3</Version>
+    <Version>2025.3.1</Version>
     <Title>Gml.Dto</Title>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
@@ -15,7 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Gml.Core\src\Gml.Interfaces\Gml.Interfaces.csproj" />
     <ProjectReference Include="..\Gml.Domains\Gml.Domains.csproj" />
     <ProjectReference Include="..\Gml.Interfaces\Gml.Interfaces.csproj" />
   </ItemGroup>
