@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <PackageReference Include="CurseForge.APIClient" Version="3.0.0" />
-    <PackageReference Include="Gml.Domains" Version="2025.3.2" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Spectre.Console" Version="0.50.0" />
@@ -24,6 +23,7 @@
     <ProjectReference Include="..\CmlLib.Core.Installer.Forge\CmlLib.Core.Installer.Forge\CmlLib.Core.Installer.Forge.csproj"/>
     <ProjectReference Include="..\CmlLib.Core.Installer.NeoForge\CmlLib.Core.Installer.NeoForge\CmlLib.Core.Installer.NeoForge.csproj" />
     <ProjectReference Include="..\Gml.Common\Gml.Common\Gml.Common.csproj" />
+    <ProjectReference Include="..\Gml.Dto\Gml.Dto.csproj" />
     <ProjectReference Include="..\Gml.Interfaces\Gml.Interfaces.csproj" />
     <ProjectReference Include="..\Modrinth.Api\src\Modrinth.Api\Modrinth.Api.csproj" />
     <ProjectReference Include="..\Pingo\Pingo\Pingo.csproj" />
