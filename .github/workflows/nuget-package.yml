@@ -7,6 +7,8 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      NUGET_IGNORE_FAILED_SOURCES: 'true'
 
     steps:
       - uses: actions/checkout@v4
