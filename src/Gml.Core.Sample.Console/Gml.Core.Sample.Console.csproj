@@ -9,8 +9,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\tests\GmlCore.Tests\GmlCore.Tests.csproj" />
-      <ProjectReference Include="..\Gml.Core\Gml.Core.csproj" />
-      <ProjectReference Include="..\Gml.Interfaces\Gml.Interfaces.csproj" />
     </ItemGroup>
 
 </Project>
