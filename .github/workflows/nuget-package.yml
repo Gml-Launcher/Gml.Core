@@ -21,6 +21,9 @@ jobs:
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.NUGET_API_KEY }}
 
+      - name: Restore dependencies
+        run: dotnet restore
+
       - name: Build and pack interfaces
         run: |
           dotnet build src/Gml.Interfaces/Gml.Interfaces.csproj --configuration Release
