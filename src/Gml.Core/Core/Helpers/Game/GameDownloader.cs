@@ -21,6 +21,7 @@ using CmlLib.Core.Java;
 using CmlLib.Core.ModLoaders.FabricMC;
 using CmlLib.Core.ModLoaders.LiteLoader;
 using CmlLib.Core.ModLoaders.QuiltMC;
+using CmlLib.Core.Natives;
 using CmlLib.Core.ProcessBuilder;
 using CmlLib.Core.Rules;
 using CmlLib.Core.Version;
@@ -102,10 +103,13 @@ public class GameDownloader
             var minecraftPath = new CustomMinecraftPath(launcherInfo.InstallationDirectory, profile.ClientPath,
                 platform, architecture);
             var launcherParameters = MinecraftLauncherParameters.CreateDefault(minecraftPath);
+            launcherParameters.NativeLibraryExtractor = new CustomNativeLibraryExtractor(launcherParameters.RulesEvaluator!);
             var platformName = $"{platform}/{architecture}";
             var platformLauncher = new MinecraftLauncher(launcherParameters)
             {
-                RulesContext = new RulesEvaluatorContext(new LauncherOSRule(platform, architecture, string.Empty))
+                RulesContext = new RulesEvaluatorContext(new LauncherOSRule(platform, architecture, string.Empty)),
+
+
             };
 
             _launchers.TryAdd(platformName, platformLauncher);
