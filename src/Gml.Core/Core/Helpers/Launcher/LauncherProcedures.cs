@@ -257,12 +257,6 @@ public class LauncherProcedures : ILauncherProcedures
                           "-p:IncludeNativeLibrariesForSelfExtract=true -p:IncludeAllContentForSelfExtract=true " +
                           "-p:PublishReadyToRun=true";
 
-        // var command = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-        //     ? $"/c {publishArgs}"
-        //     : $"-c \"{publishArgs}\"";
-        //
-        // var fileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd" : "/bin/bash";
-
         return new ProcessStartInfo(dotnetPath, publishArgs)
         {
             WorkingDirectory = projectPath,
@@ -274,10 +268,8 @@ public class LauncherProcedures : ILauncherProcedures
     private async Task<int> ExecuteProcessAsync(ProcessStartInfo processStartInfo)
     {
         var process = new Process { StartInfo = processStartInfo };
-        process.OutputDataReceived +=
-            (sender, e) => _logsBuffer.OnNext($"[{DateTime.Now:HH:mm:ss:fff}] [INFO] {e.Data}");
-        process.ErrorDataReceived +=
-            (sender, e) => _logsBuffer.OnNext($"[{DateTime.Now:HH:mm:ss:fff}] [ERROR] {e.Data}");
+        process.OutputDataReceived += LogProcessOutput;
+        process.ErrorDataReceived += ErrorProcessOutput;
 
         process.Start();
         process.BeginOutputReadLine();
@@ -288,7 +280,23 @@ public class LauncherProcedures : ILauncherProcedures
 #else
     await process.WaitForExitAsync();
 #endif
+
+        process.OutputDataReceived -= LogProcessOutput;
+        process.ErrorDataReceived -= ErrorProcessOutput;
         return process.ExitCode;
+    }
+
+    private void LogProcessOutput(object sender, DataReceivedEventArgs e)
+    {
+        Debug.WriteLine(e.Data);
+        _logsBuffer.OnNext($"[{DateTime.Now:HH:mm:ss:fff}] [INFO] {e.Data}");
+    }
+
+    private void ErrorProcessOutput(object sender, DataReceivedEventArgs e)
+    {
+        Debug.WriteLine(e.Data);
+        Console.WriteLine(e.Data);
+        _logsBuffer.OnNext($"[{DateTime.Now:HH:mm:ss:fff}] [ERROR] {e.Data}");
     }
 
     private DirectoryInfo CreateBuildsFolder()
