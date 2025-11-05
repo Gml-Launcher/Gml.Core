@@ -25,11 +25,11 @@ namespace Gml.Core.Helpers.System
 {
     public class SystemProcedures(IGmlSettings gmlSettings) : ISystemProcedures
     {
-        private string _installationDirectory;
-        private string? _buildDotnetPath;
         private readonly MinecraftJavaManifestResolver _javaManifestResolver = new(gmlSettings.HttpClient);
-        private IEnumerable<MinecraftJavaManifestMetadata>? _javaManifestMetadata;
+        private string? _buildDotnetPath;
         private Subject<string> _downloadLogs = new();
+        private string _installationDirectory;
+        private IEnumerable<MinecraftJavaManifestMetadata>? _javaManifestMetadata;
         public string? BuildDotnetPath => _buildDotnetPath;
         public IObservable<string> DownloadLogs => _downloadLogs;
 
@@ -72,6 +72,14 @@ namespace Gml.Core.Helpers.System
 
         public async Task<bool> InstallDotnet()
         {
+            if (RuntimeInformation.OSArchitecture == Architecture.Arm64 ||
+                RuntimeInformation.OSArchitecture == Architecture.Arm ||
+                RuntimeInformation.OSArchitecture == Architecture.Armv6)
+            {
+                _downloadLogs.OnNext("Не поддерживается сборка на ARM архитектуре");
+                return false;
+            }
+
             if (_buildDotnetPath is not null && File.Exists(_buildDotnetPath))
             {
                 return true;
@@ -149,11 +157,6 @@ namespace Gml.Core.Helpers.System
                 });
 
             return javaVersions.Select(c => new JavaBootstrapProgram(c.Key.Name, c.Key.Version!, c.Key.MajorVersion));
-        }
-
-        private int TryParseMajorVersion(string? majorVersion)
-        {
-            return int.TryParse(majorVersion, out var result) ? result : 0;
         }
 
         public async Task DownloadFileAsync(string url, string destinationFilePath)
@@ -261,6 +264,11 @@ namespace Gml.Core.Helpers.System
             }
 
             throw new Exception("Нет доступных зеркал для загрузки файлов");
+        }
+
+        private int TryParseMajorVersion(string? majorVersion)
+        {
+            return int.TryParse(majorVersion, out var result) ? result : 0;
         }
     }
 }
