@@ -39,24 +39,24 @@ namespace Gml.Core.Helpers.Game;
 public class GameDownloader
 {
     private readonly string[] _architectures = { "32", "64", "arm", "arm64" };
-    private readonly ILauncherInfo _launcherInfo;
-
-    private readonly ConcurrentDictionary<string, MinecraftLauncher> _launchers = new();
-    private readonly INotificationProcedures _notifications;
-    private readonly string[] _platforms = { "windows", "osx", "linux" };
-    private readonly IGameProfile _profile;
-    private readonly ISystemProcedures _systemProcedures;
-    private string? _buildJavaPath;
     private readonly SyncProgress<ByteProgress> _byteProgress;
-    private CancellationTokenSource _cancellationTokenSource;
-    private IBootstrapProgram? _bootstrapProgram;
-    private int _currentStep;
     private readonly Dictionary<GameLoader, Func<string, string?, CancellationToken, Task<string>>> _downloadMethods;
     private readonly Subject<Exception> _exception = new();
     private readonly SyncProgress<InstallerProgressChangedEventArgs> _fileProgress;
     private readonly Subject<double> _fullPercentages = new();
+    private readonly ILauncherInfo _launcherInfo;
+
+    private readonly ConcurrentDictionary<string, MinecraftLauncher> _launchers = new();
     private readonly Subject<string> _loadLog = new();
     private readonly Subject<double> _loadPercentages = new();
+    private readonly INotificationProcedures _notifications;
+    private readonly string[] _platforms = { "windows", "osx", "linux" };
+    private readonly IGameProfile _profile;
+    private readonly ISystemProcedures _systemProcedures;
+    private IBootstrapProgram? _bootstrapProgram;
+    private string? _buildJavaPath;
+    private CancellationTokenSource _cancellationTokenSource;
+    private int _currentStep;
     private int _steps;
 
     public GameDownloader(IGameProfile profile, ILauncherInfo launcherInfo, INotificationProcedures notifications)
@@ -102,10 +102,12 @@ public class GameDownloader
             var minecraftPath = new CustomMinecraftPath(launcherInfo.InstallationDirectory, profile.ClientPath,
                 platform, architecture);
             var launcherParameters = MinecraftLauncherParameters.CreateDefault(minecraftPath);
+            launcherParameters.NativeLibraryExtractor =
+                new CustomNativeLibraryExtractor(launcherParameters.RulesEvaluator!);
             var platformName = $"{platform}/{architecture}";
             var platformLauncher = new MinecraftLauncher(launcherParameters)
             {
-                RulesContext = new RulesEvaluatorContext(new LauncherOSRule(platform, architecture, string.Empty))
+                RulesContext = new RulesEvaluatorContext(new LauncherOSRule(platform, architecture, string.Empty)),
             };
 
             _launchers.TryAdd(platformName, platformLauncher);
@@ -126,7 +128,8 @@ public class GameDownloader
 
         if (!_downloadMethods.ContainsKey(loader))
         {
-            await _notifications.SendMessage("Ошибка", "Попытка создать профиль с неверным загрузчиком", NotificationType.Error);
+            await _notifications.SendMessage("Ошибка", "Попытка создать профиль с неверным загрузчиком",
+                NotificationType.Error);
             throw new ArgumentOutOfRangeException(nameof(loader), loader, null);
         }
 
@@ -171,9 +174,11 @@ public class GameDownloader
                 await launcher.InstallAsync(installVersion, _fileProgress, _byteProgress, cancellationToken)
                     .AsTask();
             }
-            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException or KeyNotFoundException)
+            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException
+                                                  or KeyNotFoundException)
             {
-                var title = $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
+                var title =
+                    $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
                 var details =
                     $"Создание профиля {_profile.Name} пропущено для операционной системы {launcher.RulesContext.OS.Name} " +
                     $"с архитектурой {launcher.RulesContext.OS.Arch}. " +
@@ -240,9 +245,11 @@ public class GameDownloader
                 });
                 // var process = await launcher.CreateProcessAsync(loadVersion, new MLaunchOption()).AsTask();
             }
-            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException or KeyNotFoundException)
+            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException
+                                                  or KeyNotFoundException)
             {
-                var title = $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
+                var title =
+                    $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
                 var details =
                     $"Создание профиля {_profile.Name} пропущено для операционной системы {launcher.RulesContext.OS.Name} " +
                     $"с архитектурой {launcher.RulesContext.OS.Arch}. " +
@@ -315,9 +322,11 @@ public class GameDownloader
 
                 var process = await launcher.CreateProcessAsync(loadVersion, new MLaunchOption()).AsTask();
             }
-            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException or KeyNotFoundException)
+            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException
+                                                  or KeyNotFoundException)
             {
-                var title = $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
+                var title =
+                    $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
                 var details =
                     $"Создание профиля {_profile.Name} пропущено для операционной системы {launcher.RulesContext.OS.Name} " +
                     $"с архитектурой {launcher.RulesContext.OS.Arch}. " +
@@ -356,11 +365,11 @@ public class GameDownloader
             {
                 _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
 
-                if (launcher.Versions?.FirstOrDefault(c => c.Name == launchVersion) is {} hasVersion)
+                if (launcher.Versions?.FirstOrDefault(c => c.Name == launchVersion) is { } hasVersion)
                 {
-
                     versionName = launchVersion;
-                    await launcher.InstallAndBuildProcessAsync(hasVersion.Name, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
+                    await launcher.InstallAndBuildProcessAsync(hasVersion.Name, new MLaunchOption(), _fileProgress,
+                        _byteProgress, cancellationToken);
                     continue;
                 }
 
@@ -371,7 +380,7 @@ public class GameDownloader
                 }
 
                 versionName = await fabricLoader.Install(version, fabricVersion.Version!, launcher.MinecraftPath);
-                downloadVersion ??= await launcher.GetVersionAsync(versionName,  cancellationToken);
+                downloadVersion ??= await launcher.GetVersionAsync(versionName, cancellationToken);
 
                 if (javaVersion is null && _bootstrapProgram is not null)
                 {
@@ -380,11 +389,14 @@ public class GameDownloader
                     // downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
                 }
 
-                await launcher.InstallAndBuildProcessAsync(versionName, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
+                await launcher.InstallAndBuildProcessAsync(versionName, new MLaunchOption(), _fileProgress,
+                    _byteProgress, cancellationToken);
             }
-            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException or KeyNotFoundException)
+            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException
+                                                  or KeyNotFoundException)
             {
-                var title = $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
+                var title =
+                    $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
                 var details =
                     $"Создание профиля {_profile.Name} пропущено для операционной системы {launcher.RulesContext.OS.Name} " +
                     $"с архитектурой {launcher.RulesContext.OS.Arch}. " +
@@ -423,10 +435,11 @@ public class GameDownloader
             {
                 _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
 
-                if (launcher.Versions?.FirstOrDefault(c => c.Name == launchVersion) is {} hasVersion)
+                if (launcher.Versions?.FirstOrDefault(c => c.Name == launchVersion) is { } hasVersion)
                 {
                     versionName = launchVersion;
-                    await launcher.InstallAndBuildProcessAsync(hasVersion.Name, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
+                    await launcher.InstallAndBuildProcessAsync(hasVersion.Name, new MLaunchOption(), _fileProgress,
+                        _byteProgress, cancellationToken);
                     continue;
                 }
 
@@ -437,7 +450,7 @@ public class GameDownloader
                 }
 
                 versionName = await quiltInstaller.Install(version, fabricVersion.Version!, launcher.MinecraftPath);
-                downloadVersion ??= await launcher.GetVersionAsync(versionName,  cancellationToken);
+                downloadVersion ??= await launcher.GetVersionAsync(versionName, cancellationToken);
 
                 if (javaVersion is null && _bootstrapProgram is not null)
                 {
@@ -446,11 +459,14 @@ public class GameDownloader
                     // downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
                 }
 
-                await launcher.InstallAndBuildProcessAsync(versionName, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
+                await launcher.InstallAndBuildProcessAsync(versionName, new MLaunchOption(), _fileProgress,
+                    _byteProgress, cancellationToken);
             }
-            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException or KeyNotFoundException)
+            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException
+                                                  or KeyNotFoundException)
             {
-                var title = $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
+                var title =
+                    $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
                 var details =
                     $"Создание профиля {_profile.Name} пропущено для операционной системы {launcher.RulesContext.OS.Name} " +
                     $"с архитектурой {launcher.RulesContext.OS.Arch}. " +
@@ -501,7 +517,7 @@ public class GameDownloader
                     await launcher.GetVersionAsync(bestLiteLoaderVersion.BaseVersion!, cancellationToken);
                 versionName = await liteLoader.Install(bestLiteLoaderVersion, versionMetaData, launcher.MinecraftPath);
 
-                downloadVersion ??= await launcher.GetVersionAsync(versionName,  cancellationToken);
+                downloadVersion ??= await launcher.GetVersionAsync(versionName, cancellationToken);
 
                 if (javaVersion is null && _bootstrapProgram is not null)
                 {
@@ -510,11 +526,14 @@ public class GameDownloader
                     // downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
                 }
 
-                await launcher.InstallAndBuildProcessAsync(versionName, new MLaunchOption(), _fileProgress, _byteProgress, cancellationToken);
+                await launcher.InstallAndBuildProcessAsync(versionName, new MLaunchOption(), _fileProgress,
+                    _byteProgress, cancellationToken);
             }
-            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException or KeyNotFoundException)
+            catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException
+                                                  or KeyNotFoundException)
             {
-                var title = $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
+                var title =
+                    $"{_profile.Name} {launcher.RulesContext.OS.Name} [{launcher.RulesContext.OS.Arch}] пропущен";
                 var details =
                     $"Создание профиля {_profile.Name} пропущено для операционной системы {launcher.RulesContext.OS.Name} " +
                     $"с архитектурой {launcher.RulesContext.OS.Arch}. " +
@@ -598,9 +617,11 @@ public class GameDownloader
                         ExtraJvmArguments = jvmArguments.Select(c => new MArgument(c))
                     }).AsTask();
                 }
-                catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException or KeyNotFoundException)
+                catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException
+                                                      or KeyNotFoundException)
                 {
-                    var title = $"{_profile.Name} {anyLauncher.RulesContext.OS.Name} [{anyLauncher.RulesContext.OS.Arch}] пропущен";
+                    var title =
+                        $"{_profile.Name} {anyLauncher.RulesContext.OS.Name} [{anyLauncher.RulesContext.OS.Arch}] пропущен";
                     var details =
                         $"Создание профиля {_profile.Name} пропущено для операционной системы {anyLauncher.RulesContext.OS.Name} " +
                         $"с архитектурой {anyLauncher.RulesContext.OS.Arch}. " +
@@ -655,7 +676,6 @@ public class GameDownloader
             }
             catch (ZipException exception)
             {
-
             }
             catch (Exception exception)
             {
