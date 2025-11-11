@@ -7,6 +7,8 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      NUGET_IGNORE_FAILED_SOURCES: 'true'
 
     steps:
       - uses: actions/checkout@v4
@@ -24,23 +26,26 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build Gml.Interfaces
-        run: dotnet build src/Gml.Interfaces/Gml.Interfaces.csproj --configuration Release
+      - name: Build and pack interfaces
+        run: |
+          dotnet build src/Gml.Interfaces/Gml.Interfaces.csproj --configuration Release
+          dotnet pack src/Gml.Interfaces/Gml.Interfaces.csproj --configuration Release --no-build --output ./nupkgs
 
-      - name: Pack Gml.Interfaces
-        run: dotnet pack src/Gml.Interfaces/Gml.Interfaces.csproj --configuration Release --no-build --output ./nupkgs
+      - name: Build and pack domains
+        run: |
+          dotnet build src/Gml.Domains/Gml.Domains.csproj --configuration Release
+          dotnet pack src/Gml.Domains/Gml.Domains.csproj --configuration Release --no-build --output ./nupkgs
 
-      - name: Build Gml.Domains
-        run: dotnet build src/Gml.Domains/Gml.Domains.csproj --configuration Release
+      - name: Build and pack dto
+        run: |
+          dotnet build src/Gml.Dto/Gml.Dto.csproj --configuration Release
+          dotnet pack src/Gml.Dto/Gml.Dto.csproj --configuration Release --no-build --output ./nupkgs
 
-      - name: Pack Gml.Domains
-        run: dotnet pack src/Gml.Domains/Gml.Domains.csproj --configuration Release --no-build --output ./nupkgs
+      - name: Add local NuGet source
+        run: dotnet nuget add source "./nupkgs" --name LocalPackages
 
-      - name: Build Gml.Dto
-        run: dotnet build src/Gml.Dto/Gml.Dto.csproj --configuration Release
-
-      - name: Pack Gml.Dto
-        run: dotnet pack src/Gml.Dto/Gml.Dto.csproj --configuration Release --no-build --output ./nupkgs
+      - name: Build full solution
+        run: dotnet build Gml.Core.sln --configuration Release
 
       - name: Publish to NuGet.org
         run: dotnet nuget push "./nupkgs/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
