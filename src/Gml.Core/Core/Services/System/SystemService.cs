@@ -5,7 +5,6 @@ namespace Gml.Core.Services.System;
 
 public class SystemService
 {
-
     public static string GetPlatform()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -20,10 +19,9 @@ public class SystemService
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            return "linux";
+            return "osx";
         }
 
         throw new PlatformNotSupportedException("This platform is not supported.");
     }
-
 }
