@@ -9,6 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CmlLib.Core" Version="4.0.6"/>
+    <PackageReference Include="CmlLib.Core.Installer.Forge" Version="1.1.0"/>
+    <PackageReference Include="CmlLib.Core.Installer.NeoForge" Version="4.0.0"/>
     <PackageReference Include="CurseForge.APIClient" Version="3.0.0" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
@@ -20,8 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CmlLib.Core.Installer.Forge\CmlLib.Core.Installer.Forge\CmlLib.Core.Installer.Forge.csproj"/>
-    <ProjectReference Include="..\CmlLib.Core.Installer.NeoForge\CmlLib.Core.Installer.NeoForge\CmlLib.Core.Installer.NeoForge.csproj" />
     <ProjectReference Include="..\Gml.Common\Gml.Common\Gml.Common.csproj" />
     <ProjectReference Include="..\Gml.Dto\Gml.Dto.csproj" />
     <ProjectReference Include="..\Gml.Interfaces\Gml.Interfaces.csproj" />
