@@ -10,6 +10,7 @@ using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.Storage;
 using GmlCore.Interfaces.System;
 using Minio;
+using Minio.DataModel.Args;
 using Minio.DataModel.Tags;
 using Minio.Exceptions;
 
