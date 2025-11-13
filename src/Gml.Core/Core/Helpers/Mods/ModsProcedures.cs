@@ -57,7 +57,7 @@ public class ModsProcedures : IModsProcedures
 
     public ICollection<IModInfo> ModsDetails => _modsInfo.Values.OfType<IModInfo>().ToArray();
 
-    public Task<IEnumerable<IMod>> GetModsAsync(IGameProfile profile)
+    public Task<IReadOnlyCollection<IMod>> GetModsAsync(IGameProfile profile)
     {
         return profile.GetModsAsync();
     }

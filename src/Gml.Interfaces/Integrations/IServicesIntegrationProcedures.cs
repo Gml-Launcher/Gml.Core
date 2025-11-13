@@ -11,7 +11,7 @@ namespace GmlCore.Interfaces.Integrations
         ITextureProvider TextureProvider { get; set; }
         INewsListenerProvider NewsProvider { get; set; }
         Task<AuthType> GetAuthType();
-        Task<IEnumerable<IAuthServiceInfo>> GetAuthServices();
+        Task<IReadOnlyCollection<IAuthServiceInfo>> GetAuthServices();
         Task<IAuthServiceInfo?> GetActiveAuthService();
         Task<IAuthServiceInfo?> GetAuthService(AuthType authType);
         Task SetActiveAuthService(IAuthServiceInfo? service);

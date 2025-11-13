@@ -32,9 +32,9 @@ public class ServicesIntegrationProcedures(
         return storage.GetAsync<AuthType>(StorageConstants.AuthType);
     }
 
-    public Task<IEnumerable<IAuthServiceInfo>> GetAuthServices()
+    public Task<IReadOnlyCollection<IAuthServiceInfo>> GetAuthServices()
     {
-        return Task.FromResult(new List<IAuthServiceInfo>
+        return Task.FromResult<IReadOnlyCollection<IAuthServiceInfo>>(new List<IAuthServiceInfo>
         {
             new AuthServiceInfo("Undefined", AuthType.Undefined),
             new AuthServiceInfo("Any", AuthType.Any),
@@ -46,7 +46,7 @@ public class ServicesIntegrationProcedures(
             new AuthServiceInfo("NamelessMC", AuthType.NamelessMC),
             new AuthServiceInfo("WebMCR Reloaded", AuthType.WebMCRReloaded),
             new AuthServiceInfo("WordPress ", AuthType.WordPress)
-        }.AsEnumerable());
+        });
     }
 
     public async Task<IAuthServiceInfo?> GetActiveAuthService()

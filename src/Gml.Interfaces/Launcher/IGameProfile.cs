@@ -233,7 +233,7 @@ namespace GmlCore.Interfaces.Launcher
         /// <summary>
         /// Retrieves the mods associated with the game profile.
         /// </summary>
-        Task<IEnumerable<IMod>> GetModsAsync();
+        Task<IReadOnlyCollection<IMod>> GetModsAsync();
 
         /// <summary>
         /// Retrieves the optional mods associated with a game profile.

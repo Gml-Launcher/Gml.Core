@@ -420,7 +420,7 @@ namespace Gml.Core.Sample.Console
             // Получаем доступные сервисы аутентификации
             var services = await gmlManager.Integrations.GetAuthServices();
 
-            if (!services.Any())
+            if (services.Count == 0)
             {
                 System.Console.WriteLine("Нет доступных сервисов аутентификации.");
                 return;
@@ -468,16 +468,9 @@ namespace Gml.Core.Sample.Console
                         null,
                         false);
 
-                    if (user != null)
-                    {
-                        System.Console.WriteLine($"Аутентификация успешна! Добро пожаловать, {user.Name}!");
-                        System.Console.WriteLine($"UUID: {user.Uuid}");
-                        System.Console.WriteLine($"AccessToken: {user.AccessToken}");
-                    }
-                    else
-                    {
-                        System.Console.WriteLine("Не удалось аутентифицировать пользователя.");
-                    }
+                    System.Console.WriteLine($"Аутентификация успешна! Добро пожаловать, {user.Name}!");
+                    System.Console.WriteLine($"UUID: {user.Uuid}");
+                    System.Console.WriteLine($"AccessToken: {user.AccessToken}");
                 }
                 catch (Exception ex)
                 {
@@ -616,14 +609,7 @@ namespace Gml.Core.Sample.Console
             {
                 var server = await gmlManager.Servers.AddMinecraftServer(profile, serverName, serverAddress, port);
 
-                if (server != null)
-                {
-                    System.Console.WriteLine($"Сервер {serverName} успешно добавлен к профилю {profile.Name}!");
-                }
-                else
-                {
-                    System.Console.WriteLine("Не удалось добавить сервер.");
-                }
+                System.Console.WriteLine($"Сервер {server.Name} успешно добавлен к профилю {profile.Name}!");
             }
             catch (Exception ex)
             {
@@ -759,7 +745,7 @@ namespace Gml.Core.Sample.Console
 
                 foreach (var mod in mods)
                 {
-                    System.Console.WriteLine($"{index++}. {mod.Name} - {mod.Description?.Substring(0, Math.Min(mod.Description.Length, 100))}...");
+                    System.Console.WriteLine($"{index++}. {mod.Name} - {mod.Description.Substring(0, Math.Min(mod.Description.Length, 100))}...");
                 }
             }
             catch (Exception ex)
@@ -779,7 +765,7 @@ namespace Gml.Core.Sample.Console
             {
                 var mods = await profile.GetModsAsync();
 
-                if (!mods.Any())
+                if (mods.Count == 0)
                 {
                     System.Console.WriteLine($"В профиле {profile.Name} нет установленных модов.");
                     return;

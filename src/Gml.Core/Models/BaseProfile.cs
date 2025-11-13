@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -240,14 +241,16 @@ namespace Gml.Models
             return ProfileProcedures.CreateUserSessionAsync(this, user);
         }
 
-        public async Task<IEnumerable<IMod>> GetModsAsync()
+        public async Task<IReadOnlyCollection<IMod>> GetModsAsync()
         {
             var files = await ProfileProcedures.GetModsAsync(this);
 
-            return files.Select(file => new LocalProfileMod
-            {
-                Name = Path.GetFileNameWithoutExtension(file.Name),
-            }).OrderBy(c => c.Name);
+            return [
+                ..files.Select(file => new LocalProfileMod
+                {
+                    Name = Path.GetFileNameWithoutExtension(file.Name),
+                }).OrderBy(c => c.Name)
+            ];
         }
 
         public async Task<IEnumerable<IMod>> GetOptionalsModsAsync()

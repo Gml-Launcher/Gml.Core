@@ -8,7 +8,7 @@ namespace GmlCore.Interfaces.Procedures;
 
 public interface IModsProcedures
 {
-    Task<IEnumerable<IMod>> GetModsAsync(IGameProfile profile);
+    Task<IReadOnlyCollection<IMod>> GetModsAsync(IGameProfile profile);
     Task<IEnumerable<IMod>> GetModsAsync(IGameProfile profile, string name);
     Task<IExternalMod?> GetInfo(string identify, ModType modType);
     Task<IReadOnlyCollection<IModVersion>> GetVersions(IExternalMod modInfo, ModType modType, GameLoader profileLoader,
