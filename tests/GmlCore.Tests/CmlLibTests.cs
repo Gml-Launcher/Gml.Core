@@ -1,5 +1,4 @@
 using CmlLib.Core;
-using CmlLib.Core.Natives;
 using CmlLib.Core.Rules;
 using CmlLib.Core.Version;
 using Gml.Core.Helpers.Game;

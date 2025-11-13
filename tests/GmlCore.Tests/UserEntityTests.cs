@@ -2,6 +2,8 @@ using System.Net;
 using System.Reflection;
 using Gml.Core.User;
 using GmlCore.Interfaces;
+using GmlCore.Interfaces.Auth;
+using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Integrations;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
@@ -30,7 +32,7 @@ public class UserEntityTests
     [Test]
     public async Task Block_SetsFlags_And_CallsUpdateUser()
     {
-        await _user.Block(isPermanent: true);
+        await _user.Block(true);
 
         Assert.That(_user.IsBanned, Is.True);
         Assert.That(_user.IsBannedPermanent, Is.True);
@@ -46,7 +48,7 @@ public class UserEntityTests
         _user.IsBannedPermanent = true;
 
         // Act
-        await _user.Unblock(isPermanent: true);
+        await _user.Unblock(true);
 
         // Assert
         Assert.That(_user.IsBanned, Is.False);
@@ -61,7 +63,7 @@ public class UserEntityTests
         _user.IsBanned = true;
         _user.IsBannedPermanent = true;
 
-        await _user.Unblock(isPermanent: false);
+        await _user.Unblock(false);
 
         Assert.That(_user.IsBanned, Is.False);
         Assert.That(_user.IsBannedPermanent, Is.True);
@@ -86,7 +88,7 @@ public class UserEntityTests
         _manager.IntegrationsMock.TextureProviderMock.NextSkinUrl = originalUrl;
 
         // Act
-        await _user.DownloadAndInstallSkinAsync("http://source/skin.png", hostValue: "external.example.com:1234");
+        await _user.DownloadAndInstallSkinAsync("http://source/skin.png", "external.example.com:1234");
 
         // Assert
         Assert.That(_user.TextureSkinUrl, Is.EqualTo(originalUrl));
@@ -97,7 +99,7 @@ public class UserEntityTests
         var ext = new Uri(_user.ExternalTextureSkinUrl!);
         Assert.That(ext.Host, Is.EqualTo("external.example.com"));
         Assert.That(ext.Port, Is.EqualTo(1234));
-        Assert.That(ext.AbsolutePath, Does.StartWith($"/api/v1/integrations/texture/skins/"));
+        Assert.That(ext.AbsolutePath, Does.StartWith("/api/v1/integrations/texture/skins/"));
         Assert.That(ext.AbsolutePath, Does.Contain(_user.TextureSkinGuid));
     }
 
@@ -107,7 +109,7 @@ public class UserEntityTests
         var originalUrl = "http://textures.local/foo";
         _manager.IntegrationsMock.TextureProviderMock.NextSkinUrl = originalUrl;
 
-        await _user.DownloadAndInstallSkinAsync("http://src/skin.png", hostValue: "public.host");
+        await _user.DownloadAndInstallSkinAsync("http://src/skin.png", "public.host");
 
         Assert.That(_user.ExternalTextureSkinUrl, Is.Not.Null.And.Not.Empty);
         var ext = new Uri(_user.ExternalTextureSkinUrl!);
@@ -122,7 +124,7 @@ public class UserEntityTests
     {
         _manager.IntegrationsMock.TextureProviderMock.NextSkinUrl = string.Empty;
 
-        await _user.DownloadAndInstallSkinAsync("http://src/skin.png", hostValue: "public.host");
+        await _user.DownloadAndInstallSkinAsync("http://src/skin.png", "public.host");
 
         Assert.That(_user.TextureSkinGuid, Is.EqualTo(string.Empty));
         Assert.That(_user.ExternalTextureSkinUrl, Is.Null.Or.Empty);
@@ -134,7 +136,7 @@ public class UserEntityTests
         var originalUrl = "http://textures.local/original/cape";
         _manager.IntegrationsMock.TextureProviderMock.NextCloakUrl = originalUrl;
 
-        await _user.DownloadAndInstallCloakAsync("http://source/cape.png", hostValue: "ext.host:9000");
+        await _user.DownloadAndInstallCloakAsync("http://source/cape.png", "ext.host:9000");
 
         Assert.That(_user.TextureCloakUrl, Is.EqualTo(originalUrl));
         Assert.That(_user.TextureCloakGuid, Is.Not.Null.And.Not.Empty);
@@ -152,7 +154,7 @@ public class UserEntityTests
     {
         _manager.IntegrationsMock.TextureProviderMock.NextCloakUrl = "";
 
-        await _user.DownloadAndInstallCloakAsync("http://source/cape.png", hostValue: "ext.host");
+        await _user.DownloadAndInstallCloakAsync("http://source/cape.png", "ext.host");
 
         Assert.That(_user.TextureCloakGuid, Is.EqualTo(string.Empty));
         Assert.That(_user.ExternalTextureCloakUrl, Is.Null.Or.Empty);
@@ -192,7 +194,11 @@ public class UserEntityTests
         public INotificationProcedures Notifications => throw new NotImplementedException();
         public IModsProcedures Mods => throw new NotImplementedException();
         public IStorageService Storage => throw new NotImplementedException();
-        public void RestoreSettings<T>() where T : IVersionFile => throw new NotImplementedException();
+
+        public void RestoreSettings<T>() where T : IVersionFile
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private class FakeUsersProcedures : IUserProcedures
@@ -200,37 +206,119 @@ public class UserEntityTests
         public int UpdateCalls { get; private set; }
         public IUser? LastUpdatedUser { get; private set; }
 
-        public Task<IUser> GetAuthData(string login, string password, string device, string protocol, IPAddress? address, string? customUuid, string? hwid, bool isSlim) => throw new NotImplementedException();
-        public Task<IUser?> GetUserByUuid(string uuid) => throw new NotImplementedException();
-        public Task<IUser?> GetUserByName(string userName) => throw new NotImplementedException();
-        public Task<IUser?> GetUserBySkinGuid(string guid) => throw new NotImplementedException();
-        public Task<IUser?> GetUserByCloakGuid(string guid) => throw new NotImplementedException();
-        public Task<bool> ValidateUser(string userUuid, string uuid, string accessToken) => throw new NotImplementedException();
-        public Task<bool> CanJoinToServer(IUser user, string serverId) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<IUser>> GetUsers() => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<IUser>> GetUsers(int take, int offset, string findName) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<IUser>> GetUsers(IEnumerable<string> userUuids) => throw new NotImplementedException();
+        public Task<IUser> GetAuthData(string login, string password, string device, string protocol,
+            IPAddress? address, string? customUuid, string? hwid, bool isSlim)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IUser?> GetUserByUuid(string uuid)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IUser?> GetUserByName(string userName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IUser?> GetUserBySkinGuid(string guid)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IUser?> GetUserByCloakGuid(string guid)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> ValidateUser(string userUuid, string uuid, string accessToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> CanJoinToServer(IUser user, string serverId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IReadOnlyCollection<IUser>> GetUsers()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IReadOnlyCollection<IUser>> GetUsers(int take, int offset, string findName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IReadOnlyCollection<IUser>> GetUsers(IEnumerable<string> userUuids)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task UpdateUser(IUser user)
         {
             UpdateCalls++;
             LastUpdatedUser = user;
             return Task.CompletedTask;
         }
-        public Task RemoveUser(IUser user) => throw new NotImplementedException();
-        public Task StartSession(IUser user) => throw new NotImplementedException();
-        public Task EndSession(IUser user) => throw new NotImplementedException();
-        public Task<Stream> GetSkin(IUser user) => throw new NotImplementedException();
-        public Task<Stream> GetCloak(IUser user) => throw new NotImplementedException();
-        public Task<Stream> GetHead(IUser user) => throw new NotImplementedException();
-        public Task<IUser?> GetUserByAccessToken(string accessToken) => throw new NotImplementedException();
-        public Task BlockHardware(IEnumerable<string?> hwids) => throw new NotImplementedException();
-        public Task UnblockHardware(IEnumerable<string?> hwids) => throw new NotImplementedException();
-        public Task<bool> CheckContainsHardware(IHardware hardware) => throw new NotImplementedException();
+
+        public Task RemoveUser(IUser user)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task StartSession(IUser user)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task EndSession(IUser user)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Stream> GetSkin(IUser user)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Stream> GetCloak(IUser user)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Stream> GetHead(IUser user)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IUser?> GetUserByAccessToken(string accessToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task BlockHardware(IEnumerable<string?> hwids)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UnblockHardware(IEnumerable<string?> hwids)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> CheckContainsHardware(IHardware hardware)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private class FakeIntegrations : IServicesIntegrationProcedures
     {
         public FakeTextureProvider TextureProviderMock { get; } = new();
+
         public ITextureProvider TextureProvider
         {
             get => TextureProviderMock;
@@ -238,19 +326,71 @@ public class UserEntityTests
         }
 
         public INewsListenerProvider NewsProvider { get; set; } = null!;
-        public Task<Interfaces.Enums.AuthType> GetAuthType() => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<Interfaces.Auth.IAuthServiceInfo>> GetAuthServices() => throw new NotImplementedException();
-        public Task<Interfaces.Auth.IAuthServiceInfo?> GetActiveAuthService() => throw new NotImplementedException();
-        public Task<Interfaces.Auth.IAuthServiceInfo?> GetAuthService(Interfaces.Enums.AuthType authType) => throw new NotImplementedException();
-        public Task SetActiveAuthService(Interfaces.Auth.IAuthServiceInfo? service) => throw new NotImplementedException();
-        public Task<string> GetSkinServiceAsync() => throw new NotImplementedException();
-        public Task<string> GetCloakServiceAsync() => throw new NotImplementedException();
-        public Task SetSkinServiceAsync(string url) => throw new NotImplementedException();
-        public Task SetCloakServiceAsync(string url) => throw new NotImplementedException();
-        public Task<string?> GetSentryService() => throw new NotImplementedException();
-        public Task SetSentryService(string url) => throw new NotImplementedException();
-        public Task UpdateDiscordRpc(IDiscordRpcClient client) => throw new NotImplementedException();
-        public Task<IDiscordRpcClient?> GetDiscordRpc() => throw new NotImplementedException();
+
+        public Task<AuthType> GetAuthType()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IReadOnlyCollection<IAuthServiceInfo>> GetAuthServices()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IAuthServiceInfo?> GetActiveAuthService()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IAuthServiceInfo?> GetAuthService(AuthType authType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetActiveAuthService(IAuthServiceInfo? service)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> GetSkinServiceAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> GetCloakServiceAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetSkinServiceAsync(string url)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetCloakServiceAsync(string url)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string?> GetSentryService()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetSentryService(string url)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpdateDiscordRpc(IDiscordRpcClient client)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IDiscordRpcClient?> GetDiscordRpc()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private class FakeTextureProvider : ITextureProvider
@@ -258,10 +398,29 @@ public class UserEntityTests
         public string NextSkinUrl { get; set; } = string.Empty;
         public string NextCloakUrl { get; set; } = string.Empty;
 
-        public Task<string> SetSkin(IUser user, string skinUrl) => Task.FromResult(NextSkinUrl);
-        public Task<string> SetCloak(IUser user, string skinUrl) => Task.FromResult(NextCloakUrl);
-        public Task<Stream> GetSkinStream(string? textureUrl) => throw new NotImplementedException();
-        public Task<Stream> GetCloakStream(string? userTextureSkinUrl) => throw new NotImplementedException();
-        public Task<Stream> GetHeadByNameStream(string? userName) => throw new NotImplementedException();
+        public Task<string> SetSkin(IUser user, string skinUrl)
+        {
+            return Task.FromResult(NextSkinUrl);
+        }
+
+        public Task<string> SetCloak(IUser user, string skinUrl)
+        {
+            return Task.FromResult(NextCloakUrl);
+        }
+
+        public Task<Stream> GetSkinStream(string? textureUrl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Stream> GetCloakStream(string? userTextureSkinUrl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Stream> GetHeadByNameStream(string? userName)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

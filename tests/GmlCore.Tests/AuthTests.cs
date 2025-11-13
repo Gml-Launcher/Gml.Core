@@ -2,7 +2,6 @@
 using Gml.Core.Launcher;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GmlCore.Tests;
 

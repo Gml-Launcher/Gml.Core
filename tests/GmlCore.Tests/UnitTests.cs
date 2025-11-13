@@ -13,12 +13,12 @@ namespace GmlCore.Tests;
 public class Tests
 {
     private const string ServerName = "Hitech #1";
-    private IGameProfile _testGameProfile = null!;
 
     private const string CheckProfileName = "TestProfile1710";
     private const string CheckMinecraftVersion = "1.7.10";
     private const string CheckLaunchVersion = "10.13.4.1614";
     private const GameLoader CheckLoader = GameLoader.Forge;
+    private IGameProfile _testGameProfile = null!;
 
     private GmlManager GmlManager { get; } =
         new(new GmlSettings("GmlServer", "gfweagertghuysergfbsuyerbgiuyserg", httpClient: new HttpClient())
@@ -309,10 +309,7 @@ public class Tests
     [Order(75)]
     public async Task CheckInstallDotnet()
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            return;
-        }
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return;
 
         var logDisposable = GmlManager.System.DownloadLogs.Subscribe(Console.WriteLine);
         var isInstalled = await GmlManager.System.InstallDotnet();
@@ -325,15 +322,12 @@ public class Tests
     [Order(76)]
     public async Task Build_launcher()
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            return;
-        }
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return;
 
         var launcherVersions = await GmlManager.Launcher.GetVersions();
 
         var version = launcherVersions.First();
-        bool isBuild = false;
+        var isBuild = false;
 
         var logsDisposable = GmlManager.System.DownloadLogs.Subscribe(logs =>
         {
@@ -349,10 +343,8 @@ public class Tests
 
         if (await GmlManager.System.InstallDotnet())
         {
-            if (!GmlManager.Launcher.CanCompile(version, out var _))
-            {
+            if (!GmlManager.Launcher.CanCompile(version, out _))
                 await GmlManager.Launcher.Download(version, "http://localhost:5000", "GmlLauncher");
-            }
 
             if (GmlManager.Launcher.CanCompile(version, out var message))
             {
@@ -581,10 +573,7 @@ public class Tests
 
         var modInfo = await GmlManager.Mods.GetInfo(mod.Id, mod.Type);
 
-        if (modInfo is null)
-        {
-            throw new Exception("Failed to get mod info");
-        }
+        if (modInfo is null) throw new Exception("Failed to get mod info");
 
         var versions = await GmlManager.Mods.GetVersions(modInfo, modType, profile.Loader, profile.GameVersion);
 
@@ -599,71 +588,6 @@ public class Tests
 
         Assert.That(mods, Is.True);
     }
-
-#if DEBUG
-    [Test]
-    [Order(92)]
-    public async Task AddModToProfile_From_Forge()
-    {
-        var modType = ModType.CurseForge;
-        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Fabric)}-mods";
-
-        var profile = await GmlManager.Profiles.GetProfile(name)
-                      ?? await GmlManager.Profiles.AddProfile(name, name, "1.20.1", string.Empty, GameLoader.Fabric,
-                          string.Empty,
-                          string.Empty)
-                      ?? throw new Exception("Failed to create profile instance");
-
-        var mod = (await GmlManager.Mods.FindModsAsync(
-            profile.Loader,
-            profile.GameVersion,
-            modType,
-            "Test",
-            1,
-            0)).First();
-
-        var modInfo = await GmlManager.Mods.GetInfo(mod.Id, mod.Type);
-
-        if (modInfo is null)
-        {
-            throw new Exception("Failed to get mod info");
-        }
-
-        var versions = await GmlManager.Mods.GetVersions(modInfo, modType, profile.Loader, profile.GameVersion);
-
-        var version = versions.First(c => c.Files.Any()).Files.First();
-
-        await profile.AddMod(Path.GetFileName(version),
-            await GmlManager.LauncherInfo.Settings.HttpClient.GetStreamAsync(version));
-
-        var mods = (await profile.GetModsAsync()).Any(c => c.Name == Path.GetFileNameWithoutExtension(version));
-
-        await profile.Remove();
-
-        Assert.That(mods, Is.True);
-    }
-
-    [Test]
-    [Order(93)]
-    public async Task GetNewsForVk()
-    {
-        var vkProvider = new VkNewsProvider("", GmlManager);
-
-        await GmlManager.Integrations.NewsProvider.AddListener(vkProvider);
-
-        await GmlManager.Integrations.NewsProvider.RefreshAsync();
-
-        await Task.Delay(5000);
-
-        var news = await GmlManager.Integrations.NewsProvider.GetNews();
-
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(news, Is.Not.Null);
-            Assert.That(news.Count, !Is.EqualTo(0));
-        }
-    }
-#endif
 
     [Test]
     [Order(94)]
@@ -790,4 +714,66 @@ public class Tests
         // processUtil.StartWithEvents();
         // await processUtil.WaitForExitTaskAsync();
     }
+
+#if DEBUG
+    [Test]
+    [Order(92)]
+    public async Task AddModToProfile_From_Forge()
+    {
+        var modType = ModType.CurseForge;
+        const string name = $"{CheckMinecraftVersion}{nameof(GameLoader.Fabric)}-mods";
+
+        var profile = await GmlManager.Profiles.GetProfile(name)
+                      ?? await GmlManager.Profiles.AddProfile(name, name, "1.20.1", string.Empty, GameLoader.Fabric,
+                          string.Empty,
+                          string.Empty)
+                      ?? throw new Exception("Failed to create profile instance");
+
+        var mod = (await GmlManager.Mods.FindModsAsync(
+            profile.Loader,
+            profile.GameVersion,
+            modType,
+            "Test",
+            1,
+            0)).First();
+
+        var modInfo = await GmlManager.Mods.GetInfo(mod.Id, mod.Type);
+
+        if (modInfo is null) throw new Exception("Failed to get mod info");
+
+        var versions = await GmlManager.Mods.GetVersions(modInfo, modType, profile.Loader, profile.GameVersion);
+
+        var version = versions.First(c => c.Files.Any()).Files.First();
+
+        await profile.AddMod(Path.GetFileName(version),
+            await GmlManager.LauncherInfo.Settings.HttpClient.GetStreamAsync(version));
+
+        var mods = (await profile.GetModsAsync()).Any(c => c.Name == Path.GetFileNameWithoutExtension(version));
+
+        await profile.Remove();
+
+        Assert.That(mods, Is.True);
+    }
+
+    [Test]
+    [Order(93)]
+    public async Task GetNewsForVk()
+    {
+        var vkProvider = new VkNewsProvider("", GmlManager);
+
+        await GmlManager.Integrations.NewsProvider.AddListener(vkProvider);
+
+        await GmlManager.Integrations.NewsProvider.RefreshAsync();
+
+        await Task.Delay(5000);
+
+        var news = await GmlManager.Integrations.NewsProvider.GetNews();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(news, Is.Not.Null);
+            Assert.That(news.Count, !Is.EqualTo(0));
+        }
+    }
+#endif
 }

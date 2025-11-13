@@ -1,29 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
+using System.Text;
+using System.Text.Json;
 using Gml.Core.Helpers.Files;
 using Gml.Models.System;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
-using GmlCore.Interfaces.Storage;
 using GmlCore.Interfaces.Sentry;
+using GmlCore.Interfaces.Storage;
 using GmlCore.Interfaces.User;
-using NUnit.Framework;
 
 namespace GmlCore.Tests;
 
 [TestFixture]
 public class FileStorageProceduresTests
 {
-    private string _tempRoot = string.Empty;
-    private TestLauncherInfo _launcher = null!;
-    private FakeStorageService _storage = null!;
-    private FakeBugTracker _bugTracker = null!;
-
     [SetUp]
     public void SetUp()
     {
@@ -49,10 +40,25 @@ public class FileStorageProceduresTests
     [TearDown]
     public void TearDown()
     {
-        try { if (Directory.Exists(_tempRoot)) Directory.Delete(_tempRoot, true); } catch { /* ignore */ }
+        try
+        {
+            if (Directory.Exists(_tempRoot)) Directory.Delete(_tempRoot, true);
+        }
+        catch
+        {
+            /* ignore */
+        }
     }
 
-    private FileStorageProcedures CreateSut() => new FileStorageProcedures(_launcher, _storage, _bugTracker);
+    private string _tempRoot = string.Empty;
+    private TestLauncherInfo _launcher = null!;
+    private FakeStorageService _storage = null!;
+    private FakeBugTracker _bugTracker = null!;
+
+    private FileStorageProcedures CreateSut()
+    {
+        return new FileStorageProcedures(_launcher, _storage, _bugTracker);
+    }
 
     [Test]
     public async Task DownloadFileStream_LocalStorage_NotFound_ReturnsNull()
@@ -74,7 +80,7 @@ public class FileStorageProceduresTests
         var attachmentsDir = Path.Combine(_launcher.InstallationDirectory, "Attachments");
         Directory.CreateDirectory(attachmentsDir);
         var fullPath = Path.Combine(attachmentsDir, fileName);
-        var content = new byte[] {1, 2, 3, 4, 5};
+        var content = new byte[] { 1, 2, 3, 4, 5 };
         await File.WriteAllBytesAsync(fullPath, content);
 
         var info = new LocalFileInfo
@@ -105,7 +111,7 @@ public class FileStorageProceduresTests
         var expectedPath = Path.GetFullPath(Path.Combine(_launcher.InstallationDirectory, relativeDir));
         Directory.CreateDirectory(expectedPath);
         var fullFilePath = Path.Combine(expectedPath, fileName);
-        var content = System.Text.Encoding.UTF8.GetBytes("hello");
+        var content = Encoding.UTF8.GetBytes("hello");
         await File.WriteAllBytesAsync(fullFilePath, content);
 
         var storageKey = "hash-123";
@@ -134,10 +140,10 @@ public class FileStorageProceduresTests
         // Arrange
         var sut = CreateSut();
         var providedName = "myfile.bin";
-        var input = new MemoryStream(new byte[] {10, 20, 30});
+        var input = new MemoryStream(new byte[] { 10, 20, 30 });
 
         // Act
-        var returnedName = await sut.LoadFile(input, folder: null, defaultFileName: providedName);
+        var returnedName = await sut.LoadFile(input, null, providedName);
 
         // Assert
         Assert.That(returnedName, Is.EqualTo(providedName));
@@ -236,7 +242,7 @@ public class FileStorageProceduresTests
             return Task.CompletedTask;
         }
 
-        public Task<T?> GetAsync<T>(string key, System.Text.Json.JsonSerializerOptions? jsonSerializerOptions = null)
+        public Task<T?> GetAsync<T>(string key, JsonSerializerOptions? jsonSerializerOptions = null)
         {
             if (_data.TryGetValue(key, out var value))
                 return Task.FromResult((T?)value);
@@ -244,21 +250,83 @@ public class FileStorageProceduresTests
         }
 
         // Unused members for these tests
-        public Task<T?> GetUserAsync<T>(string login, System.Text.Json.JsonSerializerOptions jsonSerializerOptions) => throw new NotImplementedException();
-        public Task<int> SaveRecord<T>(T record) => throw new NotImplementedException();
-        public Task<T?> GetUserByNameAsync<T>(string userName, System.Text.Json.JsonSerializerOptions jsonSerializerOptions) => throw new NotImplementedException();
-        public Task<T?> GetUserByAccessToken<T>(string accessToken, System.Text.Json.JsonSerializerOptions jsonSerializerOptions) => throw new NotImplementedException();
-        public Task<T?> GetUserByUuidAsync<T>(string uuid, System.Text.Json.JsonSerializerOptions jsonSerializerOptions) => throw new NotImplementedException();
-        public Task<T?> GetUserByCloakAsync<T>(string guid, System.Text.Json.JsonSerializerOptions jsonSerializerOptions) => throw new NotImplementedException();
-        public Task<T?> GetUserBySkinAsync<T>(string guid, System.Text.Json.JsonSerializerOptions jsonSerializerOptions) => throw new NotImplementedException();
-        public Task SetUserAsync<T>(string login, string uuid, T value) => throw new NotImplementedException();
-        public Task<IReadOnlyCollection<T>> GetUsersAsync<T>(System.Text.Json.JsonSerializerOptions jsonSerializerOptions) => throw new NotImplementedException();
-        public Task<IEnumerable<T>> GetUsersAsync<T>(System.Text.Json.JsonSerializerOptions jsonSerializerOptions, IEnumerable<string> userUuids) => throw new NotImplementedException();
-        public Task<ICollection<T>> GetUsersAsync<T>(System.Text.Json.JsonSerializerOptions jsonSerializerOptions, int take, int offset, string findName) => throw new NotImplementedException();
-        public Task AddBugAsync(GmlCore.Interfaces.Launcher.IBugInfo bugInfo) => throw new NotImplementedException();
-        public Task ClearBugsAsync() => throw new NotImplementedException();
-        public Task<IEnumerable<T>> GetBugsAsync<T>() => throw new NotImplementedException();
-        public Task<IBugInfo?> GetBugIdAsync(Guid id) => throw new NotImplementedException();
+        public Task<T?> GetUserAsync<T>(string login, JsonSerializerOptions jsonSerializerOptions)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<int> SaveRecord<T>(T record)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<T?> GetUserByNameAsync<T>(string userName, JsonSerializerOptions jsonSerializerOptions)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<T?> GetUserByAccessToken<T>(string accessToken, JsonSerializerOptions jsonSerializerOptions)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<T?> GetUserByUuidAsync<T>(string uuid, JsonSerializerOptions jsonSerializerOptions)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<T?> GetUserByCloakAsync<T>(string guid, JsonSerializerOptions jsonSerializerOptions)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<T?> GetUserBySkinAsync<T>(string guid, JsonSerializerOptions jsonSerializerOptions)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetUserAsync<T>(string login, string uuid, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IReadOnlyCollection<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions,
+            IEnumerable<string> userUuids)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ICollection<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions, int take, int offset,
+            string findName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task AddBugAsync(IBugInfo bugInfo)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task ClearBugsAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<T>> GetBugsAsync<T>()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IBugInfo?> GetBugIdAsync(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<IEnumerable<IBugInfo>> GetFilteredBugsAsync(Expression<Func<IStorageBug, bool>> filter)
         {
             throw new NotImplementedException();
@@ -297,59 +365,106 @@ public class FileStorageProceduresTests
     private class TestObservable : IObservable<IStorageSettings>
     {
         private readonly List<IObserver<IStorageSettings>> _observers = new();
-        private class SimpleDisposable : IDisposable
-        {
-            private readonly Action _dispose;
-            public SimpleDisposable(Action dispose) { _dispose = dispose; }
-            public void Dispose() { _dispose(); }
-        }
+
         public IDisposable Subscribe(IObserver<IStorageSettings> observer)
         {
             if (!_observers.Contains(observer)) _observers.Add(observer);
             return new SimpleDisposable(() => _observers.Remove(observer));
         }
+
         public void OnNext(IStorageSettings value)
         {
             foreach (var o in _observers.ToArray()) o.OnNext(value);
         }
+
         public void OnCompleted()
         {
             foreach (var o in _observers.ToArray()) o.OnCompleted();
             _observers.Clear();
         }
+
         public void OnError(Exception ex)
         {
             foreach (var o in _observers.ToArray()) o.OnError(ex);
+        }
+
+        private class SimpleDisposable : IDisposable
+        {
+            private readonly Action _dispose;
+
+            public SimpleDisposable(Action dispose)
+            {
+                _dispose = dispose;
+            }
+
+            public void Dispose()
+            {
+                _dispose();
+            }
         }
     }
 
     private class TestLauncherInfo : ILauncherInfo
     {
-        public string Name { get; set; } = "test";
-        public string BaseDirectory { get; set; } = string.Empty;
+        public string Name { get; } = "test";
+        public string BaseDirectory { get; } = string.Empty;
         public string InstallationDirectory { get; set; } = string.Empty;
         public IStorageSettings StorageSettings { get; set; } = new TestStorageSettings();
         public Dictionary<string, IVersionFile?> ActualLauncherVersion { get; set; } = new();
         public IGmlSettings Settings => throw new NotImplementedException();
         public IObservable<IStorageSettings> SettingsUpdated { get; } = new TestObservable();
         public IDictionary<string, string> AccessTokens { get; set; } = new Dictionary<string, string>();
-        public void UpdateSettings(StorageType storageType, string storageHost, string storageLogin, string storagePassword, TextureProtocol textureProtocol, string curseForgeKey, string vkKey) => throw new NotImplementedException();
-        public Task<IEnumerable<ILauncherBuild>> GetBuilds() => throw new NotImplementedException();
-        public Task<ILauncherBuild?> GetBuild(string name) => throw new NotImplementedException();
+
+        public void UpdateSettings(StorageType storageType, string storageHost, string storageLogin,
+            string storagePassword, TextureProtocol textureProtocol, string curseForgeKey, string vkKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<ILauncherBuild>> GetBuilds()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ILauncherBuild?> GetBuild(string name)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private class FakeBugTracker : IBugTrackerProcedures
     {
         public List<Exception> Exceptions { get; } = new();
-        public void CaptureException(IBugInfo bugInfo) { /* not needed */ }
+
+        public void CaptureException(IBugInfo bugInfo)
+        {
+            /* not needed */
+        }
+
         public IBugInfo CaptureException(Exception exception)
         {
             Exceptions.Add(exception);
             return null!;
         }
-        public Task<IEnumerable<IBugInfo>> GetAllBugs() => Task.FromResult<IEnumerable<IBugInfo>>(Array.Empty<IBugInfo>());
-        public Task<IBugInfo?> GetBugId(Guid id) => Task.FromResult<IBugInfo?>(null);
-        public Task<IEnumerable<IBugInfo>> GetFilteredBugs(System.Linq.Expressions.Expression<Func<IStorageBug, bool>> filter) => Task.FromResult<IEnumerable<IBugInfo>>(Array.Empty<IBugInfo>());
-        public Task SolveAllAsync() => Task.CompletedTask;
+
+        public Task<IEnumerable<IBugInfo>> GetAllBugs()
+        {
+            return Task.FromResult<IEnumerable<IBugInfo>>(Array.Empty<IBugInfo>());
+        }
+
+        public Task<IBugInfo?> GetBugId(Guid id)
+        {
+            return Task.FromResult<IBugInfo?>(null);
+        }
+
+        public Task<IEnumerable<IBugInfo>> GetFilteredBugs(Expression<Func<IStorageBug, bool>> filter)
+        {
+            return Task.FromResult<IEnumerable<IBugInfo>>(Array.Empty<IBugInfo>());
+        }
+
+        public Task SolveAllAsync()
+        {
+            return Task.CompletedTask;
+        }
     }
 }

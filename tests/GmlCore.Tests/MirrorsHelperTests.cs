@@ -1,7 +1,4 @@
-using System.Linq;
 using Gml.Core.Helpers.Mirrors;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
 
 namespace GmlCore.Tests;
 
@@ -23,7 +20,7 @@ public class MirrorsHelperTests
             "https://mirror.recloud.host/openjdk-22_linux-x64_bin.zip",
             "https://mr-1.recloud.tech/openjdk-22_linux-x64_bin.zip",
             "https://mr-2.recloud.tech/openjdk-22_linux-x64_bin.zip",
-            "https://mr-3.recloud.tech/openjdk-22_linux-x64_bin.zip",
+            "https://mr-3.recloud.tech/openjdk-22_linux-x64_bin.zip"
         };
         Assert.That(linux, Is.EqualTo(expectedLinux));
 
@@ -36,7 +33,7 @@ public class MirrorsHelperTests
             "https://mirror.recloud.host/openjdk-22_windows-x64_bin.zip",
             "https://mr-1.recloud.tech/openjdk-22_windows-x64_bin.zip",
             "https://mr-2.recloud.tech/openjdk-22_windows-x64_bin.zip",
-            "https://mr-3.recloud.tech/openjdk-22_windows-x64_bin.zip",
+            "https://mr-3.recloud.tech/openjdk-22_windows-x64_bin.zip"
         };
         Assert.That(windows, Is.EqualTo(expectedWindows));
 
@@ -49,7 +46,7 @@ public class MirrorsHelperTests
             "https://mirror.recloud.host/openjdk-22_macos-aarch64.zip",
             "https://mr-1.recloud.tech/openjdk-22_macos-aarch64.zip",
             "https://mr-2.recloud.tech/openjdk-22_macos-aarch64.zip",
-            "https://mr-3.recloud.tech/openjdk-22_macos-aarch64.zip",
+            "https://mr-3.recloud.tech/openjdk-22_macos-aarch64.zip"
         };
 
         Assert.That(osx, Is.EqualTo(expectedOsx).AsCollection);
@@ -70,7 +67,7 @@ public class MirrorsHelperTests
             "https://mirror.recloud.host/dotnet-sdk-8.0.302-linux-x64.zip",
             "https://mr-1.recloud.tech/dotnet-sdk-8.0.302-linux-x64.zip",
             "https://mr-2.recloud.tech/dotnet-sdk-8.0.302-linux-x64.zip",
-            "https://mr-3.recloud.tech/dotnet-sdk-8.0.302-linux-x64.zip",
+            "https://mr-3.recloud.tech/dotnet-sdk-8.0.302-linux-x64.zip"
         };
         using (Assert.EnterMultipleScope())
         {
@@ -79,6 +76,7 @@ public class MirrorsHelperTests
             // windows
             Assert.That(MirrorsHelper.DotnetMirrors.ContainsKey("windows"), Is.True);
         }
+
         var windows = MirrorsHelper.DotnetMirrors["windows"];
         var expectedWindows = new[]
         {
@@ -86,7 +84,7 @@ public class MirrorsHelperTests
             "https://mirror.recloud.host/dotnet-sdk-8.0.302-win-x64.zip",
             "https://mr-1.recloud.tech/dotnet-sdk-8.0.302-win-x64.zip",
             "https://mr-2.recloud.tech/dotnet-sdk-8.0.302-win-x64.zip",
-            "https://mr-3.recloud.tech/dotnet-sdk-8.0.302-win-x64.zip",
+            "https://mr-3.recloud.tech/dotnet-sdk-8.0.302-win-x64.zip"
         };
         using (Assert.EnterMultipleScope())
         {
@@ -95,6 +93,7 @@ public class MirrorsHelperTests
             // osx
             Assert.That(MirrorsHelper.DotnetMirrors.ContainsKey("osx"), Is.True);
         }
+
         var osx = MirrorsHelper.DotnetMirrors["osx"];
         var expectedOsx = new[]
         {
@@ -102,7 +101,7 @@ public class MirrorsHelperTests
             "https://mirror.recloud.host/dotnet-sdk-8.0.302-macos-aarch64.zip",
             "https://mr-1.recloud.tech/dotnet-sdk-8.0.302-macos-aarch64.zip",
             "https://mr-2.recloud.tech/dotnet-sdk-8.0.302-macos-aarch64.zip",
-            "https://mr-3.recloud.tech/dotnet-sdk-8.0.302-macos-aarch64.zip",
+            "https://mr-3.recloud.tech/dotnet-sdk-8.0.302-macos-aarch64.zip"
         };
         Assert.That(osx, Is.EqualTo(expectedOsx).AsCollection);
     }

@@ -1,5 +1,4 @@
-﻿using NUnit.Framework;
-using Gml.Common.TextureService;
+﻿using Gml.Common.TextureService;
 using Newtonsoft.Json;
 
 namespace GmlCore.Tests;
