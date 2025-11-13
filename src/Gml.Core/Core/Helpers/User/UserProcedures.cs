@@ -156,14 +156,14 @@ namespace Gml.Core.Helpers.User
             });
         }
 
-        public async Task<IEnumerable<IUser>> GetUsers(int take, int offset, string findName)
+        public async Task<IReadOnlyCollection<IUser>> GetUsers(int take, int offset, string findName)
         {
             var authUsers = await _storage.GetUsersAsync<AuthUser>(new JsonSerializerOptions
             {
                 Converters = { new SessionConverter() }
             }, take, offset, findName).ConfigureAwait(false);
 
-            return authUsers;
+            return authUsers.ToArray();
         }
 
         public async Task<IReadOnlyCollection<IUser>> GetUsers(IEnumerable<string> userUuids)

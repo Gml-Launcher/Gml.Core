@@ -25,7 +25,7 @@ namespace GmlCore.Interfaces.Procedures
         Task<bool> ValidateUser(string userUuid, string uuid, string accessToken);
         Task<bool> CanJoinToServer(IUser user, string serverId);
         Task<IEnumerable<IUser>> GetUsers();
-        Task<IEnumerable<IUser>> GetUsers(int take, int offset, string findName);
+        Task<IReadOnlyCollection<IUser>> GetUsers(int take, int offset, string findName);
         Task<IReadOnlyCollection<IUser>> GetUsers(IEnumerable<string> userUuids);
         Task UpdateUser(IUser user);
         Task RemoveUser(IUser user);
