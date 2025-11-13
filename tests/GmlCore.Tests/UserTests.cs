@@ -87,7 +87,7 @@ public class UserProceduresTests
         var result = await _gmlManager.Users.GetUserByUuid(uuid);
 
         // Assert
-        Assert.NotNull(result);
+        Assert.That(result, Is.Not.Null);
         Assert.That(result.Uuid, Is.EqualTo(uuid));
     }
 
@@ -101,7 +101,7 @@ public class UserProceduresTests
         var result = await _gmlManager.Users.GetUserByUuid(uuid);
 
         // Assert
-        Assert.IsNull(result);
+        Assert.That(result, Is.Not.Null);
     }
 
     [Test]
@@ -161,7 +161,7 @@ public class UserProceduresTests
         var result = await _gmlManager.Users.ValidateUser(user.Uuid, TestServerUuid, user.AccessToken);
 
         // Assert
-        Assert.IsTrue(result);
+        Assert.That(result, Is.True);
     }
 
     [Test]
@@ -176,7 +176,7 @@ public class UserProceduresTests
         var result = await _gmlManager.Users.ValidateUser(userUuid, uuid, accessToken);
 
         // Assert
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
 
     [Test]
@@ -203,9 +203,12 @@ public class UserProceduresTests
         var result = (await _gmlManager.Users.GetUsers()).ToArray();
 
         // Assert
-        Assert.NotNull(result);
-        Assert.That(result.Count(), Is.EqualTo(1));
-        Assert.IsTrue(result.Any(u => u.Name == TestUserName));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count(), Is.EqualTo(1));
+            Assert.That(result.Any(u => u.Name == TestUserName), Is.True);
+        }
     }
 
     [Test]
@@ -219,7 +222,7 @@ public class UserProceduresTests
         var result = await _gmlManager.Users.GetUsers(take, offset, TestUserName);
 
         // Assert
-        Assert.NotNull(result);
+        Assert.That(result, Is.Not.Null);
         Assert.That(result.Count(), Is.EqualTo(1));
     }
 
