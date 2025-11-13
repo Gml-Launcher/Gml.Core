@@ -864,12 +864,19 @@ namespace Gml.Core.Helpers.Profiles
                         var liteLoaderVersions = _liteLoaderVersions
                             .Select(c => c)
                             .Where(c => c.BaseVersion == minecraftVersion)
-                            .Select(c => c.Version);
+                            .Select(c => c.Version)
+                            .Where(c => !string.IsNullOrEmpty(c))
+                            .Cast<string>();
 
                         return [..liteLoaderVersions];
                     case GameLoader.NeoForge:
                         var neoForge = new NeoForgeInstaller(anyLauncher);
                         var neoForgeVersionMapper = new NeoForgeInstallerVersionMapper();
+
+                        if (_neoForgeVersions is null || string.IsNullOrEmpty(minecraftVersion))
+                        {
+                            return [];
+                        }
 
                         if (!_neoForgeVersions.Any(c => c.Key == minecraftVersion))
                         {
@@ -886,6 +893,11 @@ namespace Gml.Core.Helpers.Profiles
                         using (var client = new HttpClient())
                         {
                             var quiltLoader = new QuiltInstaller(client);
+
+                            if (string.IsNullOrEmpty(minecraftVersion))
+                            {
+                                return [];
+                            }
 
                             var loaders = await quiltLoader.GetLoaders(minecraftVersion);
 
