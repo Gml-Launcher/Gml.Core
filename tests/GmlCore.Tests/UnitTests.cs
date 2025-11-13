@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using Gml;
 using Gml.Core.Integrations;
@@ -8,8 +7,6 @@ using Gml.Models.Mods;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Mods;
-using Pingo;
-using Pingo.Status;
 
 namespace GmlCore.Tests;
 
@@ -108,12 +105,12 @@ public class Tests
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
 
-        Assert.Multiple(async () =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(
                 await GmlManager.Profiles.CanAddProfile(name, "1.20.1", string.Empty, GameLoader.Vanilla),
                 Is.False);
-        });
+        }
     }
 
     [Test]
@@ -129,12 +126,12 @@ public class Tests
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
 
-        Assert.Multiple(async () =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(
                 await GmlManager.Profiles.CanAddProfile(name, "1.7.10", string.Empty, GameLoader.Forge),
                 Is.False);
-        });
+        }
     }
 
     [Test]
@@ -150,12 +147,12 @@ public class Tests
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
 
-        Assert.Multiple(async () =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(
                 await GmlManager.Profiles.CanAddProfile(name, "1.7.10", string.Empty, GameLoader.NeoForge),
                 Is.False);
-        });
+        }
     }
 
     [Test]
@@ -171,12 +168,12 @@ public class Tests
                                string.Empty)
                            ?? throw new Exception("Failed to create profile instance");
 
-        Assert.Multiple(async () =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(
                 await GmlManager.Profiles.CanAddProfile(name, "1.7.10", string.Empty, GameLoader.Fabric),
                 Is.False);
-        });
+        }
     }
 
     [Test]
@@ -660,12 +657,11 @@ public class Tests
 
         var news = await GmlManager.Integrations.NewsProvider.GetNews();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(news, Is.Not.Null);
             Assert.That(news.Count, !Is.EqualTo(0));
-            return Task.CompletedTask;
-        });
+        }
     }
 #endif
 
@@ -683,12 +679,11 @@ public class Tests
 
         var news = await GmlManager.Integrations.NewsProvider.GetNews();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(news, Is.Not.Null);
             Assert.That(news.Count, !Is.EqualTo(0));
-            return Task.CompletedTask;
-        });
+        }
     }
 
     [Test]
@@ -705,12 +700,11 @@ public class Tests
 
         var news = await GmlManager.Integrations.NewsProvider.GetNews();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(news, Is.Not.Null);
             Assert.That(news.Count, !Is.EqualTo(0));
-            return Task.CompletedTask;
-        });
+        }
     }
 
     [Test]
@@ -727,12 +721,11 @@ public class Tests
 
         var news = await GmlManager.Integrations.NewsProvider.GetNews();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(news, Is.Not.Null);
             Assert.That(news.Count, !Is.EqualTo(0));
-            return Task.CompletedTask;
-        });
+        }
     }
 
     [Test]
