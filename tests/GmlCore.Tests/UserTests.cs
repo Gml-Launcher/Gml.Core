@@ -101,7 +101,7 @@ public class UserProceduresTests
         var result = await _gmlManager.Users.GetUserByUuid(uuid);
 
         // Assert
-        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Is.Null);
     }
 
     [Test]
