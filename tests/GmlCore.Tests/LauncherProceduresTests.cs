@@ -15,7 +15,6 @@ using GmlCore.Interfaces.Sentry;
 using GmlCore.Interfaces.Storage;
 using GmlCore.Interfaces.System;
 using GmlCore.Interfaces.User;
-using NUnit.Framework.Legacy;
 
 namespace GmlCore.Tests;
 
@@ -128,7 +127,7 @@ public class LauncherProceduresTests
             "osx-x64", "osx-arm64"
         };
 
-        CollectionAssert.AreEquivalent(expected, platforms);
+        Assert.That(platforms, Is.EquivalentTo(expected));
     }
 
     [Test]
@@ -199,7 +198,7 @@ public class LauncherProceduresTests
             SystemProcedures = new TestSystemProcedures();
             StorageSettings = null;
             SecurityKey = "key";
-            TextureServiceEndpoint = string.Empty;
+            TextureServiceEndpoint = "http://localhost";
         }
 
         public string Name { get; }
@@ -299,21 +298,22 @@ public class LauncherProceduresTests
 
     private class InMemoryStorage : IStorageService
     {
-        private readonly Dictionary<string, string> _data = new();
+        private readonly Dictionary<string, object?> _data = new();
 
         public Task SetAsync<T>(string key, T? value)
         {
-            var json = JsonSerializer.Serialize(value, new JsonSerializerOptions { WriteIndented = true });
-            _data[key] = json;
+            _data[key] = value;
             return Task.CompletedTask;
         }
 
         public Task<T?> GetAsync<T>(string key, JsonSerializerOptions? jsonSerializerOptions = null)
         {
-            if (_data.TryGetValue(key, out var json))
+            if (_data.TryGetValue(key, out var obj))
             {
-                var val = JsonSerializer.Deserialize<T>(json, jsonSerializerOptions ?? new JsonSerializerOptions());
-                return Task.FromResult(val);
+                if (obj is T t)
+                    return Task.FromResult<T?>(t);
+                if (obj is string s && typeof(T) == typeof(string))
+                    return Task.FromResult((T?)(object?)s);
             }
 
             return Task.FromResult(default(T));
