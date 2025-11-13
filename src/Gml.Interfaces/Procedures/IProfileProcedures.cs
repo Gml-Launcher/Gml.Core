@@ -39,7 +39,7 @@ namespace GmlCore.Interfaces.Procedures
         Task<IEnumerable<IFileInfo>> GetProfileFiles(IGameProfile baseProfile);
         Task<IFileInfo?> GetProfileFiles(IGameProfile baseProfile, string directory);
         Task<IGameProfile?> GetProfile(string profileName);
-        Task<IEnumerable<IGameProfile>> GetProfiles();
+        Task<IReadOnlyCollection<IGameProfile>> GetProfiles();
         Task<IGameProfileInfo?> GetProfileInfo(string profileName, IStartupOptions startupOptions, IUser user);
         Task<IGameProfileInfo?> RestoreProfileInfo(string profileName);
         Task PackProfile(IGameProfile baseProfile);
@@ -57,7 +57,7 @@ namespace GmlCore.Interfaces.Procedures
         Task<IFileInfo[]> GetAllProfileFiles(IGameProfile baseProfile, bool needRestoreCache);
         Task<IFileInfo[]> GetModsAsync(IGameProfile baseProfile);
         Task<IFileInfo[]> GetOptionalsModsAsync(IGameProfile baseProfile);
-        Task<IEnumerable<string>> GetAllowVersions(GameLoader result, string? minecraftVersion);
+        Task<IReadOnlyCollection<string>> GetAllowVersions(GameLoader result, string? minecraftVersion);
         Task ChangeBootstrapProgram(IGameProfile testGameProfile, IBootstrapProgram version);
         Task AddFolderToWhiteList(IGameProfile profile, IFolderInfo folder);
         Task RemoveFolderFromWhiteList(IGameProfile profile, IFolderInfo folder);

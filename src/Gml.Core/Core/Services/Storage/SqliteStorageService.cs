@@ -116,14 +116,16 @@ namespace Gml.Core.Services.Storage
             await _database.InsertOrReplaceAsync(storageItem);
         }
 
-        public async Task<IEnumerable<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions)
+        public async Task<IReadOnlyCollection<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions)
         {
             var users = (await _database
                 .Table<UserStorageItem>()
                 .ToListAsync())
-                .Select(x => JsonSerializer.Deserialize<T>(x.Value, jsonSerializerOptions));
+                .Select(x => JsonSerializer.Deserialize<T>(x.Value, jsonSerializerOptions))
+                .Where(x => x != null)
+                .Cast<T>();
 
-            return users!;
+            return [..users];
         }
 
         public async Task<IEnumerable<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions,

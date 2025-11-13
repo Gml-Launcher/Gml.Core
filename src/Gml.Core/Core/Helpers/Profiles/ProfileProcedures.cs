@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -263,11 +264,11 @@ namespace Gml.Core.Helpers.Profiles
             return profile;
         }
 
-        public async Task<IEnumerable<IGameProfile>> GetProfiles()
+        public async Task<IReadOnlyCollection<IGameProfile>> GetProfiles()
         {
             await RestoreProfiles();
 
-            return _gameProfiles.AsEnumerable();
+            return [.._gameProfiles];
         }
 
         public Task<IFileInfo?> GetProfileFiles(IGameProfile baseProfile, string directory)
@@ -789,7 +790,7 @@ namespace Gml.Core.Helpers.Profiles
             return baseProfile.GameLoader.GetOptionalsMods();
         }
 
-        public async Task<IEnumerable<string>> GetAllowVersions(GameLoader gameLoader, string? minecraftVersion)
+        public async Task<IReadOnlyCollection<string>> GetAllowVersions(GameLoader gameLoader, string? minecraftVersion)
         {
             try
             {
@@ -802,22 +803,30 @@ namespace Gml.Core.Helpers.Profiles
                     case GameLoader.Vanilla:
 
                         _vanillaVersions ??= await anyLauncher.GetAllVersionsAsync();
-                        return _vanillaVersions.Where(c => c.Type == "release").Select(c => c.Name);
+                        var innumerable = _vanillaVersions
+                            .Where(c => c.Type == "release")
+                            .Select(c => c.Name);
+
+                        return [
+                            ..innumerable
+                        ];
 
                     case GameLoader.Forge:
 
                         var forge = new ForgeInstaller(anyLauncher);
                         var versionMapper = new ForgeInstallerVersionMapper();
 
-                        if (!_forgeVersions.Any(c => c.Key == minecraftVersion))
+                        if (_forgeVersions is not null && !_forgeVersions.Any(c => c.Key == minecraftVersion))
                         {
                             _forgeVersions[minecraftVersion] = await forge.GetForgeVersions(minecraftVersion);
                         }
 
-                        return _forgeVersions[minecraftVersion]
+                        var forgeVersions = _forgeVersions![minecraftVersion]
                             .OrderByDescending(c => c.IsRecommendedVersion)
                             .ThenByDescending(c => c.Time)
                             .Select(c => versionMapper.CreateInstaller(c).ForgeVersion.ForgeVersionName);
+
+                        return [..forgeVersions];
 
                     case GameLoader.Fabric:
                         using (var client = new HttpClient())
@@ -843,7 +852,7 @@ namespace Gml.Core.Helpers.Profiles
                                 throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
                             }
 
-                            return _quiltVersions[minecraftVersion];
+                            return [.._quiltVersions[minecraftVersion]];
                         }
 
 
@@ -852,10 +861,12 @@ namespace Gml.Core.Helpers.Profiles
 
                         _liteLoaderVersions ??= await liteLoaderVersionLoader.GetAllLiteLoaders();
 
-                        return _liteLoaderVersions
+                        var liteLoaderVersions = _liteLoaderVersions
                             .Select(c => c)
                             .Where(c => c.BaseVersion == minecraftVersion)
-                            .Select(c => c.Version)!;
+                            .Select(c => c.Version);
+
+                        return [..liteLoaderVersions];
                     case GameLoader.NeoForge:
                         var neoForge = new NeoForgeInstaller(anyLauncher);
                         var neoForgeVersionMapper = new NeoForgeInstallerVersionMapper();
@@ -865,9 +876,12 @@ namespace Gml.Core.Helpers.Profiles
                             _neoForgeVersions[minecraftVersion] = await neoForge.GetForgeVersions(minecraftVersion);
                         }
 
-                        return _neoForgeVersions[minecraftVersion]
+                        var neoForgeVersions = _neoForgeVersions[minecraftVersion]
                             .Select(c => neoForgeVersionMapper.CreateInstaller(c).VersionName)
                             .Reverse();
+
+                        return [..neoForgeVersions];
+
                     case GameLoader.Quilt:
                         using (var client = new HttpClient())
                         {
@@ -892,7 +906,7 @@ namespace Gml.Core.Helpers.Profiles
                                 throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
                             }
 
-                            return _fabricVersions[minecraftVersion];
+                            return [.._fabricVersions[minecraftVersion]];
                         }
                     default:
                         throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);

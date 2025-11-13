@@ -111,7 +111,7 @@ namespace Gml.Core.Sample.Console
         {
             var profiles = await gmlManager.Profiles.GetProfiles();
 
-            if (!profiles.Any())
+            if (profiles.Count == 0)
             {
                 System.Console.WriteLine("Нет доступных профилей.");
                 return;
@@ -183,7 +183,7 @@ namespace Gml.Core.Sample.Console
                     return;
             }
 
-            string? loaderVersion = string.Empty;
+            string loaderVersion = string.Empty;
 
             if (loader != GameLoader.Vanilla)
             {

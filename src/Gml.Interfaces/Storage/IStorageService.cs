@@ -103,7 +103,7 @@ namespace GmlCore.Interfaces.Storage
         /// <typeparam name="T">The type of the users.</typeparam>
         /// <param name="jsonSerializerOptions">Options for JSON serialization and deserialization.</param>
         /// <returns>An asynchronous operation representing a collection of users.</returns>
-        Task<IEnumerable<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions);
+        Task<IReadOnlyCollection<T>> GetUsersAsync<T>(JsonSerializerOptions jsonSerializerOptions);
 
         /// <summary>
         /// Retrieves a collection of users asynchronously based on their UUIDs.

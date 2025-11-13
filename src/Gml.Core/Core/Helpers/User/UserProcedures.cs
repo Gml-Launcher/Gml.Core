@@ -148,12 +148,19 @@ namespace Gml.Core.Helpers.User
             return isSuccess;
         }
 
-        public async Task<IEnumerable<IUser>> GetUsers()
+        public async Task<IReadOnlyCollection<IUser>> GetUsers()
         {
-            return await _storage.GetUsersAsync<AuthUser>(new JsonSerializerOptions
+            var users = await _storage.GetUsersAsync<AuthUser>(new JsonSerializerOptions
             {
                 Converters = { new SessionConverter() }
             });
+
+            foreach (var user in users)
+            {
+                user.Manager = _gmlManager;
+            }
+
+            return [..users];
         }
 
         public async Task<IReadOnlyCollection<IUser>> GetUsers(int take, int offset, string findName)
