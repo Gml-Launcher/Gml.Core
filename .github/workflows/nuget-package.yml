@@ -5,7 +5,29 @@ on:
     tags: [ 'v*.*.*', 'v*.*', 'v*.*.*-alpha*', 'v*.*-alpha*' ]
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build Gml.Core.sln --configuration Release
+
+      - name: Test
+        run: dotnet test Gml.Core.sln --configuration Release --no-build --verbosity normal
+
   publish:
+    needs: validate
     runs-on: ubuntu-latest
     env:
       NUGET_IGNORE_FAILED_SOURCES: 'true'
