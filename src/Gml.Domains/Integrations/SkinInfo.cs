@@ -4,6 +4,5 @@ namespace Gml.Domains.Integrations;
 
 public class SkinInfo
 {
-    [JsonProperty("slim")]
-    public bool Slim { get; set; }
+    [JsonProperty("slim")] public bool Slim { get; set; }
 }

@@ -14,13 +14,13 @@ namespace Gml.Core.Helpers.Game;
 
 public class CustomNativeLibraryExtractor : INativeLibraryExtractor
 {
+    private readonly IRulesEvaluator rulesEvaluator;
+
     public CustomNativeLibraryExtractor(
         IRulesEvaluator rulesEvaluator)
     {
         this.rulesEvaluator = rulesEvaluator;
     }
-
-    private readonly IRulesEvaluator rulesEvaluator;
 
     public string Extract(
         MinecraftPath path,
@@ -44,8 +44,7 @@ public class CustomNativeLibraryExtractor : INativeLibraryExtractor
             SharpZipWrapper.Unzip(
                 Path.Combine(path.Library, libPath),
                 extractPath,
-                nativeLibrary.ExtractExcludes,
-                default);
+                nativeLibrary.ExtractExcludes);
         }
 
         return extractPath;
@@ -53,10 +52,8 @@ public class CustomNativeLibraryExtractor : INativeLibraryExtractor
 
     public void Clean(MinecraftPath path, IVersion version)
     {
-        return;
     }
 }
-
 
 internal static class SharpZipWrapper
 {
@@ -131,7 +128,7 @@ internal static class IOUtil
         if (!File.Exists(path))
             return false;
 
-        var fileHash = IOUtil.ComputeFileSHA1(path);
+        var fileHash = ComputeFileSHA1(path);
         return fileHash == compareHash;
     }
 

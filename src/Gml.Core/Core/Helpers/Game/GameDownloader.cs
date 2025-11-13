@@ -107,7 +107,7 @@ public class GameDownloader
             var platformName = $"{platform}/{architecture}";
             var platformLauncher = new MinecraftLauncher(launcherParameters)
             {
-                RulesContext = new RulesEvaluatorContext(new LauncherOSRule(platform, architecture, string.Empty)),
+                RulesContext = new RulesEvaluatorContext(new LauncherOSRule(platform, architecture, string.Empty))
             };
 
             _launchers.TryAdd(platformName, platformLauncher);
@@ -163,11 +163,8 @@ public class GameDownloader
             try
             {
                 if (_bootstrapProgram is not null && installVersion is null)
-                {
                     installVersion = await launcher.GetVersionAsync(version, cancellationToken).AsTask();
-                    // installVersion.ChangeJavaVersion(new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion));
-                }
-
+                // installVersion.ChangeJavaVersion(new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion));
                 installVersion ??= new MinecraftVersion(version);
 
                 _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
@@ -230,9 +227,7 @@ public class GameDownloader
                 }
 
                 if (javaVersion is null && _bootstrapProgram is not null)
-                {
                     javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion.ToString());
-                }
 
                 loadVersion = await forge.Install(bestVersion, new ForgeInstallOptions
                 {
@@ -240,7 +235,7 @@ public class GameDownloader
                     ByteProgress = _byteProgress,
                     FileProgress = _fileProgress,
                     JavaPath = _buildJavaPath,
-                    CancellationToken = cancellationToken,
+                    CancellationToken = cancellationToken
                     // JavaVersion = javaVersion
                 });
                 // var process = await launcher.CreateProcessAsync(loadVersion, new MLaunchOption()).AsTask();
@@ -306,9 +301,7 @@ public class GameDownloader
 
 
                 if (javaVersion is null && _bootstrapProgram is not null)
-                {
                     javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion.ToString());
-                }
 
                 loadVersion = await forge.Install(bestVersion, new NeoForgeInstallOptions
                 {
@@ -316,7 +309,7 @@ public class GameDownloader
                     ByteProgress = _byteProgress,
                     FileProgress = _fileProgress,
                     JavaPath = _buildJavaPath,
-                    CancellationToken = cancellationToken,
+                    CancellationToken = cancellationToken
                     // JavaVersion = javaVersion
                 });
 
@@ -383,12 +376,9 @@ public class GameDownloader
                 downloadVersion ??= await launcher.GetVersionAsync(versionName, cancellationToken);
 
                 if (javaVersion is null && _bootstrapProgram is not null)
-                {
                     javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion.ToString());
-                    // downloadVersion.ChangeJavaVersion(javaVersion);
-                    // downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
-                }
-
+                // downloadVersion.ChangeJavaVersion(javaVersion);
+                // downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
                 await launcher.InstallAndBuildProcessAsync(versionName, new MLaunchOption(), _fileProgress,
                     _byteProgress, cancellationToken);
             }
@@ -453,12 +443,9 @@ public class GameDownloader
                 downloadVersion ??= await launcher.GetVersionAsync(versionName, cancellationToken);
 
                 if (javaVersion is null && _bootstrapProgram is not null)
-                {
                     javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion.ToString());
-                    // downloadVersion.ChangeJavaVersion(javaVersion);
-                    // downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
-                }
-
+                // downloadVersion.ChangeJavaVersion(javaVersion);
+                // downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
                 await launcher.InstallAndBuildProcessAsync(versionName, new MLaunchOption(), _fileProgress,
                     _byteProgress, cancellationToken);
             }
@@ -520,12 +507,9 @@ public class GameDownloader
                 downloadVersion ??= await launcher.GetVersionAsync(versionName, cancellationToken);
 
                 if (javaVersion is null && _bootstrapProgram is not null)
-                {
                     javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion.ToString());
-                    // downloadVersion.ChangeJavaVersion(javaVersion);
-                    // downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
-                }
-
+                // downloadVersion.ChangeJavaVersion(javaVersion);
+                // downloadVersion.ParentVersion?.ChangeJavaVersion(javaVersion);
                 await launcher.InstallAndBuildProcessAsync(versionName, new MLaunchOption(), _fileProgress,
                     _byteProgress, cancellationToken);
             }
@@ -667,7 +651,6 @@ public class GameDownloader
     public async Task<bool> Validate()
     {
         foreach (var launcher in _launchers)
-        {
             try
             {
                 var version = _profile.LaunchVersion ?? throw new Exception("Profile not set");
@@ -682,7 +665,6 @@ public class GameDownloader
                 _exception.OnNext(exception);
                 return false;
             }
-        }
 
         return true;
     }

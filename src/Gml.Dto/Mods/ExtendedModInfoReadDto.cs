@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using GmlCore.Interfaces.Mods;
 
 namespace Gml.Dto.Mods;
 

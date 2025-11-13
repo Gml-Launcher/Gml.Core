@@ -51,10 +51,7 @@ public class User : IUser
     {
         IsBanned = false;
 
-        if (isPermanent)
-        {
-            IsBannedPermanent = false;
-        }
+        if (isPermanent) IsBannedPermanent = false;
 
         await Manager.Users.UpdateUser(this);
     }

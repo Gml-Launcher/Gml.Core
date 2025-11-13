@@ -5,7 +5,6 @@ using System.Reactive.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Gml.Core.Constants;
-using Gml.Core.Services.Storage;
 using Gml.Models.Converters;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Integrations;
@@ -17,16 +16,13 @@ namespace Gml.Core.Integrations;
 
 public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDisposable
 {
-    private List<INewsProvider> _providers = [];
-    private readonly List<INewsData> _newsCache = [];
-    private readonly IDisposable _timer;
-    private readonly IStorageService _storage;
+    private const int MaxCacheSize = 20;
     private readonly IBugTrackerProcedures _bugTracker;
     private readonly GmlManager _gmlManager;
-
-    public IReadOnlyCollection<INewsProvider> Providers => _providers;
-
-    private const int MaxCacheSize = 20;
+    private readonly List<INewsData> _newsCache = [];
+    private readonly IStorageService _storage;
+    private readonly IDisposable _timer;
+    private List<INewsProvider> _providers = [];
 
     public NewsListenerProvider(
         TimeSpan timespan,
@@ -40,17 +36,19 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
         _timer = Observable.Timer(TimeSpan.Zero, timespan).Subscribe(OnProvide);
     }
 
-    private async void OnProvide(long _)
+    public ValueTask DisposeAsync()
     {
-        try
-        {
-            await RefreshAsync();
-        }
-        catch (Exception e)
-        {
-            _bugTracker.CaptureException(e);
-        }
+        _timer.Dispose();
+
+        return default;
     }
+
+    public void Dispose()
+    {
+        _timer.Dispose();
+    }
+
+    public IReadOnlyCollection<INewsProvider> Providers => _providers;
 
     public Task<ICollection<INewsData>> GetNews(int count = 20)
     {
@@ -66,19 +64,13 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
                 var providerNews = await provider.GetNews();
 
                 foreach (var news in providerNews)
-                {
                     if (_newsCache.All(cachedNews => cachedNews.Date != news.Date))
-                    {
                         _newsCache.Add(news);
-                    }
-                }
 
                 _newsCache.Sort((a, b) => b.Date.CompareTo(a.Date));
 
                 if (_newsCache.Count > MaxCacheSize)
-                {
                     _newsCache.RemoveRange(MaxCacheSize, _newsCache.Count - MaxCacheSize);
-                }
             }
         }
         catch (Exception exception)
@@ -97,10 +89,7 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
 
     public Task RemoveListener(INewsProvider newsProvider)
     {
-        if (!_providers.Remove(newsProvider))
-        {
-            throw new NewsProviderNotFoundException("The provider was not found.");
-        }
+        if (!_providers.Remove(newsProvider)) throw new NewsProviderNotFoundException("The provider was not found.");
 
         return _storage.SetAsync(StorageConstants.NewsProviders, _providers);
     }
@@ -125,15 +114,15 @@ public class NewsListenerProvider : INewsListenerProvider, IDisposable, IAsyncDi
         return _storage.SetAsync(StorageConstants.NewsProviders, _providers);
     }
 
-    public void Dispose()
+    private async void OnProvide(long _)
     {
-        _timer.Dispose();
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        _timer.Dispose();
-
-        return default;
+        try
+        {
+            await RefreshAsync();
+        }
+        catch (Exception e)
+        {
+            _bugTracker.CaptureException(e);
+        }
     }
 }

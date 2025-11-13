@@ -10,7 +10,8 @@ namespace Gml.Models.Converters;
 
 public class MemoryInfoConverter : JsonConverter<IMemoryInfo>
 {
-    public override IMemoryInfo ReadJson(JsonReader reader, Type objectType, IMemoryInfo existingValue, bool hasExistingValue, JsonSerializer serializer)
+    public override IMemoryInfo ReadJson(JsonReader reader, Type objectType, IMemoryInfo existingValue,
+        bool hasExistingValue, JsonSerializer serializer)
     {
         var jsonObject = JObject.Load(reader);
         var memoryInfo = jsonObject.ToObject<MemoryInfo>();

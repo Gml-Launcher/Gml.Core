@@ -12,7 +12,7 @@ public class SessionConverter : JsonConverter<List<ISession>>
 {
     public override List<ISession> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        List<GameSession> result = JsonSerializer.Deserialize<List<GameSession>>(ref reader, options);
+        var result = JsonSerializer.Deserialize<List<GameSession>>(ref reader, options);
         return result.Cast<ISession>().ToList();
     }
 

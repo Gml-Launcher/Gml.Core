@@ -2,22 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Gml.Core.Launcher;
 using Gml.Models.News;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Enums;
-using GmlCore.Interfaces.Integrations;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.News;
+using Newtonsoft.Json;
 
 namespace Gml.Core.Integrations;
 
 public class VkNewsProvider : BaseNewsProvider
 {
-    public override string Name => "Вконтакте";
-
     private readonly IGmlManager _gmlManager;
     private string _accessToken;
 
@@ -36,13 +33,13 @@ public class VkNewsProvider : BaseNewsProvider
         gmlManager.LauncherInfo.SettingsUpdated.Subscribe(_ => SaveToken(gmlManager.LauncherInfo));
     }
 
+    public override string Name => "Вконтакте";
+
     private void SaveToken(ILauncherInfo launcherInfo)
     {
         if (launcherInfo.AccessTokens.TryGetValue(AccessTokenTokens.VkKey, out var token) &&
             !string.IsNullOrEmpty(token))
-        {
             _accessToken = token;
-        }
 
         _ = GetNews();
     }
@@ -51,10 +48,7 @@ public class VkNewsProvider : BaseNewsProvider
     {
         try
         {
-            if (string.IsNullOrEmpty(_accessToken))
-            {
-                return [];
-            }
+            if (string.IsNullOrEmpty(_accessToken)) return [];
 
             var url = "https://api.vk.com/method/wall.get";
             using var client = new HttpClient();
@@ -75,7 +69,7 @@ public class VkNewsProvider : BaseNewsProvider
             {
                 var json = await response.Content.ReadAsStringAsync();
 
-                var data = Newtonsoft.Json.JsonConvert.DeserializeObject<VkNewsResponse>(json);
+                var data = JsonConvert.DeserializeObject<VkNewsResponse>(json);
 
                 if (data is null)
                     return Array.Empty<INewsData>();
@@ -85,7 +79,7 @@ public class VkNewsProvider : BaseNewsProvider
                     Title = x.Title ?? "Нет заголовка",
                     Content = x.Text,
                     Type = NewsListenerType.VK,
-                    Date = DateTimeOffset.FromUnixTimeSeconds(x.Date),
+                    Date = DateTimeOffset.FromUnixTimeSeconds(x.Date)
                 }).ToList() ?? [];
             }
 
@@ -106,6 +100,5 @@ public class VkNewsProvider : BaseNewsProvider
         SaveToken(gmlManager.LauncherInfo);
 
         gmlManager.LauncherInfo.SettingsUpdated.Subscribe(_ => SaveToken(gmlManager.LauncherInfo));
-
     }
 }

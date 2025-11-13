@@ -58,6 +58,7 @@ Gml.Core is designed to be integrated into other projects within the Gml-Launche
 how to use the library in a C# project.
 
 ### Example: Basic Usage
+
 This example demonstrates basic usage of GmlManager for managing Minecraft profiles, users, servers and mods.
 
 ```csharp

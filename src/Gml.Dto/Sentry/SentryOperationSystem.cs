@@ -1,5 +1,4 @@
-﻿
-namespace Gml.Dto.Sentry;
+﻿namespace Gml.Dto.Sentry;
 
 public class SentryOperationSystem
 {

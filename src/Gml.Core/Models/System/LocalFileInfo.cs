@@ -5,15 +5,8 @@ namespace Gml.Models.System;
 
 public class LocalFileInfo : IFileInfo
 {
-    public string Name { get; set; }
-    public string Directory { get; set; }
-    public long Size { get; set; }
-    public string Hash { get; set; }
-    public string FullPath { get; set; }
-
     public LocalFileInfo()
     {
-
     }
 
     public LocalFileInfo(string directory)
@@ -21,6 +14,12 @@ public class LocalFileInfo : IFileInfo
         Directory = directory;
         Name = Path.GetFileName(directory);
     }
+
+    public string Name { get; set; }
+    public string Directory { get; set; }
+    public long Size { get; set; }
+    public string Hash { get; set; }
+    public string FullPath { get; set; }
 
     public override string ToString()
     {
@@ -35,5 +34,4 @@ public class LocalFileInfo : IFileInfo
 
         return Directory == ((LocalFileInfo)obj).Directory;
     }
-
 }

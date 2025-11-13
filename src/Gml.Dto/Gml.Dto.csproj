@@ -10,13 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="11.11.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="FluentValidation" Version="11.11.0"/>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Gml.Domains\Gml.Domains.csproj" />
-    <ProjectReference Include="..\Gml.Interfaces\Gml.Interfaces.csproj" />
+    <ProjectReference Include="..\Gml.Domains\Gml.Domains.csproj"/>
+    <ProjectReference Include="..\Gml.Interfaces\Gml.Interfaces.csproj"/>
   </ItemGroup>
 
 </Project>

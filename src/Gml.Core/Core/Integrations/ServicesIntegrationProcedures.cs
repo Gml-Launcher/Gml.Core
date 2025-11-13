@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Gml.Core.Constants;
-using Gml.Core.Services.Storage;
 using Gml.Models.Auth;
 using Gml.Models.Discord;
 using GmlCore.Interfaces.Auth;
@@ -22,10 +21,13 @@ public class ServicesIntegrationProcedures(
     GmlManager gmlManager)
     : IServicesIntegrationProcedures
 {
-    public ITextureProvider TextureProvider { get; set; } = new TextureProvider(settings.TextureServiceEndpoint, bugTracker);
-    public INewsListenerProvider NewsProvider { get; set; } = new NewsListenerProvider(TimeSpan.FromMinutes(1), storage, bugTracker, gmlManager);
-
     private IEnumerable<IAuthServiceInfo>? _authServices;
+
+    public ITextureProvider TextureProvider { get; set; } =
+        new TextureProvider(settings.TextureServiceEndpoint, bugTracker);
+
+    public INewsListenerProvider NewsProvider { get; set; } =
+        new NewsListenerProvider(TimeSpan.FromMinutes(1), storage, bugTracker, gmlManager);
 
     public Task<AuthType> GetAuthType()
     {

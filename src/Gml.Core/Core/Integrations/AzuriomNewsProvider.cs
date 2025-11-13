@@ -12,13 +12,13 @@ namespace Gml.Core.Integrations;
 
 public class AzuriomNewsProvider : BaseNewsProvider
 {
-    public override string Name => "Azuriom";
-    public NewsListenerType Type { get; }
-
     public AzuriomNewsProvider(string url)
     {
         Url = url;
     }
+
+    public override string Name => "Azuriom";
+    public NewsListenerType Type { get; }
 
     public override async Task<IReadOnlyCollection<INewsData>> GetNews(int count = 20)
     {

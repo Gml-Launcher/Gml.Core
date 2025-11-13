@@ -16,7 +16,7 @@ public class NewsProviderConverter(GmlManager gmlManager) : JsonConverter<INewsP
         { NewsListenerType.Telegram, typeof(TelegramNewsProvider) },
         { NewsListenerType.Azuriom, typeof(AzuriomNewsProvider) },
         { NewsListenerType.VK, typeof(VkNewsProvider) },
-        { NewsListenerType.Custom, typeof(CustomNewsProvider) },
+        { NewsListenerType.Custom, typeof(CustomNewsProvider) }
     };
 
     public override void Write(Utf8JsonWriter writer, INewsProvider value, JsonSerializerOptions options)
@@ -37,9 +37,7 @@ public class NewsProviderConverter(GmlManager gmlManager) : JsonConverter<INewsP
             throw new JsonException($"Поле 'type' не найдено для десериализации {nameof(INewsProvider)}.");
 
         if (!Enum.TryParse<NewsListenerType>(typeProperty.ToString(), out var listenerType))
-        {
             throw new JsonException($"Неизвестный тип {typeProperty} для десериализации {nameof(INewsProvider)}.");
-        }
 
         var targetType = _typeMapping[listenerType];
 
@@ -53,10 +51,8 @@ public class NewsProviderConverter(GmlManager gmlManager) : JsonConverter<INewsP
     private static NewsListenerType GetDiscriminatorByType(Type type)
     {
         foreach (var kvp in _typeMapping)
-        {
             if (kvp.Value == type)
                 return kvp.Key;
-        }
 
         throw new JsonException($"Не удалось найти дискриминатор для типа {type.FullName}");
     }

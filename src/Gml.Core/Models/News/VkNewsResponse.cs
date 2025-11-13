@@ -16,16 +16,14 @@ public class Asset
 
 public class Background
 {
-    [JsonProperty("light")] public string Light;
-
     [JsonProperty("dark")] public string Dark;
+    [JsonProperty("light")] public string Light;
 }
 
 public class Color
 {
-    [JsonProperty("foreground")] public Foreground Foreground;
-
     [JsonProperty("background")] public Background Background;
+    [JsonProperty("foreground")] public Foreground Foreground;
 }
 
 public class Comments
@@ -40,63 +38,60 @@ public class Donut
 
 public class Foreground
 {
-    [JsonProperty("light")] public string Light;
-
     [JsonProperty("dark")] public string Dark;
+    [JsonProperty("light")] public string Light;
 }
 
 public class Image
 {
+    [JsonProperty("height")] public int Height;
     [JsonProperty("url")] public string Url;
 
     [JsonProperty("width")] public int Width;
-
-    [JsonProperty("height")] public int Height;
 }
 
 public class Item
 {
-    [JsonProperty("inner_type")] public string InnerType;
-
-    [JsonProperty("donut")] public Donut Donut;
-
-    [JsonProperty("comments")] public Comments Comments;
-
-    [JsonProperty("marked_as_ads")] public int MarkedAsAds;
-
-    [JsonProperty("zoom_text")] public bool ZoomText;
-
-    [JsonProperty("hash")] public string Hash;
-
-    [JsonProperty("type")] public string Type;
-
-    [JsonProperty("push_subscription")] public PushSubscription PushSubscription;
+    [JsonProperty("asset")] public Asset Asset;
 
     [JsonProperty("attachments")] public List<object> Attachments;
 
+    [JsonProperty("comments")] public Comments Comments;
+
     [JsonProperty("date")] public int Date;
+
+    [JsonProperty("donut")] public Donut Donut;
 
     [JsonProperty("from_id")] public int FromId;
 
+    [JsonProperty("hash")] public string Hash;
+
     [JsonProperty("id")] public int Id;
+    [JsonProperty("inner_type")] public string InnerType;
 
     [JsonProperty("likes")] public Likes Likes;
 
-    [JsonProperty("reaction_set_id")] public string ReactionSetId;
+    [JsonProperty("marked_as_ads")] public int MarkedAsAds;
 
     [JsonProperty("owner_id")] public int OwnerId;
 
     [JsonProperty("post_type")] public string PostType;
 
+    [JsonProperty("push_subscription")] public PushSubscription PushSubscription;
+
+    [JsonProperty("reaction_set_id")] public string ReactionSetId;
+
     [JsonProperty("reposts")] public Reposts Reposts;
 
     [JsonProperty("text")] public string Text;
 
-    [JsonProperty("views")] public Views Views;
-
     [JsonProperty("title")] public string? Title;
 
-    [JsonProperty("asset")] public Asset Asset;
+    [JsonProperty("type")] public string Type;
+
+    [JsonProperty("views")] public Views Views;
+
+    [JsonProperty("zoom_text")] public bool ZoomText;
 }
 
 public class Likes
@@ -146,9 +141,8 @@ public class Title
 
 public class TitleColor
 {
-    [JsonProperty("light")] public string Light;
-
     [JsonProperty("dark")] public string Dark;
+    [JsonProperty("light")] public string Light;
 }
 
 public class Views

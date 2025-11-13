@@ -1,4 +1,3 @@
-#nullable enable
 namespace Gml.Domains.Integrations;
 
 public class AuthResult

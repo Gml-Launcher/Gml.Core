@@ -7,22 +7,21 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Gml.Models.News;
 using GmlCore.Interfaces.Enums;
-using GmlCore.Interfaces.Integrations;
 using GmlCore.Interfaces.News;
 using Newtonsoft.Json;
 
 namespace Gml.Core.Integrations;
 
-[JsonDerivedType(typeof(UnicoreNewsProvider), typeDiscriminator: "unicore")]
+[JsonDerivedType(typeof(UnicoreNewsProvider), "unicore")]
 public class UnicoreNewsProvider : BaseNewsProvider
 {
-    public override string Name => "UniCoreCMS";
-
     public UnicoreNewsProvider(string url)
     {
         Type = NewsListenerType.UnicoreCMS;
         Url = url;
     }
+
+    public override string Name => "UniCoreCMS";
 
     public override async Task<IReadOnlyCollection<INewsData>> GetNews(int count = 20)
     {

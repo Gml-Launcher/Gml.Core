@@ -1,4 +1,3 @@
-#nullable enable
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Storage;
 
