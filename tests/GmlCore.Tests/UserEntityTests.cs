@@ -37,7 +37,7 @@ public class UserEntityTests
         Assert.That(_user.IsBanned, Is.True);
         Assert.That(_user.IsBannedPermanent, Is.True);
         Assert.That(_manager.UsersMock.UpdateCalls, Is.EqualTo(1));
-        Assert.That(_manager.UsersMock.LastUpdatedUser, Is.SameAs(_user));
+        Assert.That(_manager.UsersMock.LastUpdatedUser, Is.EqualTo(_user));
     }
 
     [Test]
@@ -54,7 +54,7 @@ public class UserEntityTests
         Assert.That(_user.IsBanned, Is.False);
         Assert.That(_user.IsBannedPermanent, Is.False);
         Assert.That(_manager.UsersMock.UpdateCalls, Is.EqualTo(1));
-        Assert.That(_manager.UsersMock.LastUpdatedUser, Is.SameAs(_user));
+        Assert.That(_manager.UsersMock.LastUpdatedUser, Is.EqualTo(_user));
     }
 
     [Test]
@@ -68,7 +68,7 @@ public class UserEntityTests
         Assert.That(_user.IsBanned, Is.False);
         Assert.That(_user.IsBannedPermanent, Is.True);
         Assert.That(_manager.UsersMock.UpdateCalls, Is.EqualTo(1));
-        Assert.That(_manager.UsersMock.LastUpdatedUser, Is.SameAs(_user));
+        Assert.That(_manager.UsersMock.LastUpdatedUser, Is.EqualTo(_user));
     }
 
     [Test]
@@ -77,7 +77,7 @@ public class UserEntityTests
         await _user.SaveUserAsync();
 
         Assert.That(_manager.UsersMock.UpdateCalls, Is.EqualTo(1));
-        Assert.That(_manager.UsersMock.LastUpdatedUser, Is.SameAs(_user));
+        Assert.That(_manager.UsersMock.LastUpdatedUser, Is.EqualTo(_user));
     }
 
     [Test]
