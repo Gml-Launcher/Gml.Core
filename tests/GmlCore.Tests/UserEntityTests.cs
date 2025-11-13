@@ -1,6 +1,6 @@
 using System.Net;
 using System.Reflection;
-using Gml.Core.User;
+using Gml.Models.User;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Auth;
 using GmlCore.Interfaces.Enums;

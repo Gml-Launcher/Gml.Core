@@ -1,5 +1,5 @@
 using System.Net;
-using Gml.Core.User;
+using Gml.Models.User;
 using GmlCore.Interfaces;
 using GmlCore.Interfaces.Integrations;
 using GmlCore.Interfaces.Launcher;

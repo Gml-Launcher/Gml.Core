@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using Gml;
 using Gml.Core.Launcher;
-using Gml.Core.User;
+using Gml.Models.User;
 using GmlCore.Interfaces;
 
 namespace GmlCore.Tests;
@@ -322,6 +322,7 @@ public class UserProceduresTests
     public async Task RemoveUser_ValidUser_CompletesSuccessfully()
     {
         // Arrange
+
         var mockUser = new User { Uuid = "user-to-remove" };
 
         // Act

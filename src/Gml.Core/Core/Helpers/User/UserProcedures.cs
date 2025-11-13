@@ -10,24 +10,21 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Gml.Core.Launcher;
-using Gml.Core.Services.Storage;
-using Gml.Core.User;
 using Gml.Models.Converters;
 using Gml.Models.Sessions;
+using Gml.Models.User;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.Storage;
 using GmlCore.Interfaces.User;
-using Microsoft.IdentityModel.Tokens;
-using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace Gml.Core.Helpers.User
 {
     public class UserProcedures : IUserProcedures
     {
+        private readonly GmlManager _gmlManager;
         private readonly IGmlSettings _settings;
         private readonly IStorageService _storage;
-        private readonly GmlManager _gmlManager;
 
         public UserProcedures(IGmlSettings settings, IStorageService storage, GmlManager gmlManager)
         {
@@ -232,7 +229,6 @@ namespace Gml.Core.Helpers.User
             if (user is not null)
             {
                 user.Manager = _gmlManager;
-
             }
 
             return user;

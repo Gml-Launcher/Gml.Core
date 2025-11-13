@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -447,7 +446,7 @@ namespace Gml.Core.Helpers.Profiles
                 var authLibArguments = await profile.InstallAuthLib();
                 await profile.CreateModsFolder();
                 var process =
-                    await profile.GameLoader.CreateProcess(StartupOptions.Empty, Core.User.User.Empty, true,
+                    await profile.GameLoader.CreateProcess(StartupOptions.Empty, Models.User.User.Empty, true,
                         authLibArguments, []);
 
                 var files = (await GetProfileFiles(profile)).ToList();
@@ -807,7 +806,8 @@ namespace Gml.Core.Helpers.Profiles
                             .Where(c => c.Type == "release")
                             .Select(c => c.Name);
 
-                        return [
+                        return
+                        [
                             ..innumerable
                         ];
 
@@ -989,7 +989,7 @@ namespace Gml.Core.Helpers.Profiles
                 var skinUrl = skinsService.Replace("{userName}", user.Name).Replace("{userUuid}", user.Uuid);
                 var cloakUrl = cloakService.Replace("{userName}", user.Name).Replace("{userUuid}", user.Uuid);
 
-                if (user is Core.User.User player)
+                if (user is Models.User.User player)
                 {
                     Task[] tasks =
                     [
