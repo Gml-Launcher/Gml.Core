@@ -8,6 +8,8 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      FORGE_TOKEN: ${{ secrets.FORGE_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,6 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NUGET_IGNORE_FAILED_SOURCES: 'true'
+      FORGE_TOKEN: ${{ secrets.FORGE_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
