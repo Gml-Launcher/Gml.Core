@@ -88,7 +88,7 @@ public class SystemProcedures(IGmlSettings gmlSettings) : ISystemProcedures
         {
             var system = SystemService.GetPlatform();
             var dotnetName = system == "windows" ? "dotnet.exe" : "dotnet";
-            var dotnetDirectory = Path.Combine(gmlSettings.InstallationDirectory, "DotnetBuild");
+            var dotnetDirectory = Path.Combine(gmlSettings.InstallationDirectory, "temp", "DotnetBuild");
             var dotnetDirectoryPath = Path.Combine(dotnetDirectory, "dotnet-8");
             var dotnetPath = Path.Combine(dotnetDirectoryPath, dotnetName);
             if (!Directory.Exists(dotnetDirectory) || !File.Exists(dotnetPath))

@@ -98,9 +98,14 @@ public class GameDownloader
         foreach (var platform in _platforms)
         foreach (var architecture in _architectures)
         {
-            profile.ClientPath = Path.Combine(launcherInfo.InstallationDirectory, "clients", profile.Name);
-            var minecraftPath = new CustomMinecraftPath(launcherInfo.InstallationDirectory, profile.ClientPath,
-                platform, architecture);
+            profile.ClientPath = Path.Combine(launcherInfo.InstallationDirectory, "game data", profile.Name);
+            var sharedData = Path.Combine(launcherInfo.InstallationDirectory, "shared data");
+            var minecraftPath = new CustomMinecraftPath(
+                sharedData,
+                profile.ClientPath,
+                platform,
+                architecture
+            );
             var launcherParameters = MinecraftLauncherParameters.CreateDefault(minecraftPath);
             launcherParameters.NativeLibraryExtractor =
                 new CustomNativeLibraryExtractor(launcherParameters.RulesEvaluator!);
@@ -548,7 +553,7 @@ public class GameDownloader
 
         var system = SystemService.GetPlatform();
         var javaName = system == "windows" ? "java.exe" : "java";
-        var javaDirectory = Path.Combine(_launcherInfo.InstallationDirectory, "JavaBuild");
+        var javaDirectory = Path.Combine(_launcherInfo.InstallationDirectory, "temp", "JavaBuild");
         var jdkPath = Path.Combine(javaDirectory, "jdk-22");
         var javaPath = Path.Combine(jdkPath, "jdk-22", "bin", javaName);
         if (!Directory.Exists(javaDirectory) || !File.Exists(javaPath))
