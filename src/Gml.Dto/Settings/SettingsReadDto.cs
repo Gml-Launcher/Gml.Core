@@ -1,3 +1,5 @@
+using System;
+
 namespace Gml.Dto.Settings;
 
 public class SettingsReadDto
@@ -9,4 +11,6 @@ public class SettingsReadDto
     public string VkKey { get; set; }
     public string StorageLogin { get; set; }
     public int TextureProtocol { get; set; }
+    public bool SentryNeedAutoClear { get; set; }
+    public TimeSpan SentryAutoClearPeriod { get; set; }
 }

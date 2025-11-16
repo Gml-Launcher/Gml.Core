@@ -18,7 +18,8 @@ public interface ILauncherInfo
     IDictionary<string, string> AccessTokens { get; set; }
 
     void UpdateSettings(StorageType storageType, string storageHost, string storageLogin, string storagePassword,
-        TextureProtocol textureProtocol, string curseForgeKey, string vkKey);
+        TextureProtocol textureProtocol, string curseForgeKey, string vkKey, TimeSpan sentryClearPeriod,
+        bool sentryNeedAutoClear);
 
     Task<IEnumerable<ILauncherBuild>> GetBuilds();
     Task<ILauncherBuild?> GetBuild(string name);

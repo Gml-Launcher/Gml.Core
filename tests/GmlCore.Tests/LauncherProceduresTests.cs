@@ -281,7 +281,8 @@ public class LauncherProceduresTests
         public IDictionary<string, string> AccessTokens { get; set; }
 
         public void UpdateSettings(StorageType storageType, string storageHost, string storageLogin,
-            string storagePassword, TextureProtocol textureProtocol, string curseForgeKey, string vkKey)
+            string storagePassword, TextureProtocol textureProtocol, string curseForgeKey, string vkKey,
+            TimeSpan sentryClearPeriod, bool sentryNeedAutoClear)
         {
         }
 

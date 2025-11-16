@@ -28,7 +28,7 @@ public class GmlManager : IGmlManager
         _settings = settings;
         LauncherInfo = new LauncherInfo(settings);
         Storage = new SqliteStorageService(settings);
-        BugTracker = new BugTrackerProcedures(Storage, settings);
+        BugTracker = new BugTrackerProcedures(Storage, LauncherInfo.SettingsUpdated, settings);
         Notifications = new NotificationProcedures(Storage);
         Profiles = new ProfileProcedures(LauncherInfo, Storage, Notifications, BugTracker, this);
         Files = new FileStorageProcedures(LauncherInfo, Storage, BugTracker);

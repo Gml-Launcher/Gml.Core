@@ -17,11 +17,15 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
 {
     private readonly BlockingCollection<IBugInfo> _bugQueue = new();
     private readonly ISubject<IBugInfo> _bugStream = new Subject<IBugInfo>();
+    private readonly IDisposable _clearTimer;
     private readonly IGmlSettings _settings;
     private readonly IStorageService _storage;
     private readonly IDisposable _subscription;
+    private IDisposable _timerDispose;
 
-    public BugTrackerProcedures(IStorageService storage, IGmlSettings settings) : base("BugStorage.json")
+    public BugTrackerProcedures(IStorageService storage,
+        IObservable<IStorageSettings> observableSettings,
+        IGmlSettings settings) : base("BugStorage.json")
     {
         _storage = storage;
         _settings = settings;
@@ -29,6 +33,8 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
         _subscription = _bugStream
             .SelectMany(bugInfo => Observable.FromAsync(() => ProcessBugAsync(bugInfo)))
             .Subscribe();
+
+        _clearTimer = observableSettings.Subscribe(UpdateClearTimer);
 
         Task.Run(ProcessQueueAsync);
 
@@ -102,6 +108,20 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
     public Task SolveAllAsync()
     {
         return _storage.ClearBugsAsync();
+    }
+
+    public void UpdateClearTimer(IStorageSettings newSettings)
+    {
+        _timerDispose?.Dispose();
+
+        var timeSpan = newSettings.SentryAutoClearPeriod;
+        var needRunPeriodTimer = newSettings.SentryNeedAutoClear;
+
+        if (needRunPeriodTimer && timeSpan > TimeSpan.Zero)
+        {
+            _timerDispose = Observable.Interval(timeSpan)
+                .Subscribe(_ => Task.Run(async () => await _storage.ClearBugsAsync()));
+        }
     }
 
     private async Task ProcessQueueAsync()

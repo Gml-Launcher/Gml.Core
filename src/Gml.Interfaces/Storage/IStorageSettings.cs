@@ -1,3 +1,4 @@
+using System;
 using GmlCore.Interfaces.Enums;
 
 namespace GmlCore.Interfaces.Storage;
@@ -9,4 +10,6 @@ public interface IStorageSettings
     string StorageLogin { get; set; }
     string StoragePassword { get; set; }
     TextureProtocol TextureProtocol { get; set; }
+    bool SentryNeedAutoClear { get; set; }
+    TimeSpan SentryAutoClearPeriod { get; set; }
 }

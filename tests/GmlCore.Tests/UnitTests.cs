@@ -48,7 +48,9 @@ public class Tests
             settings.StorageSettings?.StoragePassword ?? string.Empty,
             settings.StorageSettings?.TextureProtocol ?? TextureProtocol.Http,
             token,
-            string.Empty);
+            string.Empty,
+            settings.StorageSettings?.SentryAutoClearPeriod ?? TimeSpan.Zero,
+            settings.StorageSettings?.SentryNeedAutoClear ?? false);
 
         _testGameProfile = await GmlManager.Profiles.GetProfile(CheckProfileName)
                            ?? await GmlManager.Profiles.AddProfile(CheckProfileName, CheckProfileName,

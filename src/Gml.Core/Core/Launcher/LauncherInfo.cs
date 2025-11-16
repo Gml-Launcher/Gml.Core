@@ -44,13 +44,17 @@ public class LauncherInfo : ILauncherInfo
         string storagePassword,
         TextureProtocol textureProtocol,
         string curseForgeKey,
-        string vkKey)
+        string vkKey,
+        TimeSpan sentryClearPeriod,
+        bool sentryNeedAutoClear)
     {
         StorageSettings.StoragePassword = storagePassword;
         StorageSettings.StorageLogin = storageLogin;
         StorageSettings.StorageType = storageType;
         StorageSettings.StorageHost = storageHost;
         StorageSettings.TextureProtocol = textureProtocol;
+        StorageSettings.SentryAutoClearPeriod = sentryClearPeriod;
+        StorageSettings.SentryNeedAutoClear = sentryNeedAutoClear;
         AccessTokens[AccessTokenTokens.CurseForgeKey] = curseForgeKey;
         AccessTokens[AccessTokenTokens.VkKey] = vkKey;
 

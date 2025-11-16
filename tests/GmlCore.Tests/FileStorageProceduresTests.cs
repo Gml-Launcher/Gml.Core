@@ -360,6 +360,8 @@ public class FileStorageProceduresTests
         public string StorageLogin { get; set; } = string.Empty;
         public string StoragePassword { get; set; } = string.Empty;
         public TextureProtocol TextureProtocol { get; set; }
+        public bool SentryNeedAutoClear { get; set; }
+        public TimeSpan SentryAutoClearPeriod { get; set; }
     }
 
     private class TestObservable : IObservable<IStorageSettings>
@@ -416,7 +418,8 @@ public class FileStorageProceduresTests
         public IDictionary<string, string> AccessTokens { get; set; } = new Dictionary<string, string>();
 
         public void UpdateSettings(StorageType storageType, string storageHost, string storageLogin,
-            string storagePassword, TextureProtocol textureProtocol, string curseForgeKey, string vkKey)
+            string storagePassword, TextureProtocol textureProtocol, string curseForgeKey, string vkKey,
+            TimeSpan sentryClearPeriod, bool sentryNeedAutoClear)
         {
             throw new NotImplementedException();
         }
