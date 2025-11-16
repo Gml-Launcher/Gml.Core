@@ -61,17 +61,46 @@ public class User : IUser
         var originalUri = new Uri(url);
         var builder = new UriBuilder(originalUri);
 
-        if (hostValue.Contains(':'))
+        var newScheme = originalUri.Scheme;
+        var newHost = originalUri.Host;
+        var newPort = originalUri.Port;
+
+        if (hostValue.Contains("://"))
         {
-            var parts = hostValue.Split(':');
-            builder.Host = parts[0];
-            builder.Port = int.Parse(parts[1]);
+            var newUri = new Uri(hostValue);
+
+            newScheme = newUri.Scheme;
+            newHost = newUri.Host;
+
+            newPort = newUri.IsDefaultPort ? -1 : newUri.Port;
         }
         else
         {
-            builder.Host = hostValue;
-            builder.Port = 80;
+            var hostPart = hostValue;
+            var port = (int?)null;
+
+            var colonIndex = hostPart.LastIndexOf(':');
+            if (colonIndex > 0 && colonIndex < hostPart.Length - 1)
+            {
+                var hostOnly = hostPart[..colonIndex];
+                var portPart = hostPart[(colonIndex + 1)..];
+
+                if (int.TryParse(portPart, out var parsedPort))
+                {
+                    hostPart = hostOnly;
+                    port = parsedPort;
+                }
+            }
+
+            newHost = hostPart;
+
+            if (port.HasValue)
+                newPort = port.Value;
         }
+
+        builder.Scheme = newScheme;
+        builder.Host = newHost;
+        builder.Port = newPort;
 
         return builder;
     }
