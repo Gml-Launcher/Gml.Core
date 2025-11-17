@@ -18,6 +18,7 @@ public class GameProfileInfo : IGameProfileInfo
     public string LaunchVersion { get; set; }
     public string JvmArguments { get; set; }
     public string GameArguments { get; set; }
+    public string ReleativePath { get; set; }
     public string ProfileName { get; set; }
     public string DisplayName { get; set; }
     public string MinecraftVersion { get; set; }
