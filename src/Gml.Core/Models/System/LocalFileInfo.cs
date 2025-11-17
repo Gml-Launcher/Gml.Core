@@ -5,6 +5,8 @@ namespace Gml.Models.System;
 
 public class LocalFileInfo : IFileInfo
 {
+    private string _directory;
+
     public LocalFileInfo()
     {
     }
@@ -16,7 +18,13 @@ public class LocalFileInfo : IFileInfo
     }
 
     public string Name { get; set; }
-    public string Directory { get; set; }
+
+    public string Directory
+    {
+        get => _directory.Replace("\t", string.Empty).Replace("\r", string.Empty).Replace("\n", string.Empty);
+        set => _directory = value;
+    }
+
     public long Size { get; set; }
     public string Hash { get; set; }
     public string FullPath { get; set; }

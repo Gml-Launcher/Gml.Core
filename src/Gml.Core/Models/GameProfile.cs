@@ -6,7 +6,6 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Gml.Models.Converters;
 using Gml.Models.Servers;
-using Gml.Models.System;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Servers;
@@ -43,6 +42,26 @@ public class GameProfile : BaseProfile
 
     internal Subject<IProfileServer> ServerRemoved { get; } = new();
 
+    //
+    // public override List<LocalFileInfo>? FileWhiteList
+    // {
+    //     get => base.FileWhiteList?.Cast<LocalFileInfo>().ToList();
+    //     set => base.FileWhiteList = value?.Cast<IFileInfo>().ToList();
+    // }
+    //
+    // [JsonConverter(typeof(LocalFolderInfoConverter))]
+    // public override List<LocalFolderInfo>? FolderWhiteList
+    // {
+    //     get => base.FolderWhiteList?.Cast<LocalFolderInfo>().ToList();
+    //     set => base.FolderWhiteList = value?.Cast<IFolderInfo>().ToList();
+    // }
+
+    [JsonConverter(typeof(LocalFileInfoConverter))]
+    public override List<IFileInfo>? FileWhiteList { get; set; }
+
+    [JsonConverter(typeof(LocalFolderInfoConverter))]
+    public override List<IFolderInfo>? FolderWhiteList { get; set; }
+
     [JsonConverter(typeof(ServerConverter))]
     public List<MinecraftServer> Servers
     {
@@ -53,20 +72,6 @@ public class GameProfile : BaseProfile
     public static IGameProfile Empty { get; set; } =
         new GameProfile("Empty", "Empty", "0.0.0", GmlCore.Interfaces.Enums.GameLoader.Undefined);
 
-
-    [JsonConverter(typeof(LocalFileInfoConverter))]
-    public List<LocalFileInfo>? FileWhiteList
-    {
-        get => base.FileWhiteList?.Cast<LocalFileInfo>().ToList();
-        set => base.FileWhiteList = value?.Cast<IFileInfo>().ToList();
-    }
-
-    [JsonConverter(typeof(LocalFolderInfoConverter))]
-    public List<LocalFolderInfo>? FolderWhiteList
-    {
-        get => base.FolderWhiteList?.Cast<LocalFolderInfo>().ToList();
-        set => base.FolderWhiteList = value?.Cast<IFolderInfo>().ToList();
-    }
 
     private async void CreateServerListener(IProfileServer server)
     {

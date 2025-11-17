@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Reactive.Subjects;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading.Tasks;
 using CmlLib.Core;
 using CmlLib.Core.Installer.Forge;
@@ -24,6 +25,7 @@ using Gml.Core.Exceptions;
 using Gml.Core.Helpers.Game;
 using Gml.Core.Launcher;
 using Gml.Models;
+using Gml.Models.Converters;
 using Gml.Models.Mods;
 using Gml.Models.System;
 using GmlCore.Interfaces.Bootstrap;
@@ -125,15 +127,15 @@ public partial class ProfileProcedures : IProfileProcedures
         await AddProfile(profile);
 
         await AddFileToWhiteList(profile, [
-            new LocalFileInfo(Path.Combine("clients", profile.Name, "options.txt"))
+            new LocalFileInfo(Path.Combine(profile.ReleativePath, "options.txt"))
         ]);
 
         await AddFolderToWhiteList(profile, [
-            new LocalFolderInfo("saves"),
-            new LocalFolderInfo("logs"),
-            new LocalFolderInfo("resourcepacks"),
-            new LocalFolderInfo("crash-reports"),
-            new LocalFolderInfo("config")
+            new LocalFolderInfo(Path.Combine(profile.ReleativePath, "saves")),
+            new LocalFolderInfo(Path.Combine(profile.ReleativePath, "logs")),
+            new LocalFolderInfo(Path.Combine(profile.ReleativePath, "resourcepacks")),
+            new LocalFolderInfo(Path.Combine(profile.ReleativePath, "crash-reports")),
+            new LocalFolderInfo(Path.Combine(profile.ReleativePath, "config"))
         ]);
 
         return profile;
@@ -195,7 +197,15 @@ public partial class ProfileProcedures : IProfileProcedures
 
     public async Task RestoreProfiles()
     {
-        var profiles = await _storageService.GetAsync<List<GameProfile>>(StorageConstants.GameProfiles);
+        var profiles = await _storageService.GetAsync<List<GameProfile>>(StorageConstants.GameProfiles,
+            new JsonSerializerOptions
+            {
+                Converters =
+                {
+                    new LocalFileInfoConverter(),
+                    new LocalFolderInfoConverter()
+                }
+            });
 
         if (profiles != null && !_gameProfiles.Any())
         {
@@ -341,9 +351,13 @@ public partial class ProfileProcedures : IProfileProcedures
         if (profile == null)
             return null;
 
-        var profileDirectory = Path.Combine(profile.ClientPath, "platforms", startupOptions.OsName,
-            startupOptions.OsArch);
-        var relativePath = Path.Combine("clients", profileName);
+        var profileDirectory = Path.Combine(
+            profile.ClientPath,
+            "platforms",
+            startupOptions.OsName,
+            startupOptions.OsArch
+        );
+
         var jvmArgs = new List<string>();
         var gameArguments = new List<string>();
 
@@ -377,7 +391,7 @@ public partial class ProfileProcedures : IProfileProcedures
 
         var arguments =
             process?.StartInfo.Arguments
-                .Replace(profileDirectory, Path.Combine("{localPath}", relativePath))
+                .Replace(profileDirectory, Path.Combine("{localPath}", profile.ReleativePath))
                 .Replace(_launcherInfo.InstallationDirectory, "{localPath}")
             ?? string.Empty;
 
@@ -1083,7 +1097,8 @@ public partial class ProfileProcedures : IProfileProcedures
     {
         profile.FolderWhiteList ??= [];
 
-        if (!profile.FolderWhiteList.Any(c => c == folder)) profile.FolderWhiteList.Add(folder);
+        if (!profile.FolderWhiteList.Any(c => Equals(c, folder)))
+            profile.FolderWhiteList.Add(folder);
     }
 
     private void RemoveWhiteListFolderIfNotExists(IGameProfile profile, IFolderInfo folder)

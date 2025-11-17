@@ -151,6 +151,11 @@ public interface IGameProfile : IDisposable
     int RecommendedRam { get; set; }
 
     /// <summary>
+    /// Specifies the relative path of the game profile within its directory structure.
+    /// </summary>
+    string ReleativePath { get; set; }
+
+    /// <summary>
     ///     Validates the game profile.
     /// </summary>
     Task<bool> ValidateProfile();

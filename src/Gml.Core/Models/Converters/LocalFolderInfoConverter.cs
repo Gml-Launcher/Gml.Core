@@ -1,29 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Gml.Models.System;
 using GmlCore.Interfaces.System;
-using Newtonsoft.Json;
 
 namespace Gml.Models.Converters;
 
-public class LocalFolderInfoConverter : JsonConverter
+public class LocalFolderInfoConverter : JsonConverter<List<IFolderInfo>>
 {
-    public override bool CanConvert(Type objectType)
+    public override List<IFolderInfo>? Read(ref Utf8JsonReader reader, Type typeToConvert,
+        JsonSerializerOptions options)
     {
-        return typeof(List<IFolderInfo>).IsAssignableFrom(objectType);
+        var folderInfos = JsonSerializer.Deserialize<List<LocalFolderInfo>>(ref reader, options);
+        return folderInfos?.Cast<IFolderInfo>().ToList();
     }
 
-    public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
-        JsonSerializer serializer)
+    public override void Write(Utf8JsonWriter writer, List<IFolderInfo> value, JsonSerializerOptions options)
     {
-        var fileInfos = serializer.Deserialize<List<LocalFolderInfo>>(reader);
-
-        return fileInfos?.Cast<LocalFolderInfo>() ?? new List<LocalFolderInfo>();
-    }
-
-    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-    {
-        serializer.Serialize(writer, value, typeof(List<LocalFolderInfo>));
+        JsonSerializer.Serialize(writer, value, typeof(List<LocalFolderInfo>), options);
     }
 }

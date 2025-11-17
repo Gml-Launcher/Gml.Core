@@ -18,7 +18,7 @@ using Newtonsoft.Json;
 
 namespace Gml.Models;
 
-public class BaseProfile : IGameProfile
+public abstract class BaseProfile : IGameProfile
 {
     private bool _isDisposed;
     // private Lazy<IMod> _mods = new Lazy<IMod>(async () =>
@@ -53,6 +53,7 @@ public class BaseProfile : IGameProfile
     public bool CanEdit => State != ProfileState.Loading && State != ProfileState.Packing;
     public int Priority { get; set; }
     public int RecommendedRam { get; set; }
+    public string ReleativePath { get; set; }
     public bool IsEnabled { get; set; }
     public string GameVersion { get; set; }
     public string? LaunchVersion { get; set; }
@@ -67,9 +68,11 @@ public class BaseProfile : IGameProfile
     public ProfileState State { get; set; }
 
     [JsonConverter(typeof(LocalFileInfoConverter))]
-    public List<IFileInfo>? FileWhiteList { get; set; }
+    public abstract List<IFileInfo>? FileWhiteList { get; set; }
 
-    public List<IFolderInfo>? FolderWhiteList { get; set; }
+    [JsonConverter(typeof(LocalFolderInfoConverter))]
+    public abstract List<IFolderInfo>? FolderWhiteList { get; set; }
+
     public List<string> UserWhiteListGuid { get; set; } = [];
 
     public List<IProfileServer> Servers { get; set; } = new();

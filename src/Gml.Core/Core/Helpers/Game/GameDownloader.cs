@@ -99,6 +99,7 @@ public class GameDownloader
         foreach (var architecture in _architectures)
         {
             profile.ClientPath = Path.Combine(launcherInfo.InstallationDirectory, "game data", profile.Name);
+            profile.ReleativePath = Path.Combine("game data", profile.Name);
             var sharedData = Path.Combine(launcherInfo.InstallationDirectory, "shared data");
             var minecraftPath = new CustomMinecraftPath(
                 sharedData,
