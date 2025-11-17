@@ -21,10 +21,6 @@ namespace Gml.Models;
 public abstract class BaseProfile : IGameProfile
 {
     private bool _isDisposed;
-    // private Lazy<IMod> _mods = new Lazy<IMod>(async () =>
-    // {
-    //     return await GetModsAsync();
-    // });
 
     public BaseProfile()
     {
@@ -59,8 +55,8 @@ public abstract class BaseProfile : IGameProfile
     public string? LaunchVersion { get; set; }
     public GameLoader Loader { get; set; }
     public string ClientPath { get; set; }
-    public string IconBase64 { get; set; }
-    public string BackgroundImageKey { get; set; }
+    public string? IconBase64 { get; set; }
+    public string? BackgroundImageKey { get; set; }
     public string Description { get; set; }
 
     public string? JvmArguments { get; set; }
