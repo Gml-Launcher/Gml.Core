@@ -68,6 +68,11 @@ jobs:
           dotnet build src/Gml.Dto/Gml.Dto.csproj --configuration Release
           dotnet pack src/Gml.Dto/Gml.Dto.csproj --configuration Release --no-build --output ./nupkgs
 
+      - name: Build and pack core
+        run: |
+          dotnet build src/Gml.Core/Gml.Core.csproj --configuration Release
+          dotnet pack src/Gml.Core/Gml.Core.csproj --configuration Release --no-build --output ./nupkgs
+
       - name: Add local NuGet source
         run: dotnet nuget add source "./nupkgs" --name LocalPackages
 
