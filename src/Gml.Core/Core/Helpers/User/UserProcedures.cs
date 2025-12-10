@@ -158,6 +158,11 @@ public class UserProcedures : IUserProcedures
             Converters = { new SessionConverter() }
         }, take, offset, findName).ConfigureAwait(false);
 
+        foreach (var user in authUsers)
+        {
+            user.Manager = _gmlManager;
+        }
+
         return authUsers.ToArray();
     }
 
