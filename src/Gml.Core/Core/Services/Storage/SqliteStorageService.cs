@@ -281,7 +281,7 @@ public class SqliteStorageService : IStorageService
     public async Task<T?> GetUserByNameAsync<T>(string userName, JsonSerializerOptions jsonSerializerOptions)
     {
         var storageItem = await _database.Table<UserStorageItem>()
-            .Where(si => si.Login == userName)
+            .Where(si => si.Login.ToLower() == userName.ToLower())
             .FirstOrDefaultAsync();
 
         return storageItem != null
