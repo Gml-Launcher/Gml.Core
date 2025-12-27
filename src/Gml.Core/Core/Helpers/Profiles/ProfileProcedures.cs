@@ -877,7 +877,7 @@ public partial class ProfileProcedures : IProfileProcedures
                         _neoForgeVersions[minecraftVersion] = await neoForge.GetForgeVersions(minecraftVersion);
 
                     var neoForgeVersions = _neoForgeVersions[minecraftVersion]
-                        .Select(c => neoForgeVersionMapper.CreateInstaller(c).VersionName)
+                        .Select(c => neoForgeVersionMapper.CreateInstaller(c).NeoForgeVersion.VersionName)
                         .Reverse();
 
                     return [..neoForgeVersions];

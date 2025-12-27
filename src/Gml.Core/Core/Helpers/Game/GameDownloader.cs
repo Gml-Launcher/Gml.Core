@@ -292,8 +292,6 @@ public class GameDownloader
 
                 forgeVersions ??= (await forge.GetForgeVersions(version)).ToArray();
 
-                launchVersion = launchVersion!.Split("-").Last();
-
                 bestVersion ??=
                     forgeVersions.FirstOrDefault(v => v.VersionName == launchVersion) ??
                     forgeVersions.FirstOrDefault();
