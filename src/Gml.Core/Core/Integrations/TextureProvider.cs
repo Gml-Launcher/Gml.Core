@@ -13,14 +13,16 @@ namespace Gml.Core.Integrations;
 
 public class TextureProvider(string textureServiceEndpoint, IBugTrackerProcedures bugTracker) : ITextureProvider
 {
-    private readonly HttpClient _httpClintSkinChecker = new();
+    private readonly string _cloakPrefix = "-c";
+
     private readonly HttpClient _httpClientLoader = new()
     {
         BaseAddress = new Uri(textureServiceEndpoint)
     };
 
+    private readonly HttpClient _httpClintSkinChecker = new();
+
     private readonly string _skinPrefix = "-s";
-    private readonly string _cloakPrefix = "-c";
 
     public async Task<string> SetSkin(IUser user, string skinUrl)
     {
@@ -101,7 +103,6 @@ public class TextureProvider(string textureServiceEndpoint, IBugTrackerProcedure
             var data = await response.Content.ReadAsStringAsync();
 
             return JsonConvert.DeserializeObject<TextureReadDto>(data);
-
         }
 
         return null;

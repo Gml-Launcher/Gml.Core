@@ -1,9 +1,8 @@
-namespace Gml.Models.Enums
+namespace Gml.Models.Enums;
+
+public enum NullableBool
 {
-    public enum NullableBool
-    {
-        Undefined = 0,
-        True = 1,
-        False = 2
-    }
+    Undefined = 0,
+    True = 1,
+    False = 2
 }

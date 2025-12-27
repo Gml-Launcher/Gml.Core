@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Gml.Domains.Auth;
+using Gml.Domains.User;
 
 namespace Gml.Domains.Repositories;
 
 public interface IRbacRepository
 {
     // Users
-    Task<List<User.DbUser>> GetAllUsersAsync();
+    Task<List<DbUser>> GetAllUsersAsync();
 
     // User roles/permissions
     Task<List<Role>> GetUserRolesAsync(int userId);

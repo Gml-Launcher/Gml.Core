@@ -1,18 +1,13 @@
-﻿using System;
-using System.IO;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
+using System.Text;
 using Gml.Common;
 using Gml.Web.Api.Domains.System;
-using NUnit.Framework;
 
 namespace GmlCore.Tests;
 
 [TestFixture]
 public class SystemTestsHelper
 {
-    private string _testFilePath;
-    private string _testFileContent;
-
     [SetUp]
     public void Setup()
     {
@@ -24,18 +19,18 @@ public class SystemTestsHelper
     [TearDown]
     public void TearDown()
     {
-        if (File.Exists(_testFilePath))
-        {
-            File.Delete(_testFilePath);
-        }
+        if (File.Exists(_testFilePath)) File.Delete(_testFilePath);
     }
+
+    private string _testFilePath;
+    private string _testFileContent;
 
     [Test]
     public void CalculateFileHash_ValidFile_ReturnsCorrectHash()
     {
         // Arrange
         using var sha256 = SHA256.Create();
-        var expectedHash = BitConverter.ToString(sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(_testFileContent)))
+        var expectedHash = BitConverter.ToString(sha256.ComputeHash(Encoding.UTF8.GetBytes(_testFileContent)))
             .Replace("-", "").ToLowerInvariant();
 
         // Act

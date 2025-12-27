@@ -15,7 +15,6 @@ namespace Gml.Core.Helpers.BugTracker;
 public class FileStorageService(string filePath)
 {
     protected readonly ConcurrentDictionary<string, IBugInfo> _bugBuffer = new();
-    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     private readonly JsonSerializerSettings _converterSettings = new()
     {
@@ -27,6 +26,8 @@ public class FileStorageService(string filePath)
         ]
     };
 
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
+
     protected async Task SaveBugAsync(IBugInfo bugInfo)
     {
         _bugBuffer[bugInfo.Id] = bugInfo;
@@ -36,10 +37,7 @@ public class FileStorageService(string filePath)
 
     public async Task RemoveBugAsync(string bugId)
     {
-        if (_bugBuffer.TryRemove(bugId, out _))
-        {
-            await SaveBufferedBugsAsync();
-        }
+        if (_bugBuffer.TryRemove(bugId, out _)) await SaveBufferedBugsAsync();
     }
 
     private async Task SaveBufferedBugsAsync()
@@ -73,12 +71,8 @@ public class FileStorageService(string filePath)
                 var bugs = JsonConvert.DeserializeObject<List<BugInfo>>(json, _converterSettings);
 
                 if (bugs != null)
-                {
                     foreach (var bug in bugs)
-                    {
                         _bugBuffer[bug.Id] = bug;
-                    }
-                }
             }
         }
         finally

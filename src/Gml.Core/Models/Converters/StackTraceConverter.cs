@@ -10,7 +10,8 @@ namespace Gml.Models.Converters;
 
 public class StackTraceConverter : JsonConverter<IStackTrace>
 {
-    public override IStackTrace ReadJson(JsonReader reader, Type objectType, IStackTrace? existingValue, bool hasExistingValue, JsonSerializer serializer)
+    public override IStackTrace ReadJson(JsonReader reader, Type objectType, IStackTrace? existingValue,
+        bool hasExistingValue, JsonSerializer serializer)
     {
         var jsonObject = JObject.Load(reader);
         var stackTrace = jsonObject.ToObject<StackTrace>();

@@ -1,6 +1,6 @@
 using System;
 
-namespace Gml.Core.User;
+namespace Gml.Models.User;
 
 public class ServerJoinHistory(string serverUuid, DateTime date)
 {

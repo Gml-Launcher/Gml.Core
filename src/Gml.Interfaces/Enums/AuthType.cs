@@ -11,5 +11,5 @@ public enum AuthType
     CustomEndpoint = 6,
     NamelessMC = 7,
     WebMCRReloaded = 8,
-    WordPress = 9,
+    WordPress = 9
 }

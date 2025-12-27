@@ -7,78 +7,80 @@ using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Gml.Models.Launcher;
 using Gml.Models.Storage;
-using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Storage;
 
-namespace Gml.Core.Launcher
+namespace Gml.Core.Launcher;
+
+public class AccessTokenTokens
 {
-    public class AccessTokenTokens
+    public const string CurseForgeKey = "CurseForgeKey";
+    public const string VkKey = "VkKey";
+}
+
+public class LauncherInfo : ILauncherInfo
+{
+    private readonly Subject<IStorageSettings> _settingsUpdated = new();
+
+    public LauncherInfo(IGmlSettings settings)
     {
-        public const string CurseForgeKey = "CurseForgeKey";
-        public const string VkKey = "VkKey";
+        Settings = settings;
     }
 
-    public class LauncherInfo : ILauncherInfo
+    public string Name => Settings.Name;
+    public string BaseDirectory => Settings.BaseDirectory;
+    public string InstallationDirectory => Settings.InstallationDirectory;
+    public IGmlSettings Settings { get; }
+
+    public IStorageSettings StorageSettings { get; set; } = new StorageSettings();
+    public IObservable<IStorageSettings> SettingsUpdated => _settingsUpdated;
+    public IDictionary<string, string> AccessTokens { get; set; } = new ConcurrentDictionary<string, string>();
+    public Dictionary<string, IVersionFile?> ActualLauncherVersion { get; set; } = new();
+
+    public void UpdateSettings(StorageType storageType,
+        string storageHost,
+        string storageLogin,
+        string storagePassword,
+        TextureProtocol textureProtocol,
+        string curseForgeKey,
+        string vkKey,
+        TimeSpan sentryClearPeriod,
+        bool sentryNeedAutoClear)
     {
-        private readonly IGmlSettings _settings;
-        private Subject<IStorageSettings> _settingsUpdated = new();
+        StorageSettings.StoragePassword = storagePassword;
+        StorageSettings.StorageLogin = storageLogin;
+        StorageSettings.StorageType = storageType;
+        StorageSettings.StorageHost = storageHost;
+        StorageSettings.TextureProtocol = textureProtocol;
+        StorageSettings.SentryAutoClearPeriod = sentryClearPeriod;
+        StorageSettings.SentryNeedAutoClear = sentryNeedAutoClear;
+        AccessTokens[AccessTokenTokens.CurseForgeKey] = curseForgeKey;
+        AccessTokens[AccessTokenTokens.VkKey] = vkKey;
 
-        public string Name => _settings.Name;
-        public string BaseDirectory => _settings.BaseDirectory;
-        public string InstallationDirectory => _settings.InstallationDirectory;
-        public IGmlSettings Settings => _settings;
-        public IStorageSettings StorageSettings { get; set; } = new StorageSettings();
-        public IObservable<IStorageSettings> SettingsUpdated => _settingsUpdated;
-        public IDictionary<string, string> AccessTokens { get; set; } = new ConcurrentDictionary<string, string>();
-        public Dictionary<string, IVersionFile?> ActualLauncherVersion { get; set; } = new();
+        _settingsUpdated.OnNext(StorageSettings);
+    }
 
-        public LauncherInfo(IGmlSettings settings)
+    public Task<IEnumerable<ILauncherBuild>> GetBuilds()
+    {
+        var versionsPath = Path.Combine(InstallationDirectory, "LauncherBuilds");
+
+        var directoryInfo = new DirectoryInfo(versionsPath);
+
+        var builds = directoryInfo.GetDirectories();
+
+        var versions = builds.Select(c => new LauncherBuild
         {
-            _settings = settings;
-        }
+            Name = c.Name,
+            Path = c.FullName,
+            DateTime = c.CreationTime
+        });
 
-        public void UpdateSettings(StorageType storageType,
-            string storageHost,
-            string storageLogin,
-            string storagePassword,
-            TextureProtocol textureProtocol,
-            string curseForgeKey,
-            string vkKey)
-        {
-            StorageSettings.StoragePassword = storagePassword;
-            StorageSettings.StorageLogin = storageLogin;
-            StorageSettings.StorageType = storageType;
-            StorageSettings.StorageHost = storageHost;
-            StorageSettings.TextureProtocol = textureProtocol;
-            AccessTokens[AccessTokenTokens.CurseForgeKey] = curseForgeKey;
-            AccessTokens[AccessTokenTokens.VkKey] = vkKey;
+        return Task.FromResult(versions.OfType<ILauncherBuild>());
+    }
 
-            _settingsUpdated.OnNext(StorageSettings);
-        }
-
-        public Task<IEnumerable<ILauncherBuild>> GetBuilds()
-        {
-            var versionsPath = Path.Combine(InstallationDirectory, "LauncherBuilds");
-
-            var directoryInfo = new DirectoryInfo(versionsPath);
-
-            var builds = directoryInfo.GetDirectories();
-
-            var versions = builds.Select(c => new LauncherBuild
-            {
-                Name = c.Name,
-                Path = c.FullName,
-                DateTime = c.CreationTime
-            });
-
-            return Task.FromResult(versions.OfType<ILauncherBuild>());
-        }
-
-        public async Task<ILauncherBuild?> GetBuild(string name)
-        {
-            return (await GetBuilds()).FirstOrDefault(c => c.Name == name);
-        }
+    public async Task<ILauncherBuild?> GetBuild(string name)
+    {
+        return (await GetBuilds()).FirstOrDefault(c => c.Name == name);
     }
 }

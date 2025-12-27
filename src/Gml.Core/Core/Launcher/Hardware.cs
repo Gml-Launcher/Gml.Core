@@ -7,7 +7,6 @@ public class Hardware : IHardware
 {
     public Hardware()
     {
-
     }
 
     public Hardware(string? cpuIdentifier, string? motherboardIdentifier, string? diskIdentifiers)

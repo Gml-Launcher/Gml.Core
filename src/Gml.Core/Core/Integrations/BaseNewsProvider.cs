@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using GmlCore.Interfaces;
@@ -24,17 +23,9 @@ public abstract class BaseNewsProvider : INewsProvider
     public virtual string Name => GetType().Name;
     public string Url { get; set; }
 
-    public BaseNewsProvider()
-    {
-
-    }
-
     public override bool Equals(object? obj)
     {
-        if (obj is BaseNewsProvider provider)
-        {
-            return provider.Type == Type;
-        }
+        if (obj is BaseNewsProvider provider) return provider.Type == Type;
 
         return false;
     }

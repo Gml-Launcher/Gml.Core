@@ -1,7 +1,6 @@
-﻿using NUnit.Framework;
+﻿using CurseForge.APIClient.Models.Mods;
 using Gml.Core.Extensions;
 using GmlCore.Interfaces.Enums;
-using CurseForge.APIClient.Models.Mods;
 
 namespace GmlCore.Tests;
 

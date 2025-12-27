@@ -14,6 +14,7 @@ public class ModVersionDto
     public List<ModVersionDtoDependency> Dependencies { get; set; } = [];
     public List<string> Files { get; set; } = [];
 }
+
 public class ModVersionDtoDependency
 {
     public string VersionId { get; set; }
@@ -21,5 +22,3 @@ public class ModVersionDtoDependency
     public string FileName { get; set; }
     public string DependencyType { get; set; }
 }
-
-

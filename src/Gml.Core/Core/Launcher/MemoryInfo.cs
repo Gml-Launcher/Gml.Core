@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using GmlCore.Interfaces.Sentry;
-using Newtonsoft.Json;
 
 namespace Gml.Core.Launcher;
 

@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using Gml;
 using Gml.Core.Launcher;
-using Gml.Core.User;
+using Gml.Models.User;
 using GmlCore.Interfaces;
 
 namespace GmlCore.Tests;
@@ -13,7 +13,9 @@ public class UserProceduresTests
     private const string TestUserName = "GamerVII";
     private const string TestUserUuid = "28823C6E-1C50-3FA9-B051-FEC15E9C5986";
     private const string TestServerUuid = "8D4E6F2A-1B3C-4D5E-9F8A-7C6B5D4E3F2A";
-    private const string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyODgyM0M2RS0xQzUwLTNGQTktQjA1MS1GRUMxNUU5QzU5ODYiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjI4ODIzQzZFLTFDNTAtM0ZBOS1CMDUxLUZFQzE1RTlDNTk4NiIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJHYW1lclZJSSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6IkdhbWVyVklJIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiUGxheWVyIiwicGVybSI6InByb2ZpbGVzLnZpZXciLCJuYmYiOjE3NTkwNDgxOTMsImV4cCI6MTc1OTkxMjE5MywiaXNzIjoiZ21sLWFwaSIsImF1ZCI6ImdtbC1jbGllbnRzIn0.vSPyjO1i--pv6louwyIXpZ3ycW42kOg8OxLTvMhMpUc";
+
+    private const string token =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyODgyM0M2RS0xQzUwLTNGQTktQjA1MS1GRUMxNUU5QzU5ODYiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjI4ODIzQzZFLTFDNTAtM0ZBOS1CMDUxLUZFQzE1RTlDNTk4NiIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJHYW1lclZJSSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6IkdhbWVyVklJIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiUGxheWVyIiwicGVybSI6InByb2ZpbGVzLnZpZXciLCJuYmYiOjE3NTkwNDgxOTMsImV4cCI6MTc1OTkxMjE5MywiaXNzIjoiZ21sLWFwaSIsImF1ZCI6ImdtbC1jbGllbnRzIn0.vSPyjO1i--pv6louwyIXpZ3ycW42kOg8OxLTvMhMpUc";
 
     private IGmlManager _gmlManager;
 
@@ -32,7 +34,8 @@ public class UserProceduresTests
 
         if (user is null)
         {
-            var userData = await _gmlManager.Users.GetAuthData(TestUserName, TestUserName, "Desktop", "1.0", IPAddress.Parse("127.0.0.1"), null, "empty", false);
+            var userData = await _gmlManager.Users.GetAuthData(TestUserName, TestUserName, "Desktop", "1.0",
+                IPAddress.Parse("127.0.0.1"), null, "empty", false);
 
             userData.AccessToken = token;
 
@@ -44,11 +47,11 @@ public class UserProceduresTests
     public async Task GetAuthData_ReturnsValidUser()
     {
         // Arrange
-        string login = TestUserName;
-        string password = "testPassword";
-        string device = "Desktop";
-        string protocol = "1.0";
-        IPAddress address = IPAddress.Parse("127.0.0.1");
+        var login = TestUserName;
+        var password = "testPassword";
+        var device = "Desktop";
+        var protocol = "1.0";
+        var address = IPAddress.Parse("127.0.0.1");
 
         // Act
         var result = await _gmlManager.Users.GetAuthData(login, password, device, protocol, address, null, null, false);
@@ -63,14 +66,15 @@ public class UserProceduresTests
     public async Task GetAuthData_WithCustomUuid_ReturnsValidUser()
     {
         // Arrange
-        string login = TestUserName;
-        string password = "testPassword";
-        string device = "Desktop";
-        string protocol = "1.0";
-        string customUuid = "custom-uuid";
+        var login = TestUserName;
+        var password = "testPassword";
+        var device = "Desktop";
+        var protocol = "1.0";
+        var customUuid = "custom-uuid";
 
         // Act
-        var result = await _gmlManager.Users.GetAuthData(login, password, device, protocol, null, customUuid, null, false);
+        var result =
+            await _gmlManager.Users.GetAuthData(login, password, device, protocol, null, customUuid, null, false);
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -81,13 +85,13 @@ public class UserProceduresTests
     public async Task GetUserByUuid_ExistingUuid_ReturnsUser()
     {
         // Arrange
-        string uuid = TestUserUuid;
+        var uuid = TestUserUuid;
 
         // Act
         var result = await _gmlManager.Users.GetUserByUuid(uuid);
 
         // Assert
-        Assert.NotNull(result);
+        Assert.That(result, Is.Not.Null);
         Assert.That(result.Uuid, Is.EqualTo(uuid));
     }
 
@@ -95,13 +99,13 @@ public class UserProceduresTests
     public async Task GetUserByUuid_NonExistingUuid_ReturnsNull()
     {
         // Arrange
-        string uuid = "non-existing-uuid";
+        var uuid = "non-existing-uuid";
 
         // Act
         var result = await _gmlManager.Users.GetUserByUuid(uuid);
 
         // Assert
-        Assert.IsNull(result);
+        Assert.That(result, Is.Null);
     }
 
     [Test]
@@ -161,7 +165,7 @@ public class UserProceduresTests
         var result = await _gmlManager.Users.ValidateUser(user.Uuid, TestServerUuid, user.AccessToken);
 
         // Assert
-        Assert.IsTrue(result);
+        Assert.That(result, Is.True);
     }
 
     [Test]
@@ -176,7 +180,7 @@ public class UserProceduresTests
         var result = await _gmlManager.Users.ValidateUser(userUuid, uuid, accessToken);
 
         // Assert
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
 
     [Test]
@@ -203,9 +207,12 @@ public class UserProceduresTests
         var result = (await _gmlManager.Users.GetUsers()).ToArray();
 
         // Assert
-        Assert.NotNull(result);
-        Assert.That(result.Count(), Is.EqualTo(1));
-        Assert.IsTrue(result.Any(u => u.Name == TestUserName));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count(), Is.EqualTo(1));
+            Assert.That(result.Any(u => u.Name == TestUserName), Is.True);
+        }
     }
 
     [Test]
@@ -219,7 +226,7 @@ public class UserProceduresTests
         var result = await _gmlManager.Users.GetUsers(take, offset, TestUserName);
 
         // Assert
-        Assert.NotNull(result);
+        Assert.That(result, Is.Not.Null);
         Assert.That(result.Count(), Is.EqualTo(1));
     }
 
@@ -235,7 +242,6 @@ public class UserProceduresTests
         // Assert
         Assert.Multiple(() =>
         {
-
             Assert.That(result.Count(), Is.EqualTo(1));
             Assert.That(result.First().Uuid, Is.EqualTo(TestUserUuid));
         });
@@ -316,6 +322,7 @@ public class UserProceduresTests
     public async Task RemoveUser_ValidUser_CompletesSuccessfully()
     {
         // Arrange
+
         var mockUser = new User { Uuid = "user-to-remove" };
 
         // Act

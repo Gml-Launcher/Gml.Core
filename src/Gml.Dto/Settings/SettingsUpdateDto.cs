@@ -1,3 +1,4 @@
+using System;
 using GmlCore.Interfaces.Enums;
 
 namespace Gml.Dto.Settings;
@@ -12,4 +13,6 @@ public class SettingsUpdateDto
     public string VkKey { get; set; }
     public string StoragePassword { get; set; }
     public TextureProtocol TextureProtocol { get; set; }
+    public bool SentryNeedAutoClear { get; set; }
+    public TimeSpan SentryAutoClearPeriod { get; set; }
 }

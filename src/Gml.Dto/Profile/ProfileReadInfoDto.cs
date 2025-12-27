@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Gml.Dto.Files;
 using Gml.Dto.Player;
 using GmlCore.Interfaces.Enums;
-using GmlCore.Interfaces.System;
 
 namespace Gml.Dto.Profile;
 
@@ -17,6 +16,7 @@ public class ProfileReadInfoDto
     public string LaunchVersion { get; set; }
     public string IconBase64 { get; set; }
     public string Description { get; set; }
+    public string ReleativePath { get; set; }
     public string Arguments { get; set; }
     public bool IsEnabled { get; set; }
     public int Priority { get; set; }
@@ -25,9 +25,9 @@ public class ProfileReadInfoDto
     public string GameArguments { get; set; }
     public bool HasUpdate { get; set; }
     public ProfileState State { get; set; }
-    public List<ProfileFileReadDto> Files { get; set; }
-    public List<ProfileFolderReadDto> WhiteListFolders { get; set; }
-    public List<ProfileFileReadDto> WhiteListFiles { get; set; }
-    public List<PlayerReadDto> UsersWhiteList { get; set; }
+    public List<ProfileFileReadDto> Files { get; set; } = [];
+    public List<ProfileFolderReadDto> WhiteListFolders { get; set; } = [];
+    public List<ProfileFileReadDto> WhiteListFiles { get; set; } = [];
+    public List<PlayerReadDto> UsersWhiteList { get; set; } = [];
     public string Background { get; set; }
 }

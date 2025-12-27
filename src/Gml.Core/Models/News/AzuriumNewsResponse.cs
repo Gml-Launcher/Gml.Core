@@ -9,37 +9,35 @@ public class Author
 
     [JsonProperty("name")] public string Name;
 
-    [JsonProperty("role")] public Role Role;
-
     [JsonProperty("registered")] public DateTime Registered;
+
+    [JsonProperty("role")] public Role Role;
 }
 
 public class Role
 {
+    [JsonProperty("color")] public string Color;
     [JsonProperty("id")] public int Id;
 
     [JsonProperty("name")] public string Name;
-
-    [JsonProperty("color")] public string Color;
 }
 
 public class AzuriomNewsResponse
 {
-    [JsonProperty("id")] public int Id;
-
-    [JsonProperty("title")] public string? Title;
-
-    [JsonProperty("description")] public string? Description;
-
-    [JsonProperty("slug")] public string Slug;
-
-    [JsonProperty("url")] public string Url;
+    [JsonProperty("author")] public Author Author;
 
     [JsonProperty("content")] public string Content;
 
-    [JsonProperty("author")] public Author Author;
+    [JsonProperty("description")] public string? Description;
+    [JsonProperty("id")] public int Id;
+
+    [JsonProperty("image")] public string Image;
 
     [JsonProperty("published_at")] public DateTime PublishedAt;
 
-    [JsonProperty("image")] public string Image;
+    [JsonProperty("slug")] public string Slug;
+
+    [JsonProperty("title")] public string? Title;
+
+    [JsonProperty("url")] public string Url;
 }

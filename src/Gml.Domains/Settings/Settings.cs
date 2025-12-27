@@ -1,3 +1,4 @@
+using System;
 using GmlCore.Interfaces.Enums;
 
 namespace Gml.Domains.Settings;
@@ -15,4 +16,6 @@ public class Settings
     public TextureProtocol TextureProtocol { get; set; }
     public bool RegistrationIsEnabled { get; set; }
     public bool IsInstalled { get; set; }
+    public bool SentryNeedAutoClear { get; set; }
+    public TimeSpan SentryAutoClearPeriod { get; set; }
 }

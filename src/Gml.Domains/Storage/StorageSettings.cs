@@ -1,4 +1,4 @@
-#nullable enable
+using System;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.Storage;
 
@@ -11,4 +11,6 @@ public class StorageSettings : IStorageSettings
     public string? StorageLogin { get; set; }
     public string? StoragePassword { get; set; }
     public TextureProtocol TextureProtocol { get; set; }
+    public bool SentryNeedAutoClear { get; set; }
+    public TimeSpan SentryAutoClearPeriod { get; set; }
 }

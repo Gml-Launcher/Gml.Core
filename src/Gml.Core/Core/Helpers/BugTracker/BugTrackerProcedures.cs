@@ -4,12 +4,8 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Gml.Core.Launcher;
-using Gml.Core.Services.Storage;
-using Gml.Models.Converters;
-using Gml.Models.Storage;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.Sentry;
@@ -19,13 +15,17 @@ namespace Gml.Core.Helpers.BugTracker;
 
 public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
 {
-    private readonly IStorageService _storage;
-    private readonly IGmlSettings _settings;
-    private readonly ISubject<IBugInfo> _bugStream = new Subject<IBugInfo>();
     private readonly BlockingCollection<IBugInfo> _bugQueue = new();
+    private readonly ISubject<IBugInfo> _bugStream = new Subject<IBugInfo>();
+    private readonly IDisposable _clearTimer;
+    private readonly IGmlSettings _settings;
+    private readonly IStorageService _storage;
     private readonly IDisposable _subscription;
+    private IDisposable _timerDispose;
 
-    public BugTrackerProcedures(IStorageService storage, IGmlSettings settings) : base("BugStorage.json")
+    public BugTrackerProcedures(IStorageService storage,
+        IObservable<IStorageSettings> observableSettings,
+        IGmlSettings settings) : base("BugStorage.json")
     {
         _storage = storage;
         _settings = settings;
@@ -34,27 +34,11 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
             .SelectMany(bugInfo => Observable.FromAsync(() => ProcessBugAsync(bugInfo)))
             .Subscribe();
 
+        _clearTimer = observableSettings.Subscribe(UpdateClearTimer);
+
         Task.Run(ProcessQueueAsync);
 
         _ = LoadUnprocessedBugsFromStorage();
-    }
-
-    private async Task ProcessQueueAsync()
-    {
-        foreach (var bug in _bugQueue.GetConsumingEnumerable())
-        {
-            await SaveBugAsync(bug);
-        }
-    }
-
-    private async Task LoadUnprocessedBugsFromStorage()
-    {
-        await LoadUnprocessedBugsAsync();
-
-        foreach (var bug in _bugBuffer.Values)
-        {
-            _bugStream.OnNext(bug);
-        }
     }
 
     public void CaptureException(IBugInfo bugInfo)
@@ -83,7 +67,7 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
             OsVersion = "GmlServer",
             Exceptions = new List<ExceptionReport>
             {
-                new ExceptionReport
+                new()
                 {
                     Type = exception.GetType().FullName,
                     Module = exception.GetType().Assembly.FullName,
@@ -93,36 +77,17 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
                     {
                         new StackTrace
                         {
-                            Function = exception.StackTrace,
+                            Function = exception.StackTrace
                         }
                     }
                 }
             },
-            ProjectType = ProjectType.Backend,
+            ProjectType = ProjectType.Backend
         };
 
         CaptureException(bugInfo);
 
         return bugInfo;
-    }
-
-    private async Task ProcessBugAsync(IBugInfo bug)
-    {
-        try
-        {
-            await _storage.AddBugAsync(bug);
-
-            await RemoveBugAsync(bug.Id);
-        }
-        catch (Exception ex)
-        {
-            // ignore
-        }
-    }
-
-    public void StopProcessing()
-    {
-        _subscription.Dispose();
     }
 
     public async Task<IEnumerable<IBugInfo>> GetAllBugs()
@@ -143,5 +108,50 @@ public class BugTrackerProcedures : FileStorageService, IBugTrackerProcedures
     public Task SolveAllAsync()
     {
         return _storage.ClearBugsAsync();
+    }
+
+    public void UpdateClearTimer(IStorageSettings newSettings)
+    {
+        _timerDispose?.Dispose();
+
+        var timeSpan = newSettings.SentryAutoClearPeriod;
+        var needRunPeriodTimer = newSettings.SentryNeedAutoClear;
+
+        if (needRunPeriodTimer && timeSpan > TimeSpan.Zero)
+        {
+            _timerDispose = Observable.Interval(timeSpan)
+                .Subscribe(_ => Task.Run(async () => await _storage.ClearBugsAsync()));
+        }
+    }
+
+    private async Task ProcessQueueAsync()
+    {
+        foreach (var bug in _bugQueue.GetConsumingEnumerable()) await SaveBugAsync(bug);
+    }
+
+    private async Task LoadUnprocessedBugsFromStorage()
+    {
+        await LoadUnprocessedBugsAsync();
+
+        foreach (var bug in _bugBuffer.Values) _bugStream.OnNext(bug);
+    }
+
+    private async Task ProcessBugAsync(IBugInfo bug)
+    {
+        try
+        {
+            await _storage.AddBugAsync(bug);
+
+            await RemoveBugAsync(bug.Id);
+        }
+        catch (Exception ex)
+        {
+            // ignore
+        }
+    }
+
+    public void StopProcessing()
+    {
+        _subscription.Dispose();
     }
 }

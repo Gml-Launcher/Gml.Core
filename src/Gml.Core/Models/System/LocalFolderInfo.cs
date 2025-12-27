@@ -4,10 +4,10 @@ namespace Gml.Models.System;
 
 public class LocalFolderInfo : IFolderInfo
 {
+    private string _path;
 
     public LocalFolderInfo()
     {
-
     }
 
     public LocalFolderInfo(string path)
@@ -15,7 +15,11 @@ public class LocalFolderInfo : IFolderInfo
         Path = path;
     }
 
-    public string Path { get; set; }
+    public string Path
+    {
+        get => _path.Trim('\t', '\n', '\r');
+        set => _path = value;
+    }
 
     public override string ToString()
     {

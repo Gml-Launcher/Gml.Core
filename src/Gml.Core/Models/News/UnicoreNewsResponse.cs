@@ -6,17 +6,16 @@ namespace Gml.Models.News;
 
 public class Datum
 {
-    [JsonProperty("id")] public int Id;
-
-    [JsonProperty("title")] public string? Title;
+    [JsonProperty("created")] public DateTime Created;
 
     [JsonProperty("description")] public string? Description;
+    [JsonProperty("id")] public int Id;
 
     [JsonProperty("image")] public string? Image;
 
     [JsonProperty("link")] public object? Link;
 
-    [JsonProperty("created")] public DateTime Created;
+    [JsonProperty("title")] public string? Title;
 }
 
 public class Links
@@ -26,22 +25,21 @@ public class Links
 
 public class Meta
 {
+    [JsonProperty("currentPage")] public int CurrentPage;
     [JsonProperty("itemsPerPage")] public int ItemsPerPage;
+
+    [JsonProperty("sortBy")] public List<List<string>> SortBy;
 
     [JsonProperty("totalItems")] public int TotalItems;
 
-    [JsonProperty("currentPage")] public int CurrentPage;
-
     [JsonProperty("totalPages")] public int TotalPages;
-
-    [JsonProperty("sortBy")] public List<List<string>> SortBy;
 }
 
 public class UnicoreNewsResponse
 {
     [JsonProperty("data")] public List<Datum> Data;
 
-    [JsonProperty("meta")] public Meta Meta;
-
     [JsonProperty("links")] public Links Links;
+
+    [JsonProperty("meta")] public Meta Meta;
 }

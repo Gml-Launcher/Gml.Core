@@ -6,4 +6,6 @@ public class ProfileFileReadDto
     public string Directory { get; set; }
     public long Size { get; set; }
     public string Hash { get; set; }
+
+    override public string ToString() => Directory;
 }

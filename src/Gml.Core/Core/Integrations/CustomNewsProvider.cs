@@ -46,7 +46,6 @@ public class CustomNewsProvider : BaseNewsProvider
                 Type = Type,
                 Date = x.CreatedAt
             }).ToList();
-
         }
         catch (Exception e)
         {

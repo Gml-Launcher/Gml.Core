@@ -16,16 +16,17 @@ public class GitHubService : IGitHubService
 {
     private readonly IGmlManager _gmlManager;
     private readonly HttpClient _httpClient;
-    private IReadOnlyCollection<string> _versions;
+    private readonly Subject<string> _logs = new();
     private IReadOnlyCollection<string> _branches;
-    private Subject<string> _logs = new();
-    public IObservable<string> Logs => _logs;
+    private IReadOnlyCollection<string> _versions;
 
     public GitHubService(HttpClient httpClient, IGmlManager gmlManager)
     {
         _gmlManager = gmlManager;
         _httpClient = httpClient;
     }
+
+    public IObservable<string> Logs => _logs;
 
     public async Task<IEnumerable<string>> GetRepositoryBranches(string user, string repository)
     {
@@ -107,10 +108,7 @@ public class GitHubService : IGitHubService
     {
         var directory = new DirectoryInfo(Path.Combine(projectPath, branchName));
 
-        if (!directory.Exists)
-        {
-            directory.Create();
-        }
+        if (!directory.Exists) directory.Create();
 
         var processInfo = new ProcessStartInfo
         {
@@ -139,39 +137,12 @@ public class GitHubService : IGitHubService
 #endif
 
         if (process.ExitCode != 0)
-        {
-            throw new InvalidOperationException($"An error occurred while cloning the repository");
-        }
+            throw new InvalidOperationException("An error occurred while cloning the repository");
 
         process.OutputDataReceived -= SendLog;
         process.ErrorDataReceived -= SendLog;
 
         return directory.FullName;
-    }
-
-    private void SendLog(object sender, DataReceivedEventArgs e)
-    {
-        if (string.IsNullOrEmpty(e.Data))
-        {
-            return;
-        }
-
-        _logs.OnNext(e.Data);
-    }
-
-    private string NormalizePath(string directory, string fileDirectory)
-    {
-        directory = directory
-            .Replace('\\', Path.DirectorySeparatorChar)
-            .Replace('/', Path.DirectorySeparatorChar);
-        // .TrimStart(Path.DirectorySeparatorChar);
-
-        fileDirectory = fileDirectory
-            .Replace('\\', Path.DirectorySeparatorChar)
-            .Replace('/', Path.DirectorySeparatorChar)
-            .TrimStart(Path.DirectorySeparatorChar);
-
-        return Path.Combine(directory, fileDirectory);
     }
 
     public async Task EditLauncherFiles(string projectPath, string host, string folder)
@@ -197,5 +168,27 @@ public class GitHubService : IGitHubService
         foreach (var key in keys) content = content.Replace(key.Key, key.Value);
 
         await File.WriteAllTextAsync(settingsFile, content);
+    }
+
+    private void SendLog(object sender, DataReceivedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(e.Data)) return;
+
+        _logs.OnNext(e.Data);
+    }
+
+    private string NormalizePath(string directory, string fileDirectory)
+    {
+        directory = directory
+            .Replace('\\', Path.DirectorySeparatorChar)
+            .Replace('/', Path.DirectorySeparatorChar);
+        // .TrimStart(Path.DirectorySeparatorChar);
+
+        fileDirectory = fileDirectory
+            .Replace('\\', Path.DirectorySeparatorChar)
+            .Replace('/', Path.DirectorySeparatorChar)
+            .TrimStart(Path.DirectorySeparatorChar);
+
+        return Path.Combine(directory, fileDirectory);
     }
 }

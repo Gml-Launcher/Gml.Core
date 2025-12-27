@@ -1,16 +1,11 @@
 ﻿using System.Linq.Expressions;
 using Gml.Core.Services.Storage;
-using NUnit.Framework;
 
 namespace GmlCore.Tests;
 
 [TestFixture]
 public class ReplaceParameterVisitorTests
 {
-    private ParameterExpression _oldParameter;
-    private ParameterExpression _newParameter;
-    private ReplaceParameterVisitor _visitor;
-
     [SetUp]
     public void Setup()
     {
@@ -18,6 +13,10 @@ public class ReplaceParameterVisitorTests
         _newParameter = Expression.Parameter(typeof(int), "newParam");
         _visitor = new ReplaceParameterVisitor(_oldParameter, _newParameter);
     }
+
+    private ParameterExpression _oldParameter;
+    private ParameterExpression _newParameter;
+    private ReplaceParameterVisitor _visitor;
 
     [Test]
     public void VisitParameter_OldParameter_ReturnsNewParameter()

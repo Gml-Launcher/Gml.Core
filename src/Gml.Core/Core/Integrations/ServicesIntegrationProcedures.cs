@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Gml.Core.Constants;
-using Gml.Core.Services.Storage;
 using Gml.Models.Auth;
 using Gml.Models.Discord;
 using GmlCore.Interfaces.Auth;
@@ -22,19 +21,22 @@ public class ServicesIntegrationProcedures(
     GmlManager gmlManager)
     : IServicesIntegrationProcedures
 {
-    public ITextureProvider TextureProvider { get; set; } = new TextureProvider(settings.TextureServiceEndpoint, bugTracker);
-    public INewsListenerProvider NewsProvider { get; set; } = new NewsListenerProvider(TimeSpan.FromMinutes(1), storage, bugTracker, gmlManager);
-
     private IEnumerable<IAuthServiceInfo>? _authServices;
+
+    public ITextureProvider TextureProvider { get; set; } =
+        new TextureProvider(settings.TextureServiceEndpoint, bugTracker);
+
+    public INewsListenerProvider NewsProvider { get; set; } =
+        new NewsListenerProvider(TimeSpan.FromMinutes(1), storage, bugTracker, gmlManager);
 
     public Task<AuthType> GetAuthType()
     {
         return storage.GetAsync<AuthType>(StorageConstants.AuthType);
     }
 
-    public Task<IEnumerable<IAuthServiceInfo>> GetAuthServices()
+    public Task<IReadOnlyCollection<IAuthServiceInfo>> GetAuthServices()
     {
-        return Task.FromResult(new List<IAuthServiceInfo>
+        return Task.FromResult<IReadOnlyCollection<IAuthServiceInfo>>(new List<IAuthServiceInfo>
         {
             new AuthServiceInfo("Undefined", AuthType.Undefined),
             new AuthServiceInfo("Any", AuthType.Any),
@@ -46,7 +48,7 @@ public class ServicesIntegrationProcedures(
             new AuthServiceInfo("NamelessMC", AuthType.NamelessMC),
             new AuthServiceInfo("WebMCR Reloaded", AuthType.WebMCRReloaded),
             new AuthServiceInfo("WordPress ", AuthType.WordPress)
-        }.AsEnumerable());
+        });
     }
 
     public async Task<IAuthServiceInfo?> GetActiveAuthService()

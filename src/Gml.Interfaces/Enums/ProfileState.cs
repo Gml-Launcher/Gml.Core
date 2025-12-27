@@ -8,5 +8,5 @@ public enum ProfileState
     Restoring = 3,
     Error = 4,
     NeedCompile = 5,
-    Packing = 6,
+    Packing = 6
 }

@@ -12,8 +12,10 @@ public interface IAccessTokenService
 
     string GenerateAccessToken(string subject, IEnumerable<string> roles, IEnumerable<string> permissions,
         int? tokenDuration = null);
+
     string GenerateAccessToken(string subject, string userLogin, string userEmail, IEnumerable<string> roles,
         IEnumerable<string> permissions, int? tokenDuration = null);
+
     bool ValidateToken(string token);
     string GenerateRefreshToken();
     string HashRefreshToken(string refreshToken);

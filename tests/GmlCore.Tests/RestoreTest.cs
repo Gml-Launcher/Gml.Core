@@ -6,7 +6,6 @@ namespace GmlCore.Tests;
 
 public class RestoreTest
 {
-
     private const string LauncherName = "GmlServer";
     private const string SecurityKey = "gfweagertghuysergfbsuyerbgiuyserg";
 

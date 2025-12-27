@@ -5,13 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Gml.Core.Constants;
-using Gml.Core.Launcher;
 using Gml.Core.Services.GitHub;
-using Gml.Core.Services.Storage;
-using Gml.Web.Api.Domains.System;
 using GmlCore.Interfaces.Enums;
 using GmlCore.Interfaces.GitHub;
 using GmlCore.Interfaces.Launcher;
@@ -22,17 +18,9 @@ namespace Gml.Core.Helpers.Launcher;
 
 public class LauncherProcedures : ILauncherProcedures
 {
-    private readonly ILauncherInfo _launcherInfo;
-    private readonly IStorageService _storage;
-    private readonly IFileStorageProcedures _files;
-    private readonly GmlManager _gmlManager;
-    private readonly IGitHubService _githubService;
-    private ISubject<string> _buildLogs = new Subject<string>();
-    private readonly Subject<string> _logsBuffer;
-    public IObservable<string> BuildLogs => _buildLogs;
     private const string _launcherGitHub = "https://github.com/Gml-Launcher/Gml.Launcher";
 
-    private string[] _allowedVersions =
+    private readonly string[] _allowedVersions =
     [
         "win-x86",
         "win-x64",
@@ -43,8 +31,16 @@ public class LauncherProcedures : ILauncherProcedures
         "linux-arm64",
         "linux-x64",
         "osx-x64",
-        "osx-arm64",
+        "osx-arm64"
     ];
+
+    private readonly ISubject<string> _buildLogs = new Subject<string>();
+    private readonly IFileStorageProcedures _files;
+    private readonly IGitHubService _githubService;
+    private readonly GmlManager _gmlManager;
+    private readonly ILauncherInfo _launcherInfo;
+    private readonly Subject<string> _logsBuffer;
+    private readonly IStorageService _storage;
 
     public LauncherProcedures(
         ILauncherInfo launcherInfo,
@@ -59,10 +55,7 @@ public class LauncherProcedures : ILauncherProcedures
             .Select(items => string.Join(Environment.NewLine, items))
             .Subscribe(combinedText =>
             {
-                if (!string.IsNullOrEmpty(combinedText))
-                {
-                    _buildLogs.OnNext(combinedText);
-                }
+                if (!string.IsNullOrEmpty(combinedText)) _buildLogs.OnNext(combinedText);
             });
 
         _gmlManager = gmlManager;
@@ -71,6 +64,8 @@ public class LauncherProcedures : ILauncherProcedures
         _files = files;
         _githubService = new GitHubService(launcherInfo.Settings.HttpClient, gmlManager);
     }
+
+    public IObservable<string> BuildLogs => _buildLogs;
 
     public async Task<string> CreateVersion(IVersionFile version, ILauncherBuild launcherBuild)
     {
@@ -113,9 +108,7 @@ public class LauncherProcedures : ILauncherProcedures
         var launcherDirectory = new DirectoryInfo(Path.Combine(projectPath, "src", "Gml.Launcher"));
 
         if (!Directory.Exists(projectPath))
-        {
             throw new DirectoryNotFoundException("Нет исходников для формирования бинарных файлов!");
-        }
 
         var buildFolder = await CreateBuilds(osNameVersions, projectPath, launcherDirectory);
 
@@ -149,7 +142,7 @@ public class LauncherProcedures : ILauncherProcedures
         if (!projects.Any(c => c.Name.StartsWith("Gml.Client")))
         {
             message =
-                $"Не удалось найти проект по пути: Gml.Client. Убедитесь, что проект загружен на сервер полностью. " +
+                "Не удалось найти проект по пути: Gml.Client. Убедитесь, что проект загружен на сервер полностью. " +
                 "Подробная инструкция доступна на wiki.recloud.tech: \n" +
                 "Клиентская часть / Сборка лаунчера / Сборка из панели / Загрузка исходных файлов / Пункт 2. Загрузка";
             return false;
@@ -158,7 +151,7 @@ public class LauncherProcedures : ILauncherProcedures
         if (!projects.Any(c => c.Name.StartsWith("GamerVII.Notification.Avalonia")))
         {
             message =
-                $"Не удалось найти проект по пути: Gml.Client. Убедитесь, что проект загружен на сервер полностью";
+                "Не удалось найти проект по пути: Gml.Client. Убедитесь, что проект загружен на сервер полностью";
             return false;
         }
 
@@ -227,10 +220,7 @@ public class LauncherProcedures : ILauncherProcedures
         foreach (var version in versions.Where(version => _allowedVersions.Contains(version)))
         {
             var processStartInfo = GetProcessStartInfo(dotnetPath, version, projectPath);
-            if (processStartInfo != null)
-            {
-                statusCode = await ExecuteProcessAsync(processStartInfo);
-            }
+            if (processStartInfo != null) statusCode = await ExecuteProcessAsync(processStartInfo);
         }
 
         var publishDirectory = launcherDirectory.GetDirectories("publish", SearchOption.AllDirectories);
@@ -239,10 +229,7 @@ public class LauncherProcedures : ILauncherProcedures
         foreach (var dir in publishDirectory)
         {
             var newFolder = new DirectoryInfo(Path.Combine(buildsFolder.FullName, dir.Parent.Name));
-            if (!newFolder.Exists)
-            {
-                newFolder.Create();
-            }
+            if (!newFolder.Exists) newFolder.Create();
 
             CopyDirectory(dir, newFolder);
         }
@@ -278,7 +265,7 @@ public class LauncherProcedures : ILauncherProcedures
 #if NETSTANDARD2_1
         process.WaitForExit();
 #else
-    await process.WaitForExitAsync();
+        await process.WaitForExitAsync();
 #endif
 
         process.OutputDataReceived -= LogProcessOutput;
@@ -303,29 +290,18 @@ public class LauncherProcedures : ILauncherProcedures
     {
         var buildsFolder = new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "LauncherBuilds",
             $"build-{DateTime.Now:dd-MM-yyyy HH-mm-ss}"));
-        if (!buildsFolder.Exists)
-        {
-            buildsFolder.Create();
-        }
+        if (!buildsFolder.Exists) buildsFolder.Create();
 
         return buildsFolder;
     }
 
     private static void CopyDirectory(DirectoryInfo source, DirectoryInfo destination)
     {
-        if (!destination.Exists)
-        {
-            destination.Create();
-        }
+        if (!destination.Exists) destination.Create();
 
-        foreach (FileInfo file in source.GetFiles())
-        {
-            file.CopyTo(Path.Combine(destination.FullName, file.Name), true);
-        }
+        foreach (var file in source.GetFiles()) file.CopyTo(Path.Combine(destination.FullName, file.Name), true);
 
-        foreach (DirectoryInfo subDir in source.GetDirectories())
-        {
+        foreach (var subDir in source.GetDirectories())
             CopyDirectory(subDir, new DirectoryInfo(Path.Combine(destination.FullName, subDir.Name)));
-        }
     }
 }
