@@ -16,7 +16,7 @@
     <PackageReference Include="CmlLib.Core.Installer.Forge" Version="1.1.1"/>
     <PackageReference Include="CmlLib.Core.Installer.NeoForge" Version="4.0.0"/>
     <PackageReference Include="CurseForge.APIClient" Version="4.2.0"/>
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0"/>
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.15.0"/>
     <PackageReference Include="Minio" Version="7.0.0"/>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4"/>
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172"/>
