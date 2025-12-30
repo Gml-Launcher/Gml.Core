@@ -58,6 +58,11 @@ jobs:
           dotnet build src/Gml.Interfaces/Gml.Interfaces.csproj --configuration Release
           dotnet pack src/Gml.Interfaces/Gml.Interfaces.csproj --configuration Release --no-build --output ./nupkgs
 
+      - name: Build and pack common
+        run: |
+          dotnet build src/Gml.Common/Gml.Common/Gml.Common.csproj --configuration Release
+          dotnet pack src/Gml.Common/Gml.Common/Gml.Common.csproj --configuration Release --no-build --output ./nupkgs
+
       - name: Build and pack domains
         run: |
           dotnet build src/Gml.Domains/Gml.Domains.csproj --configuration Release
