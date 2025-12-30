@@ -7,7 +7,7 @@
     <PackageId>Gml.Core</PackageId>
     <TargetFramework>net10.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2025.3.3</Version>
+    <Version>2025.3.3.1</Version>
     <Authors>Recloud LLC</Authors>
   </PropertyGroup>
 
