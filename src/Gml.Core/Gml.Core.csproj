@@ -18,6 +18,7 @@
     <PackageReference Include="CurseForge.APIClient" Version="4.2.0"/>
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0"/>
     <PackageReference Include="Minio" Version="7.0.0"/>
+    <PackageReference Include="Modrinth.Net" Version="3.6.0"/>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4"/>
     <PackageReference Include="Pingo" Version="2025.3.3"/>
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172"/>
@@ -31,7 +32,6 @@
     <ProjectReference Include="..\Gml.Common\Gml.Common\Gml.Common.csproj"/>
     <ProjectReference Include="..\Gml.Dto\Gml.Dto.csproj"/>
     <ProjectReference Include="..\Gml.Interfaces\Gml.Interfaces.csproj"/>
-    <ProjectReference Include="..\Modrinth.Api\src\Modrinth.Api\Modrinth.Api.csproj"/>
   </ItemGroup>
 
   <ItemGroup>

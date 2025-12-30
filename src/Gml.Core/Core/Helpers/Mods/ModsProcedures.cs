@@ -14,9 +14,7 @@ using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Mods;
 using GmlCore.Interfaces.Procedures;
 using GmlCore.Interfaces.Storage;
-using Modrinth.Api;
-using Modrinth.Api.Core.Filter;
-using Modrinth.Api.Models.Projects;
+using Modrinth;
 
 namespace Gml.Core.Helpers.Mods;
 
@@ -24,7 +22,7 @@ public class ModsProcedures : IModsProcedures
 {
     private readonly IBugTrackerProcedures _bugTracker;
     private readonly int _curseForgeGameId = 432;
-    private readonly ModrinthApi _modrinthApi;
+    private readonly ModrinthClient _modrinthClient;
     private readonly IStorageService _storage;
     private ApiClient? _curseForgeApi;
     private ConcurrentDictionary<string, ModInfo> _modsInfo = [];
@@ -36,7 +34,7 @@ public class ModsProcedures : IModsProcedures
     {
         _storage = storage;
         _bugTracker = bugTracker;
-        _modrinthApi = new ModrinthApi(Environment.CurrentDirectory, settings.HttpClient);
+        _modrinthClient = new ModrinthClient();
 
         UpdateCurseForgeToken(launcherInfo.AccessTokens);
         launcherInfo.SettingsUpdated.Subscribe(newSettings => { UpdateCurseForgeToken(launcherInfo.AccessTokens); });
@@ -148,8 +146,8 @@ public class ModsProcedures : IModsProcedures
 
     private async Task<IExternalMod?> GetInfoModByModrinth(string identify)
     {
-        var mod = await _modrinthApi.Mods
-            .FindAsync<ModProject>(identify, CancellationToken.None)
+        var mod = await _modrinthClient.Project
+            .GetAsync(identify, CancellationToken.None)
             .ConfigureAwait(false);
 
         return mod is null
@@ -189,8 +187,9 @@ public class ModsProcedures : IModsProcedures
     private async Task<IReadOnlyCollection<IModVersion>> GetModrinthModVersions(IExternalMod modInfo,
         GameLoader profileLoader, string gameVersion)
     {
-        var versions = await _modrinthApi.Versions
-            .GetVersionsByModId(modInfo.Id, profileLoader.ToModrinthString(), gameVersion, CancellationToken.None)
+        var versions = await _modrinthClient.Version.GetProjectVersionListAsync(
+                modInfo.Id, [profileLoader.ToModrinthString()], [gameVersion]
+            )
             .ConfigureAwait(false);
 
         return versions.Select(version => new ModrinthModVersion
@@ -201,7 +200,7 @@ public class ModsProcedures : IModsProcedures
             DatePublished = version.DatePublished,
             Downloads = version.Downloads,
             Dependencies = version.Dependencies,
-            Files = version.Files.Where(c => !c.Filename.StartsWith("sources_")).Select(c => c.Url).ToList()
+            Files = version.Files.Where(c => !c.FileName.StartsWith("sources_")).Select(c => c.Url).ToList()
         }).ToArray();
     }
 
@@ -231,28 +230,18 @@ public class ModsProcedures : IModsProcedures
         string gameVersion, string modName, short take,
         short offset)
     {
-        var searchFilter = new ProjectModFilter
-        {
-            Query = modName,
-            Index = FaceIndexEnum.Relevance,
-            Limit = take,
-            Offset = offset
-        };
+        var facets = new FacetCollection();
+        facets.Add(Facet.Category(profileLoader.ToModrinthString()));
+        facets.Add(Facet.Version(gameVersion));
 
-        searchFilter.AddFacet(ProjectFilterTypes.Version, gameVersion);
-        searchFilter.AddFacet(ProjectFilterTypes.Category, profileLoader.ToModrinthString());
+        var search = await _modrinthClient.Project.SearchAsync(modName, offset: offset, limit: take, facets: facets);
 
-        var mods = await _modrinthApi.Mods.FindAsync<ModProject>(searchFilter, CancellationToken.None)
-            .ConfigureAwait(false);
-
-        if (mods.Hits.Count == 0) return [];
-
-        return mods.Hits.Select(mod => new ModrinthMod
+        return search.Hits.Select(mod => new ModrinthMod
         {
             Id = mod.ProjectId,
             Name = mod.Title,
             Description = mod.Description,
-            FollowsCount = mod.Follows,
+            FollowsCount = mod.Followers,
             DownloadCount = mod.Downloads,
             IconUrl = mod.IconUrl
         }).ToArray();
