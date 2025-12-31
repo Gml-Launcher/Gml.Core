@@ -133,7 +133,7 @@ public class UserProcedures : IUserProcedures
         {
             user.ServerExpiredDate = DateTime.MinValue;
             user.ServerUuid = string.Empty;
-            await _storage.SetUserAsync(user.Name, user.Uuid, user);
+            await UpdateUser(user);
         }
 
         return isSuccess;
