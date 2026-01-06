@@ -438,7 +438,9 @@ public partial class ProfileProcedures : IProfileProcedures
             WhiteListFolders = profile.FolderWhiteList?.OfType<LocalFolderInfo>().ToList() ?? [],
             WhiteListFiles = profile.FileWhiteList?.OfType<LocalFileInfo>().ToList() ?? [],
             HasUpdate = profile.State != ProfileState.Loading,
-            MinecraftVersion = profile.GameVersion
+            MinecraftVersion = profile.GameVersion,
+            ProfileJavaVendor = profile.JavaVendor,
+            JavaMajorVersion = profile.JavaMajorVersion
         };
     }
 
@@ -681,7 +683,9 @@ public partial class ProfileProcedures : IProfileProcedures
         string gameArguments,
         int priority,
         int recommendedRam,
-        bool needUpdateImages)
+        bool needUpdateImages,
+        ProfileJavaVendor? vendor = null,
+        string? javaMajorVersion = null)
     {
         var directory =
             new DirectoryInfo(Path.Combine(_launcherInfo.InstallationDirectory, "clients", profile.Name));
@@ -715,7 +719,9 @@ public partial class ProfileProcedures : IProfileProcedures
             jvmArguments,
             gameArguments,
             priority,
-            recommendedRam);
+            recommendedRam,
+            vendor,
+            javaMajorVersion);
     }
 
     public async Task<string[]> InstallAuthLib(IGameProfile profile)
@@ -1074,7 +1080,9 @@ public partial class ProfileProcedures : IProfileProcedures
         string jvmArguments,
         string gameArguments,
         int priority,
-        int recommendedRam)
+        int recommendedRam,
+        ProfileJavaVendor? vendor = null,
+        string? javaMajorVersion = null)
     {
         profile.Name = newProfileName;
         profile.DisplayName = displayName;
@@ -1086,6 +1094,8 @@ public partial class ProfileProcedures : IProfileProcedures
         profile.GameArguments = gameArguments;
         profile.Priority = priority;
         profile.RecommendedRam = recommendedRam;
+        profile.JavaVendor = vendor ?? ProfileJavaVendor.Default;
+        profile.JavaMajorVersion = javaMajorVersion;
 
         profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications,
             _gmlManager.BugTracker);

@@ -12,11 +12,11 @@ using ICSharpCode.SharpZipLib.Zip;
 
 namespace Gml.Core.Helpers.Game;
 
-public class CustomNativeLibraryExtractor : INativeLibraryExtractor
+public class AzulNativeLibraryExtractor : INativeLibraryExtractor
 {
     private readonly IRulesEvaluator rulesEvaluator;
 
-    public CustomNativeLibraryExtractor(
+    public AzulNativeLibraryExtractor(
         IRulesEvaluator rulesEvaluator)
     {
         this.rulesEvaluator = rulesEvaluator;

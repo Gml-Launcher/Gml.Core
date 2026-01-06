@@ -30,4 +30,6 @@ public class ProfileReadInfoDto
     public List<ProfileFileReadDto> WhiteListFiles { get; set; } = [];
     public List<PlayerReadDto> UsersWhiteList { get; set; } = [];
     public string Background { get; set; }
+    public ProfileJavaVendor ProfileJavaVendor { get; set; }
+    public string? JavaMajorVersion { get; set; }
 }

@@ -50,6 +50,8 @@ public abstract class BaseProfile : IGameProfile
     public int Priority { get; set; }
     public int RecommendedRam { get; set; }
     public string ReleativePath { get; set; }
+    public ProfileJavaVendor JavaVendor { get; set; } = ProfileJavaVendor.Default;
+    public string? JavaMajorVersion { get; set; }
     public bool IsEnabled { get; set; }
     public string GameVersion { get; set; }
     public string? LaunchVersion { get; set; }

@@ -1,3 +1,5 @@
+using GmlCore.Interfaces.Enums;
+
 namespace Gml.Dto.Profile;
 
 public class ProfileUpdateDto
@@ -14,4 +16,6 @@ public class ProfileUpdateDto
     public string GameArguments { get; set; }
     public int RecommendedRam { get; set; }
     public bool NeedUpdateImages { get; set; }
+    public ProfileJavaVendor ProfileJavaVendor { get; set; }
+    public string? JavaMajorVersion { get; set; }
 }

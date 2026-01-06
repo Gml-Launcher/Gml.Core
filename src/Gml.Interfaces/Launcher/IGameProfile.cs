@@ -155,6 +155,9 @@ public interface IGameProfile : IDisposable
     /// </summary>
     string ReleativePath { get; set; }
 
+    ProfileJavaVendor JavaVendor { get; set; }
+    string? JavaMajorVersion { get; set; }
+
     /// <summary>
     ///     Validates the game profile.
     /// </summary>

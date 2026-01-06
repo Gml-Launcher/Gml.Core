@@ -305,18 +305,21 @@ public class GameDownloaderProcedures : IGameDownloaderProcedures
             Arch = osArchitecture
         };
 
-        var osDirectory = MinecraftJavaManifestResolver.GetOSNameForJava(osRule);
+        var version = launcher.JavaPathResolver.GetInstalledJavaVersions().FirstOrDefault() ?? string.Empty;
+        runtimeFolder = launcher.JavaPathResolver.GetJavaDirPath(new JavaVersion(version), launcher.RulesContext);
 
-        runtimeFolder = Directory
-            .GetDirectories(
-                launcher.MinecraftPath.Runtime, osDirectory, SearchOption.AllDirectories)
-            .FirstOrDefault() ?? string.Empty;
+        // var osDirectory = MinecraftJavaManifestResolver.GetOSNameForJava(osRule);
 
-        if (string.IsNullOrEmpty(runtimeFolder) && osName == "linux")
-            runtimeFolder = Directory
-                .GetDirectories(
-                    launcher.MinecraftPath.Runtime, $"{osName}", SearchOption.AllDirectories)
-                .FirstOrDefault() ?? string.Empty;
+        // runtimeFolder = Directory
+        //     .GetDirectories(
+        //         launcher.MinecraftPath.Runtime, osDirectory, SearchOption.AllDirectories)
+        //     .FirstOrDefault() ?? string.Empty;
+
+        // if (string.IsNullOrEmpty(runtimeFolder) && osName == "linux")
+        //     runtimeFolder = Directory
+        //         .GetDirectories(
+        //             launcher.MinecraftPath.Runtime, $"{osName}", SearchOption.AllDirectories)
+        //         .FirstOrDefault() ?? string.Empty;
 
         return !string.IsNullOrEmpty(runtimeFolder);
     }

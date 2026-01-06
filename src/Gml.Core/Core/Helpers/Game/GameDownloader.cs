@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
+using CmlLib.Core.FileExtractors;
 using CmlLib.Core.Installer.Forge;
 using CmlLib.Core.Installer.Forge.Versions;
 using CmlLib.Core.Installer.NeoForge;
@@ -107,9 +108,18 @@ public class GameDownloader
                 platform,
                 architecture
             );
-            var launcherParameters = MinecraftLauncherParameters.CreateDefault(minecraftPath);
+            var launcherParameters
+                = MinecraftLauncherParameters.CreateDefault(minecraftPath);
+
             launcherParameters.NativeLibraryExtractor =
-                new CustomNativeLibraryExtractor(launcherParameters.RulesEvaluator!);
+                new AzulNativeLibraryExtractor(launcherParameters.RulesEvaluator!);
+
+            launcherParameters.FileExtractors
+                = GetFileExtractors(profile, launcherParameters);
+
+            launcherParameters.JavaPathResolver
+                = GetJavaResolver(profile.JavaVendor, minecraftPath);
+
             var platformName = $"{platform}/{architecture}";
             var platformLauncher = new MinecraftLauncher(launcherParameters)
             {
@@ -125,6 +135,31 @@ public class GameDownloader
     public IObservable<string> LoadLog => _loadLog;
     public IObservable<Exception> LoadException => _exception;
     public MinecraftLauncher AnyLauncher => _launchers.Values.First();
+
+    private IJavaPathResolver GetJavaResolver(ProfileJavaVendor profileJavaVendor, CustomMinecraftPath minecraftPath)
+    {
+        return profileJavaVendor switch
+        {
+            ProfileJavaVendor.Azul => new AzulMinecraftJavaPathResolver(minecraftPath),
+            _ => new MinecraftJavaPathResolver(minecraftPath)
+        };
+    }
+
+    private FileExtractorCollection? GetFileExtractors(IGameProfile profile, MinecraftLauncherParameters parameters)
+    {
+        return profile.JavaVendor switch
+        {
+            ProfileJavaVendor.Azul => AzulDefaultFileExtractors.CreateDefault(
+                parameters.HttpClient,
+                parameters.RulesEvaluator,
+                parameters.JavaPathResolver).ToExtractorCollection(),
+
+            _ => DefaultFileExtractors.CreateDefault(
+                parameters.HttpClient,
+                parameters.RulesEvaluator,
+                parameters.JavaPathResolver).ToExtractorCollection()
+        };
+    }
 
     public async Task<string> DownloadGame(GameLoader loader, string version, string? launchVersion,
         IBootstrapProgram? bootstrapProgram)
@@ -147,6 +182,17 @@ public class GameDownloader
 
         await CheckBuildJava();
         OnStep();
+
+        switch (_profile.JavaVendor)
+        {
+            case ProfileJavaVendor.Default:
+                break;
+            case ProfileJavaVendor.Azul:
+                AzulMinecraftJavaManifestResolver.MajorVersion = _profile.JavaMajorVersion;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
 
         return await _downloadMethods[loader](version, launchVersion, _cancellationTokenSource.Token);
     }
@@ -232,9 +278,6 @@ public class GameDownloader
                     throw new InvalidOperationException("Cannot find any version");
                 }
 
-                if (javaVersion is null && _bootstrapProgram is not null)
-                    javaVersion = new JavaVersion(_bootstrapProgram.Name, _bootstrapProgram.MajorVersion.ToString());
-
                 loadVersion = await forge.Install(bestVersion, new ForgeInstallOptions
                 {
                     SkipIfAlreadyInstalled = false,
@@ -242,8 +285,8 @@ public class GameDownloader
                     FileProgress = _fileProgress,
                     JavaPath = _buildJavaPath,
                     CancellationToken = cancellationToken
-                    // JavaVersion = javaVersion
                 });
+
                 // var process = await launcher.CreateProcessAsync(loadVersion, new MLaunchOption()).AsTask();
             }
             catch (Exception exception) when (exception is DirectoryNotFoundException or ZipException
@@ -627,6 +670,12 @@ public class GameDownloader
                     _loadLog.OnNext(message);
                 }
 
+        var version = launcher.JavaPathResolver.GetInstalledJavaVersions().FirstOrDefault() ?? string.Empty;
+
+        if (string.IsNullOrEmpty(version))
+        {
+        }
+
         return await launcher.BuildProcessAsync(_profile.LaunchVersion, new MLaunchOption
         {
             MinimumRamMb = startupOptions.MinimumRamMb,
@@ -637,6 +686,7 @@ public class GameDownloader
             ServerIp = startupOptions.ServerIp,
             ServerPort = startupOptions.ServerPort,
             Session = session,
+            JavaPath = launcher.JavaPathResolver.GetJavaBinaryPath(new JavaVersion(version), launcher.RulesContext),
             PathSeparator = startupOptions.OsName == "windows" ? ";" : ":",
             ExtraGameArguments = gameArguments.Select(c => new MArgument(c)),
             ExtraJvmArguments = jvmArguments.Select(c => new MArgument(c))

@@ -48,7 +48,14 @@ public interface IProfileProcedures
     Task UpdateProfile(IGameProfile profile, string newProfileName, string displayName, Stream? icon,
         Stream? backgroundImage,
         string updateDtoDescription, bool isEnabled,
-        string jvmArguments, string gameArguments, int priority, int recommendedRam, bool needUpdateImages);
+        string jvmArguments,
+        string gameArguments,
+        int priority,
+        int recommendedRam,
+        bool needUpdateImages,
+        ProfileJavaVendor? vendor = null,
+        string? javaMajorVersion = null
+    );
 
     Task<string[]> InstallAuthLib(IGameProfile profile);
     Task<IGameProfileInfo?> GetCacheProfile(IGameProfile baseProfile);

@@ -24,7 +24,7 @@ public class CmlLibTests
             File.WriteAllText(Path.Combine(directory.FullName, "test", "test.txt"), "test");
         }
 
-        var extractor = new CustomNativeLibraryExtractor(new RulesEvaluator());
+        var extractor = new AzulNativeLibraryExtractor(new RulesEvaluator());
 
         extractor.Clean(minecraftPath, version);
         Assert.Multiple(() =>
