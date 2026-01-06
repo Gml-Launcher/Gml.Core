@@ -1094,8 +1094,13 @@ public partial class ProfileProcedures : IProfileProcedures
         profile.GameArguments = gameArguments;
         profile.Priority = priority;
         profile.RecommendedRam = recommendedRam;
-        profile.JavaVendor = vendor ?? ProfileJavaVendor.Default;
-        profile.JavaMajorVersion = javaMajorVersion;
+
+        if (profile.JavaVendor != vendor)
+        {
+            profile.JavaVendor = vendor ?? ProfileJavaVendor.Default;
+            profile.JavaMajorVersion = javaMajorVersion;
+            profile.State = ProfileState.NeedDownload;
+        }
 
         profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications,
             _gmlManager.BugTracker);
