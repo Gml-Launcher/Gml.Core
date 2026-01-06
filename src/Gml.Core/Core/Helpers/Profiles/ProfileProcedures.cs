@@ -1094,11 +1094,11 @@ public partial class ProfileProcedures : IProfileProcedures
         profile.GameArguments = gameArguments;
         profile.Priority = priority;
         profile.RecommendedRam = recommendedRam;
-
-        if (profile.JavaVendor != vendor)
+        var needDownload = profile.JavaVendor != vendor || profile.JavaMajorVersion != javaMajorVersion;
+        profile.JavaVendor = vendor ?? ProfileJavaVendor.Default;
+        profile.JavaMajorVersion = javaMajorVersion;
+        if (needDownload)
         {
-            profile.JavaVendor = vendor ?? ProfileJavaVendor.Default;
-            profile.JavaMajorVersion = javaMajorVersion;
             profile.State = ProfileState.NeedDownload;
         }
 
