@@ -1084,6 +1084,8 @@ public partial class ProfileProcedures : IProfileProcedures
         ProfileJavaVendor? vendor = null,
         string? javaMajorVersion = null)
     {
+        var needDownload = profile.JavaVendor != vendor || profile.JavaMajorVersion != javaMajorVersion;
+
         profile.Name = newProfileName;
         profile.DisplayName = displayName;
         profile.IconBase64 = newIcon;
@@ -1094,17 +1096,16 @@ public partial class ProfileProcedures : IProfileProcedures
         profile.GameArguments = gameArguments;
         profile.Priority = priority;
         profile.RecommendedRam = recommendedRam;
-        var needDownload = profile.JavaVendor != vendor || profile.JavaMajorVersion != javaMajorVersion;
         profile.JavaVendor = vendor ?? ProfileJavaVendor.Default;
         profile.JavaMajorVersion = javaMajorVersion;
-        if (needDownload)
-        {
-            profile.State = ProfileState.NeedDownload;
-        }
-
         profile.GameLoader = new GameDownloaderProcedures(_launcherInfo, _storageService, profile, _notifications,
             _gmlManager.BugTracker);
-        profile.State = profile.State == ProfileState.Created ? profile.State : ProfileState.NeedCompile;
+
+        if (needDownload)
+            profile.State = ProfileState.NeedDownload;
+        else
+            profile.State = profile.State == ProfileState.Created ? profile.State : ProfileState.NeedCompile;
+
         await SaveProfiles();
         await RestoreProfiles();
 
