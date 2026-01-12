@@ -30,7 +30,6 @@ public class JavaTests
             TextureServiceEndpoint = "http://gml-web-skins:8085"
         });
 
-
         _fileExtractor = new AzulJavaFileExtractor(client, new MinecraftJavaPathResolver(new MinecraftPath()));
         _manifest = new AzulMinecraftJavaManifestResolver(client);
     }
@@ -101,6 +100,9 @@ public class JavaTests
         };
 
         Debug.WriteLine($"\"{process.StartInfo.FileName}\" {process.StartInfo.Arguments}");
+        process.Start();
+
+        await process.WaitForExitAsync();
 
         Assert.That(newProfile, Is.Not.Null);
     }
@@ -145,6 +147,10 @@ public class JavaTests
         };
 
         Debug.WriteLine($"\"{process.StartInfo.FileName}\" {process.StartInfo.Arguments}");
+
+        process.Start();
+
+        await process.WaitForExitAsync();
 
         Assert.That(newProfile, Is.Not.Null);
     }
