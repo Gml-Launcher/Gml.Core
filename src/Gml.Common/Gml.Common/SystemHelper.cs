@@ -9,7 +9,7 @@ namespace Gml.Common
     {
         public static string CalculateFileHash(string filePath, HashAlgorithm algorithm)
         {
-            using var file = File.OpenRead(filePath);
+            using var file = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
             var binaryHash = algorithm.ComputeHash(file);
             return BitConverter.ToString(binaryHash).Replace("-", "").ToLowerInvariant();
