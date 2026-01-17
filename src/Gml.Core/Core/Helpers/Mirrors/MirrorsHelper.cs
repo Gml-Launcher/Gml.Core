@@ -57,11 +57,7 @@ public class MirrorsHelper
         },
         {
             "osx", [
-                "https://mirror.recloud.tech/dotnet-sdk-8.0.302-macos-aarch64.zip",
-                "https://mirror.recloud.host/dotnet-sdk-8.0.302-macos-aarch64.zip",
-                "https://mr-1.recloud.tech/dotnet-sdk-8.0.302-macos-aarch64.zip",
-                "https://mr-2.recloud.tech/dotnet-sdk-8.0.302-macos-aarch64.zip",
-                "https://mr-3.recloud.tech/dotnet-sdk-8.0.302-macos-aarch64.zip"
+                "https://mirror.recloud.tech/dotnet-sdk-8.0.302-osx-arm64.zip",
             ]
         }
     };

@@ -70,16 +70,8 @@ public class SystemProcedures(IGmlSettings gmlSettings) : ISystemProcedures
             : Environment.CurrentDirectory;
     }
 
-    public async Task<bool> InstallDotnet()
+    public async Task<bool> InstallDotnet(string? platform = null, string? dotnetExecutableName = null)
     {
-        if (RuntimeInformation.OSArchitecture == Architecture.Arm64 ||
-            RuntimeInformation.OSArchitecture == Architecture.Arm ||
-            RuntimeInformation.OSArchitecture == Architecture.Armv6)
-        {
-            _downloadLogs.OnNext("Не поддерживается сборка на ARM архитектуре");
-            return false;
-        }
-
         if (BuildDotnetPath is not null && File.Exists(BuildDotnetPath)) return true;
 
         _downloadLogs.OnNext("Check install Dotnet");
@@ -87,7 +79,7 @@ public class SystemProcedures(IGmlSettings gmlSettings) : ISystemProcedures
         try
         {
             var system = SystemService.GetPlatform();
-            var dotnetName = system == "windows" ? "dotnet.exe" : "dotnet";
+            var dotnetName = dotnetExecutableName ?? (system == "windows" ? "dotnet.exe" : "dotnet");
             var dotnetDirectory = Path.Combine(gmlSettings.InstallationDirectory, "temp", "DotnetBuild");
             var dotnetDirectoryPath = Path.Combine(dotnetDirectory, "dotnet-8");
             var dotnetPath = Path.Combine(dotnetDirectoryPath, dotnetName);
@@ -96,11 +88,11 @@ public class SystemProcedures(IGmlSettings gmlSettings) : ISystemProcedures
                 _downloadLogs.OnNext("Starting install Dotnet");
                 Directory.CreateDirectory(dotnetDirectory);
                 _downloadLogs.OnNext("Get active mirrors...");
-                var mirror = await GetAvailableMirrorAsync(MirrorsHelper.DotnetMirrors);
+                var mirror = await GetAvailableMirrorAsync(MirrorsHelper.DotnetMirrors, platform);
                 var tempZipFilePath = Path.Combine(dotnetDirectory, "dotnet.zip");
                 await DownloadFileAsync(mirror, tempZipFilePath);
                 ExtractZipFile(tempZipFilePath, dotnetDirectoryPath);
-                if (system == "linux") SetFileExecutable(dotnetPath);
+                if (system != "windows") SetFileExecutable(dotnetPath);
             }
 
             BuildDotnetPath = dotnetPath;
@@ -194,9 +186,9 @@ public class SystemProcedures(IGmlSettings gmlSettings) : ISystemProcedures
         File.Delete(zipFilePath);
     }
 
-    public async Task<string> GetAvailableMirrorAsync(IDictionary<string, string[]> mirrorUrls)
+    public async Task<string> GetAvailableMirrorAsync(IDictionary<string, string[]> mirrorUrls, string? platform = null)
     {
-        if (mirrorUrls.TryGetValue(SystemService.GetPlatform(), out var mirrors))
+        if (mirrorUrls.TryGetValue(platform ?? SystemService.GetPlatform(), out var mirrors))
         {
             List<MirrorPingModel> mirrorsPing = [];
 

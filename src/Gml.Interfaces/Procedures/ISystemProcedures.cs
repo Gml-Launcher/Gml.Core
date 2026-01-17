@@ -14,8 +14,8 @@ public interface ISystemProcedures
     string CleanFolderName(string name);
 
     string GetDefaultInstallationPath();
-    Task<bool> InstallDotnet();
-    Task<string> GetAvailableMirrorAsync(IDictionary<string, string[]> mirrorUrls);
+    Task<bool> InstallDotnet(string? platform = null, string? dotnetExecutableName = null);
+    Task<string> GetAvailableMirrorAsync(IDictionary<string, string[]> mirrorUrls, string? platform = null);
     Task DownloadFileAsync(string url, string destinationFilePath);
     void ExtractZipFile(string zipFilePath, string extractPath);
     void SetFileExecutable(string filePath);

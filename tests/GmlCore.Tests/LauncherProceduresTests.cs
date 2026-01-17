@@ -227,12 +227,12 @@ public class LauncherProceduresTests
             return DefaultInstallation;
         }
 
-        public Task<bool> InstallDotnet()
+        public Task<bool> InstallDotnet(string? platform = null, string? dotnetExecutableName = null)
         {
             return Task.FromResult(true);
         }
 
-        public Task<string> GetAvailableMirrorAsync(IDictionary<string, string[]> mirrorUrls)
+        public Task<string> GetAvailableMirrorAsync(IDictionary<string, string[]> mirrorUrls, string? platform = null)
         {
             return Task.FromResult(string.Empty);
         }
