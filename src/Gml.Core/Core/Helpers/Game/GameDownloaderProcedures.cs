@@ -31,16 +31,18 @@ public class GameDownloaderProcedures : IGameDownloaderProcedures
     private readonly IStorageService _storageService;
     private Dictionary<GameLoader, Func<string, Task<string>>> _downloadMethods;
 
-    public GameDownloaderProcedures(ILauncherInfo launcherInfo,
+    public GameDownloaderProcedures(
+        ILauncherInfo launcherInfo,
         IStorageService storageService,
         IGameProfile profile,
-        INotificationProcedures notifications, IBugTrackerProcedures bugTracker)
+        INotificationProcedures notifications,
+        IBugTrackerProcedures bugTracker)
     {
         _launcherInfo = launcherInfo;
         _storageService = storageService;
         _profile = profile;
         _bugTracker = bugTracker;
-        _gameLoader = new GameDownloader(profile, launcherInfo, notifications);
+        _gameLoader = new GameDownloader(profile, launcherInfo, notifications, launcherInfo.Settings.HttpClient);
 
         LoadException.Subscribe(CaptureException);
     }

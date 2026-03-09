@@ -44,6 +44,7 @@ public class GameDownloader
     private readonly Subject<Exception> _exception = new();
     private readonly SyncProgress<InstallerProgressChangedEventArgs> _fileProgress;
     private readonly Subject<double> _fullPercentages = new();
+    private readonly HttpClient _httpClient;
     private readonly ILauncherInfo _launcherInfo;
 
     private readonly ConcurrentDictionary<string, MinecraftLauncher> _launchers = new();
@@ -59,7 +60,8 @@ public class GameDownloader
     private int _currentStep;
     private int _steps;
 
-    public GameDownloader(IGameProfile profile, ILauncherInfo launcherInfo, INotificationProcedures notifications)
+    public GameDownloader(IGameProfile profile, ILauncherInfo launcherInfo, INotificationProcedures notifications,
+        HttpClient httpClient)
     {
         _downloadMethods = new Dictionary<GameLoader, Func<string, string?, CancellationToken, Task<string>>>
         {
@@ -74,6 +76,7 @@ public class GameDownloader
         _profile = profile;
         _launcherInfo = launcherInfo;
         _notifications = notifications;
+        _httpClient = httpClient;
         _systemProcedures = launcherInfo.Settings.SystemProcedures;
 
         _byteProgress = new SyncProgress<ByteProgress>(e => { _loadPercentages.OnNext(e.ToRatio() * 100); });
@@ -108,6 +111,7 @@ public class GameDownloader
                 architecture
             );
             var launcherParameters = MinecraftLauncherParameters.CreateDefault(minecraftPath);
+            launcherParameters.HttpClient = httpClient;
             launcherParameters.NativeLibraryExtractor =
                 new CustomNativeLibraryExtractor(launcherParameters.RulesEvaluator!);
             var platformName = $"{platform}/{architecture}";
@@ -352,7 +356,7 @@ public class GameDownloader
         CancellationToken cancellationToken)
     {
         var versionName = string.Empty;
-        var fabricLoader = new FabricInstaller(new HttpClient());
+        var fabricLoader = new FabricInstaller(_httpClient);
         FabricLoader? fabricVersion = default;
         JavaVersion? javaVersion = default;
         IVersion? downloadVersion = default;
@@ -419,7 +423,7 @@ public class GameDownloader
         CancellationToken cancellationToken)
     {
         var versionName = string.Empty;
-        var quiltInstaller = new QuiltInstaller(new HttpClient());
+        var quiltInstaller = new QuiltInstaller(_httpClient);
         QuiltLoader? fabricVersion = default;
         JavaVersion? javaVersion = default;
         IVersion? downloadVersion = default;
@@ -488,7 +492,7 @@ public class GameDownloader
         var versionName = string.Empty;
         JavaVersion? javaVersion = default;
         IVersion? downloadVersion = default;
-        var liteLoader = new LiteLoaderInstaller(new HttpClient());
+        var liteLoader = new LiteLoaderInstaller(_httpClient);
         var liteLoaderVersions = await liteLoader.GetAllLiteLoaders();
 
         foreach (var launcher in _launchers.Values)
