@@ -110,7 +110,7 @@ public class GameDownloader
                 platform,
                 architecture
             );
-            var launcherParameters = MinecraftLauncherParameters.CreateDefault(minecraftPath);
+            var launcherParameters = MinecraftLauncherParameters.CreateDefault(minecraftPath, httpClient);
             launcherParameters.HttpClient = httpClient;
             launcherParameters.NativeLibraryExtractor =
                 new CustomNativeLibraryExtractor(launcherParameters.RulesEvaluator!);
