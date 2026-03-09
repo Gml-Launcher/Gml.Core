@@ -793,7 +793,10 @@ public partial class ProfileProcedures : IProfileProcedures
     {
         try
         {
-            var anyLauncher = new MinecraftLauncher();
+            var launcherParameters = MinecraftLauncherParameters.CreateDefault(
+                new MinecraftPath(), _launcherInfo.Settings.HttpClient
+            );
+            var anyLauncher = new MinecraftLauncher(launcherParameters);
 
             switch (gameLoader)
             {
