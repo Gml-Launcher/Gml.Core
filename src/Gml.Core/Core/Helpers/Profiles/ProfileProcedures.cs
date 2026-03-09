@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Reactive.Subjects;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -734,21 +733,18 @@ public partial class ProfileProcedures : IProfileProcedures
         if (downloadingFileInfo.Exists && downloadingFileInfo.Length > 0)
             return [$"-javaagent:{{localPath}}\\libraries\\custom\\{authlibFileName}={{authEndpoint}}"];
 
-        using (var httpClient = new HttpClient())
-        {
-            var response = await httpClient.GetAsync(AuthLibUrl);
+        var response = await _launcherInfo.Settings.HttpClient.GetAsync(AuthLibUrl);
 
-            using (var contentStream = await response.Content.ReadAsStreamAsync())
-            using (Stream fileStream = new FileStream(downloadingFileInfo.FullName, FileMode.Create,
-                       FileAccess.Write, FileShare.None, 8192, true))
-            {
-                await contentStream.CopyToAsync(fileStream);
-            }
+        await using (var contentStream = await response.Content.ReadAsStreamAsync())
+        await using (Stream fileStream = new FileStream(downloadingFileInfo.FullName, FileMode.Create,
+                         FileAccess.Write, FileShare.None, 8192, true))
+        {
+            await contentStream.CopyToAsync(fileStream);
         }
 
         downloadingFileInfo.Refresh();
 
-        return [$"-javaagent:{{localPath}}\\libraries\\custom\\{authlibFileName}={{authEndpoint}}"];
+        return [$@"-javaagent:{{localPath}}\libraries\custom\{authlibFileName}={{authEndpoint}}"];
     }
 
     public async Task<IGameProfileInfo?> GetCacheProfile(IGameProfile baseProfile)
@@ -831,31 +827,27 @@ public partial class ProfileProcedures : IProfileProcedures
                     return [..forgeVersions];
 
                 case GameLoader.Fabric:
-                    using (var client = new HttpClient())
-                    {
-                        var fabricLoader = new FabricInstaller(client);
+                    var fabricLoader = new FabricInstaller(_launcherInfo.Settings.HttpClient);
+                    var fabricLoaders = await fabricLoader.GetLoaders(minecraftVersion);
 
-                        var loaders = await fabricLoader.GetLoaders(minecraftVersion);
+                    var fabricVersions = fabricLoaders
+                        .Where(c => !string.IsNullOrEmpty(c.Version))
+                        .OrderBy(c => c.Stable)
+                        .Select(c => c.Version!)
+                        .ToList()
+                        .AsReadOnly();
 
-                        var versions = loaders
-                            .Where(c => !string.IsNullOrEmpty(c.Version))
-                            .OrderBy(c => c.Stable)
-                            .Select(c => c.Version!)
-                            .ToList()
-                            .AsReadOnly();
+                    if (!_quiltVersions.Any(c => c.Key == minecraftVersion))
+                        _quiltVersions[minecraftVersion] = fabricVersions;
 
-                        if (!_quiltVersions.Any(c => c.Key == minecraftVersion))
-                            _quiltVersions[minecraftVersion] = versions;
+                    if (_quiltVersions[minecraftVersion] is null || !_quiltVersions[minecraftVersion].Any())
+                        throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
 
-                        if (_quiltVersions[minecraftVersion] is null || !_quiltVersions[minecraftVersion].Any())
-                            throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
-
-                        return [.._quiltVersions[minecraftVersion]];
-                    }
+                    return [.._quiltVersions[minecraftVersion]];
 
 
                 case GameLoader.LiteLoader:
-                    var liteLoaderVersionLoader = new LiteLoaderInstaller(new HttpClient());
+                    var liteLoaderVersionLoader = new LiteLoaderInstaller(_launcherInfo.Settings.HttpClient);
 
                     _liteLoaderVersions ??= await liteLoaderVersionLoader.GetAllLiteLoaders();
 
@@ -883,29 +875,26 @@ public partial class ProfileProcedures : IProfileProcedures
                     return [..neoForgeVersions];
 
                 case GameLoader.Quilt:
-                    using (var client = new HttpClient())
-                    {
-                        var quiltLoader = new QuiltInstaller(client);
+                    var quiltLoader = new QuiltInstaller(_launcherInfo.Settings.HttpClient);
 
-                        if (string.IsNullOrEmpty(minecraftVersion)) return [];
+                    if (string.IsNullOrEmpty(minecraftVersion)) return [];
 
-                        var loaders = await quiltLoader.GetLoaders(minecraftVersion);
+                    var loaders = await quiltLoader.GetLoaders(minecraftVersion);
 
-                        var versions = loaders
-                            .Where(c => !string.IsNullOrEmpty(c.Version))
-                            .OrderBy(c => c.Stable)
-                            .Select(c => c.Version!)
-                            .ToList()
-                            .AsReadOnly();
+                    var versions = loaders
+                        .Where(c => !string.IsNullOrEmpty(c.Version))
+                        .OrderBy(c => c.Stable)
+                        .Select(c => c.Version!)
+                        .ToList()
+                        .AsReadOnly();
 
-                        if (!_fabricVersions.Any(c => c.Key == minecraftVersion))
-                            _fabricVersions[minecraftVersion] = versions;
+                    if (!_fabricVersions.Any(c => c.Key == minecraftVersion))
+                        _fabricVersions[minecraftVersion] = versions;
 
-                        if (_fabricVersions[minecraftVersion] is null || !_fabricVersions[minecraftVersion].Any())
-                            throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
+                    if (_fabricVersions[minecraftVersion] is null || !_fabricVersions[minecraftVersion].Any())
+                        throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
 
-                        return [.._fabricVersions[minecraftVersion]];
-                    }
+                    return [.._fabricVersions[minecraftVersion]];
                 default:
                     throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
             }
