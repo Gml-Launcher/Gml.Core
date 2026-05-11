@@ -43,13 +43,13 @@ public class GameDownloader
     private readonly Dictionary<GameLoader, Func<string, string?, CancellationToken, Task<string>>> _downloadMethods;
     private readonly Subject<Exception> _exception = new();
     private readonly SyncProgress<InstallerProgressChangedEventArgs> _fileProgress;
-    private readonly Subject<double> _fullPercentages = new();
+    private readonly ReplaySubject<double> _fullPercentages = new(2);
     private readonly HttpClient _httpClient;
     private readonly ILauncherInfo _launcherInfo;
 
     private readonly ConcurrentDictionary<string, MinecraftLauncher> _launchers = new();
-    private readonly Subject<string> _loadLog = new();
-    private readonly Subject<double> _loadPercentages = new();
+    private readonly ReplaySubject<string> _loadLog = new(50);
+    private readonly ReplaySubject<double> _loadPercentages = new(2);
     private readonly INotificationProcedures _notifications;
     private readonly string[] _platforms = { "windows", "osx", "linux" };
     private readonly IGameProfile _profile;
@@ -126,7 +126,7 @@ public class GameDownloader
 
     public IObservable<double> FullPercentages => _fullPercentages;
     public IObservable<double> LoadPercentages => _loadPercentages;
-    public IObservable<string> LoadLog => _loadLog;
+    public IObservable<string> LoadLog => _loadLog.AsObservable();
     public IObservable<Exception> LoadException => _exception;
     public MinecraftLauncher AnyLauncher => _launchers.Values.First();
 
