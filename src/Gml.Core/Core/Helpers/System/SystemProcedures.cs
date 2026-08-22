@@ -4,9 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Net.NetworkInformation;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -16,7 +14,6 @@ using CmlLib.Core.Java;
 using Gml.Core.Helpers.Mirrors;
 using Gml.Core.Services.System;
 using Gml.Models.Bootstrap;
-using Gml.Models.Mirror;
 using GmlCore.Interfaces.Bootstrap;
 using GmlCore.Interfaces.Launcher;
 using GmlCore.Interfaces.Procedures;
@@ -188,58 +185,39 @@ public class SystemProcedures(IGmlSettings gmlSettings) : ISystemProcedures
 
     public async Task<string> GetAvailableMirrorAsync(IDictionary<string, string[]> mirrorUrls, string? platform = null)
     {
-        if (mirrorUrls.TryGetValue(platform ?? SystemService.GetPlatform(), out var mirrors))
+        if (!mirrorUrls.TryGetValue(platform ?? SystemService.GetPlatform(), out var mirrors) || mirrors.Length == 0)
         {
-            List<MirrorPingModel> mirrorsPing = [];
+            throw new Exception("Нет доступных зеркал для загрузки файлов");
+        }
 
-            foreach (var url in mirrors)
-                try
+        // HTTP-only. Do not ICMP-ping mirrors: Pterodactyl Wings drops CAP_NET_RAW, and
+        // Ping.SendPingAsync then either throws (every URL skipped) or hangs forever
+        // ("Get active mirrors..." never finishes — launcher compile and JDK download).
+        foreach (var url in mirrors)
+        {
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                using var response = await gmlSettings.HttpClient.GetAsync(
+                    url,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    cts.Token);
+
+                if (response.IsSuccessStatusCode)
                 {
-                    var mirrorPing = new Ping();
-                    var uri = new Uri(url);
-                    var domain = uri.Host;
-
-                    var ping = await mirrorPing.SendPingAsync(domain);
-
-                    mirrorPing.Dispose();
-
-                    mirrorsPing.Add(new MirrorPingModel { Url = url, RoundtripTime = ping.RoundtripTime });
-                }
-                catch (Exception)
-                {
-                    // Ignore the exception and try the next URL
-                }
-
-            mirrorsPing = mirrorsPing.OrderBy(x => x.RoundtripTime).ToList();
-
-            foreach (var pingModel in mirrorsPing)
-                try
-                {
-                    using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(3000));
-                    var response = await gmlSettings.HttpClient.GetAsync(pingModel.Url,
-                        HttpCompletionOption.ResponseHeadersRead, cts.Token);
-
-                    if (response.StatusCode == HttpStatusCode.OK)
+                    await using var stream = await response.Content.ReadAsStreamAsync(cts.Token);
+                    var buffer = new byte[8192];
+                    var bytesRead = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length), cts.Token);
+                    if (bytesRead > 0)
                     {
-                        await using var stream = await response.Content.ReadAsStreamAsync();
-                        var buffer = new byte[8192];
-                        var bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cts.Token);
-                        if (bytesRead > 0)
-                            return pingModel.Url;
+                        return url;
                     }
                 }
-                catch (HttpRequestException)
-                {
-                    // Ignore the exception and try the next URL
-                }
-                catch (TaskCanceledException)
-                {
-                    // Catch timeout exception and continue to the next URL
-                }
-                catch (Exception)
-                {
-                    // Ignore other exceptions and try the next URL
-                }
+            }
+            catch (Exception)
+            {
+                // Try the next mirror.
+            }
         }
 
         throw new Exception("Нет доступных зеркал для загрузки файлов");

@@ -43,7 +43,8 @@ public class MirrorsHelper
                 "https://mirror.recloud.host/dotnet-sdk-8.0.302-linux-x64.zip",
                 "https://mr-1.recloud.tech/dotnet-sdk-8.0.302-linux-x64.zip",
                 "https://mr-2.recloud.tech/dotnet-sdk-8.0.302-linux-x64.zip",
-                "https://mr-3.recloud.tech/dotnet-sdk-8.0.302-linux-x64.zip"
+                "https://mr-3.recloud.tech/dotnet-sdk-8.0.302-linux-x64.zip",
+                "https://aka.ms/dotnet/8.0/sdk-linux-x64.zip"
             ]
         },
         {
@@ -52,12 +53,14 @@ public class MirrorsHelper
                 "https://mirror.recloud.host/dotnet-sdk-8.0.302-win-x64.zip",
                 "https://mr-1.recloud.tech/dotnet-sdk-8.0.302-win-x64.zip",
                 "https://mr-2.recloud.tech/dotnet-sdk-8.0.302-win-x64.zip",
-                "https://mr-3.recloud.tech/dotnet-sdk-8.0.302-win-x64.zip"
+                "https://mr-3.recloud.tech/dotnet-sdk-8.0.302-win-x64.zip",
+                "https://aka.ms/dotnet/8.0/sdk-win-x64.zip"
             ]
         },
         {
             "osx", [
                 "https://mirror.recloud.tech/dotnet-sdk-8.0.302-osx-arm64.zip",
+                "https://aka.ms/dotnet/8.0/sdk-osx-arm64.zip"
             ]
         }
     };
