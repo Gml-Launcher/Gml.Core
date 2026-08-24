@@ -7,7 +7,9 @@
     <PackageId>Gml.Core</PackageId>
     <TargetFramework>net10.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2026.1-beta1</Version>
+    <Version>2026.1.1</Version>
+    <AssemblyVersion>2026.1.1.0</AssemblyVersion>
+    <FileVersion>2026.1.1.0</FileVersion>
     <Authors>Recloud LLC</Authors>
   </PropertyGroup>
 
@@ -41,9 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http.Features">
-      <HintPath>C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\8.0.14\Microsoft.AspNetCore.Http.Features.dll</HintPath>
-    </Reference>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
 </Project>

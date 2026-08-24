@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Gml.Core.Constants;
@@ -39,7 +38,6 @@ public class LauncherProcedures : ILauncherProcedures
     private readonly IGitHubService _githubService;
     private readonly GmlManager _gmlManager;
     private readonly ILauncherInfo _launcherInfo;
-    private readonly Subject<string> _logsBuffer;
     private readonly IStorageService _storage;
 
     public LauncherProcedures(
@@ -48,16 +46,6 @@ public class LauncherProcedures : ILauncherProcedures
         IFileStorageProcedures files,
         GmlManager gmlManager)
     {
-        _logsBuffer = new Subject<string>();
-
-        _logsBuffer
-            .Buffer(TimeSpan.FromSeconds(2))
-            .Select(items => string.Join(Environment.NewLine, items))
-            .Subscribe(combinedText =>
-            {
-                if (!string.IsNullOrEmpty(combinedText)) _buildLogs.OnNext(combinedText);
-            });
-
         _gmlManager = gmlManager;
         _launcherInfo = launcherInfo;
         _storage = storage;
@@ -217,10 +205,23 @@ public class LauncherProcedures : ILauncherProcedures
         var dotnetPath = _launcherInfo.Settings.SystemProcedures.BuildDotnetPath;
         var statusCode = 0;
 
+        if (string.IsNullOrEmpty(dotnetPath) || !File.Exists(dotnetPath))
+        {
+            _buildLogs.OnNext("[ERROR] .NET SDK for launcher compile is not installed (temp/DotnetBuild/dotnet-8).");
+            return (false, string.Empty);
+        }
+
+        CleanBuildArtifacts(projectPath);
+        _buildLogs.OnNext("Cleaned bin/obj from a previous (often Windows) build so restore runs on the server.");
+
         foreach (var version in versions.Where(version => _allowedVersions.Contains(version)))
         {
             var processStartInfo = GetProcessStartInfo(dotnetPath, version, projectPath);
-            if (processStartInfo != null) statusCode = await ExecuteProcessAsync(processStartInfo);
+            _buildLogs.OnNext($"Starting: {processStartInfo.FileName} {processStartInfo.Arguments}");
+            statusCode = await ExecuteProcessAsync(processStartInfo);
+            _buildLogs.OnNext($"dotnet publish {version} finished with exit code {statusCode}");
+            if (statusCode != 0)
+                break;
         }
 
         var publishDirectory = launcherDirectory.GetDirectories("publish", SearchOption.AllDirectories);
@@ -237,19 +238,32 @@ public class LauncherProcedures : ILauncherProcedures
         return (statusCode == 0, buildsFolder.FullName);
     }
 
-    private ProcessStartInfo? GetProcessStartInfo(string dotnetPath, string version, string projectPath)
+    private ProcessStartInfo GetProcessStartInfo(string dotnetPath, string version, string projectPath)
     {
-        var publishArgs = $"publish ./src/Gml.Launcher/ -r {version} -c Release -f net8.0 " +
+        // ReadyToRun on a Linux host targeting win-x64 needs Crossgen2 and a lot of RAM;
+        // Pterodactyl often OOM-kills the compile and the panel never shows the error.
+        var publishArgs = $"publish ./src/Gml.Launcher/Gml.Launcher.csproj -r {version} -c Release -f net8.0 " +
                           "-p:PublishSingleFile=true --self-contained true " +
                           "-p:IncludeNativeLibrariesForSelfExtract=true -p:IncludeAllContentForSelfExtract=true " +
-                          "-p:PublishReadyToRun=true";
+                          "-p:PublishReadyToRun=false";
 
-        return new ProcessStartInfo(dotnetPath, publishArgs)
+        var startInfo = new ProcessStartInfo(dotnetPath, publishArgs)
         {
             WorkingDirectory = projectPath,
             RedirectStandardOutput = true,
-            RedirectStandardError = true
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
         };
+
+        var dotnetRoot = Path.GetDirectoryName(dotnetPath);
+        if (!string.IsNullOrEmpty(dotnetRoot))
+        {
+            startInfo.Environment["DOTNET_ROOT"] = dotnetRoot;
+            startInfo.Environment["DOTNET_NOLOGO"] = "1";
+        }
+
+        return startInfo;
     }
 
     private async Task<int> ExecuteProcessAsync(ProcessStartInfo processStartInfo)
@@ -275,15 +289,44 @@ public class LauncherProcedures : ILauncherProcedures
 
     private void LogProcessOutput(object sender, DataReceivedEventArgs e)
     {
+        if (string.IsNullOrEmpty(e.Data))
+            return;
+
         Debug.WriteLine(e.Data);
-        _logsBuffer.OnNext($"[{DateTime.Now:HH:mm:ss:fff}] [INFO] {e.Data}");
+        _buildLogs.OnNext($"[{DateTime.Now:HH:mm:ss:fff}] [INFO] {e.Data}");
     }
 
     private void ErrorProcessOutput(object sender, DataReceivedEventArgs e)
     {
+        if (string.IsNullOrEmpty(e.Data))
+            return;
+
         Debug.WriteLine(e.Data);
         Console.WriteLine(e.Data);
-        _logsBuffer.OnNext($"[{DateTime.Now:HH:mm:ss:fff}] [ERROR] {e.Data}");
+        _buildLogs.OnNext($"[{DateTime.Now:HH:mm:ss:fff}] [ERROR] {e.Data}");
+    }
+
+    private static void CleanBuildArtifacts(string projectPath)
+    {
+        if (!Directory.Exists(projectPath))
+            return;
+
+        var dirs = Directory.GetDirectories(projectPath, "bin", SearchOption.AllDirectories)
+            .Concat(Directory.GetDirectories(projectPath, "obj", SearchOption.AllDirectories))
+            .OrderByDescending(path => path.Length)
+            .ToList();
+
+        foreach (var dir in dirs)
+        {
+            try
+            {
+                Directory.Delete(dir, true);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine($"Failed to delete {dir}: {exception.Message}");
+            }
+        }
     }
 
     private DirectoryInfo CreateBuildsFolder()
