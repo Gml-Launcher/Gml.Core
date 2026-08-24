@@ -452,7 +452,10 @@ public partial class ProfileProcedures : IProfileProcedures
             LaunchVersion = profile.LaunchVersion ?? string.Empty,
             WhiteListFolders = profile.FolderWhiteList?.OfType<LocalFolderInfo>().ToList() ?? [],
             WhiteListFiles = profile.FileWhiteList?.OfType<LocalFileInfo>().ToList() ?? [],
-            HasUpdate = false,
+            // Admin UI disables "Загрузить"/"Собрать" when hasUpdate is false and
+            // even shows a spinner as if restore is already running. Unbuilt
+            // profiles must stay downloadable; only a live load/pack locks them.
+            HasUpdate = profile.State is not ProfileState.Loading and not ProfileState.Packing,
             MinecraftVersion = profile.GameVersion
         };
     }
