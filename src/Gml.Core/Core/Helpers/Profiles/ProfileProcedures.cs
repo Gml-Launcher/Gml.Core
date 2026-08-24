@@ -350,6 +350,15 @@ public partial class ProfileProcedures : IProfileProcedures
         if (profile == null)
             return null;
 
+        if (profile.State is ProfileState.Created
+            or ProfileState.Loading
+            or ProfileState.Error
+            or ProfileState.NeedCompile
+            or ProfileState.Packing)
+        {
+            return CreateUnbuiltProfileInfo(profile);
+        }
+
         var profileDirectory = Path.Combine(
             profile.ClientPath,
             "platforms",
@@ -419,6 +428,13 @@ public partial class ProfileProcedures : IProfileProcedures
                 WhiteListFiles = profile.FileWhiteList?.OfType<LocalFileInfo>().ToList() ?? []
             };
 
+        return CreateUnbuiltProfileInfo(profile, files.OfType<LocalFileInfo>());
+    }
+
+    private static GameProfileInfo CreateUnbuiltProfileInfo(
+        IGameProfile profile,
+        IEnumerable<LocalFileInfo>? files = null)
+    {
         return new GameProfileInfo
         {
             ProfileName = profile.Name,
@@ -426,7 +442,7 @@ public partial class ProfileProcedures : IProfileProcedures
             Arguments = string.Empty,
             JavaPath = string.Empty,
             State = profile.State,
-            Files = files.OfType<LocalFileInfo>(),
+            Files = files ?? [],
             IconBase64 = profile.IconBase64,
             Description = profile.Description,
             ClientVersion = profile.GameVersion,
@@ -436,7 +452,7 @@ public partial class ProfileProcedures : IProfileProcedures
             LaunchVersion = profile.LaunchVersion ?? string.Empty,
             WhiteListFolders = profile.FolderWhiteList?.OfType<LocalFolderInfo>().ToList() ?? [],
             WhiteListFiles = profile.FileWhiteList?.OfType<LocalFileInfo>().ToList() ?? [],
-            HasUpdate = profile.State != ProfileState.Loading,
+            HasUpdate = false,
             MinecraftVersion = profile.GameVersion
         };
     }
