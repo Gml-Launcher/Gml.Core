@@ -254,9 +254,12 @@ public partial class ProfileProcedures : IProfileProcedures
     public async Task DownloadProfileAsync(IGameProfile baseProfile, IBootstrapProgram? version = default)
     {
         if (baseProfile is GameProfile gameProfile && await gameProfile.ValidateProfile())
+        {
             gameProfile.LaunchVersion =
                 await gameProfile.GameLoader.DownloadGame(baseProfile.GameVersion, baseProfile.LaunchVersion,
                     gameProfile.Loader, version);
+            await SaveProfiles();
+        }
     }
 
 
@@ -849,23 +852,22 @@ public partial class ProfileProcedures : IProfileProcedures
                     return [..forgeVersions];
 
                 case GameLoader.Fabric:
+                    if (string.IsNullOrEmpty(minecraftVersion)) return [];
+
                     var fabricLoader = new FabricInstaller(_launcherInfo.Settings.HttpClient);
                     var fabricLoaders = await fabricLoader.GetLoaders(minecraftVersion);
 
                     var fabricVersions = fabricLoaders
                         .Where(c => !string.IsNullOrEmpty(c.Version))
-                        .OrderBy(c => c.Stable)
+                        .OrderByDescending(c => c.Stable)
                         .Select(c => c.Version!)
-                        .ToList()
-                        .AsReadOnly();
+                        .ToArray();
 
-                    if (!_quiltVersions.Any(c => c.Key == minecraftVersion))
-                        _quiltVersions[minecraftVersion] = fabricVersions;
-
-                    if (_quiltVersions[minecraftVersion] is null || !_quiltVersions[minecraftVersion].Any())
+                    if (fabricVersions.Length == 0)
                         throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
 
-                    return [.._quiltVersions[minecraftVersion]];
+                    _fabricVersions[minecraftVersion] = fabricVersions;
+                    return fabricVersions;
 
 
                 case GameLoader.LiteLoader:
@@ -897,26 +899,22 @@ public partial class ProfileProcedures : IProfileProcedures
                     return [..neoForgeVersions];
 
                 case GameLoader.Quilt:
-                    var quiltLoader = new QuiltInstaller(_launcherInfo.Settings.HttpClient);
-
                     if (string.IsNullOrEmpty(minecraftVersion)) return [];
 
+                    var quiltLoader = new QuiltInstaller(_launcherInfo.Settings.HttpClient);
                     var loaders = await quiltLoader.GetLoaders(minecraftVersion);
 
                     var versions = loaders
                         .Where(c => !string.IsNullOrEmpty(c.Version))
-                        .OrderBy(c => c.Stable)
+                        .OrderByDescending(c => c.Stable)
                         .Select(c => c.Version!)
-                        .ToList()
-                        .AsReadOnly();
+                        .ToArray();
 
-                    if (!_fabricVersions.Any(c => c.Key == minecraftVersion))
-                        _fabricVersions[minecraftVersion] = versions;
-
-                    if (_fabricVersions[minecraftVersion] is null || !_fabricVersions[minecraftVersion].Any())
+                    if (versions.Length == 0)
                         throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
 
-                    return [.._fabricVersions[minecraftVersion]];
+                    _quiltVersions[minecraftVersion] = versions;
+                    return versions;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(gameLoader), gameLoader, null);
             }
