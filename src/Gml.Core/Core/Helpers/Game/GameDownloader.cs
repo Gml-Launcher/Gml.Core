@@ -352,6 +352,34 @@ public class GameDownloader
         return await Task.FromResult(loadVersion);
     }
 
+    private static string? ExtractFabricLoaderVersion(string minecraftVersion, string? launchVersion)
+    {
+        if (string.IsNullOrEmpty(launchVersion))
+            return launchVersion;
+
+        const string prefix = "fabric-loader-";
+        if (!launchVersion.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            return launchVersion;
+
+        var rest = launchVersion[prefix.Length..];
+        var suffix = "-" + minecraftVersion;
+        if (rest.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+            return rest[..^suffix.Length];
+
+        return launchVersion;
+    }
+
+    private static string ResolveFabricLoaderVersion(string minecraftVersion, string? launchVersion)
+    {
+        var loader = ExtractFabricLoaderVersion(minecraftVersion, launchVersion) ?? string.Empty;
+
+        // Existing 1.20.1 profiles were created with 0.19.2; install 0.19.3 on the next download.
+        if (minecraftVersion == "1.20.1" && loader == "0.19.2")
+            return "0.19.3";
+
+        return loader;
+    }
+
     private async Task<string> DownloadFabric(string version, string? launchVersion,
         CancellationToken cancellationToken)
     {
@@ -360,15 +388,28 @@ public class GameDownloader
         FabricLoader? fabricVersion = default;
         JavaVersion? javaVersion = default;
         IVersion? downloadVersion = default;
+        var requestedLoader = launchVersion;
+        launchVersion = ResolveFabricLoaderVersion(version, launchVersion);
+
+        if (!string.Equals(requestedLoader, launchVersion, StringComparison.Ordinal)
+            && !string.Equals(requestedLoader, $"fabric-loader-{launchVersion}-{version}", StringComparison.OrdinalIgnoreCase))
+        {
+            _loadLog.OnNext($"Fabric loader {requestedLoader} → {launchVersion} for Minecraft {version}");
+        }
 
         foreach (var launcher in _launchers.Values)
             try
             {
                 _loadLog.OnNext($"Downloading: {launcher.RulesContext.OS.Name}, arch: {launcher.RulesContext.OS.Arch}");
 
-                if (launcher.Versions?.FirstOrDefault(c => c.Name == launchVersion) is { } hasVersion)
+                var installedId = string.IsNullOrEmpty(launchVersion)
+                    ? string.Empty
+                    : $"fabric-loader-{launchVersion}-{version}";
+
+                if (!string.IsNullOrEmpty(installedId)
+                    && launcher.Versions?.FirstOrDefault(c => c.Name == installedId) is { } hasVersion)
                 {
-                    versionName = launchVersion;
+                    versionName = hasVersion.Name;
                     await launcher.InstallAndBuildProcessAsync(hasVersion.Name, new MLaunchOption(), _fileProgress,
                         _byteProgress, cancellationToken);
                     continue;
@@ -377,7 +418,9 @@ public class GameDownloader
                 if (fabricVersion is null)
                 {
                     var versionLoaders = await fabricLoader.GetLoaders(version);
-                    fabricVersion = versionLoaders.First(c => c.Version == launchVersion);
+                    fabricVersion = versionLoaders.FirstOrDefault(c => c.Version == launchVersion)
+                        ?? throw new InvalidOperationException(
+                            $"Fabric loader {launchVersion} is not available for Minecraft {version}");
                 }
 
                 versionName = await fabricLoader.Install(version, fabricVersion.Version!, launcher.MinecraftPath);
